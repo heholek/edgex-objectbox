@@ -127,7 +127,7 @@ func (client *ObjectBoxClient) ScrubAllEvents() (err error) {
 }
 
 func (client *ObjectBoxClient) Readings() (readings []models.Reading, err error) {
-	err = client.objectBox.RunWithCursor(2, true, func(cursor *Cursor) (err error) {
+	err = client.objectBox.Strict().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
 		var bytes []byte
 		for bytes, err = cursor.First(); bytes != nil; bytes, err = cursor.Next() {
 			if err != nil || bytes == nil {
@@ -197,15 +197,14 @@ func (client *ObjectBoxClient) ReadingById(idString string) (reading models.Read
 		if err != nil {
 			return
 		}
-		flatReading := flatcoredata.GetRootAsReading(bytes, flatbuffers.UOffsetT(0))
-		reading = *toModelReading(flatReading)
+		reading = *toModelReadingFromBytes(bytes)
 		return
 	})
 	return
 }
 
 func (client *ObjectBoxClient) ReadingCount() (count int, err error) {
-	err = client.objectBox.RunWithCursor(2, true, func(cursor *Cursor) (err error) {
+	err = client.objectBox.Strict().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
 		var countLong uint64
 		countLong, err = cursor.Count()
 		count = int(countLong)
@@ -218,17 +217,23 @@ func (ObjectBoxClient) DeleteReadingById(id string) error {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]models.Reading, error) {
-	client.objectBox.RunWithCursor(2, true, func(cursor *Cursor) (err error) {
-		tableArray, err := cursor.FindByString(7, deviceId)
+func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) (readings []models.Reading, err error) {
+	client.objectBox.Strict().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
+		bytesArray, err := cursor.FindByString(7, deviceId)
 		if err != nil {
 			return
 		}
-		flatReading := flatcoredata.GetRootAsReading(bytes, flatbuffers.UOffsetT(0))
-		reading = *toModelReading(flatReading)
+		defer bytesArray.Destroy()
+		for _, bytesData := range bytesArray.bytesArray {
+			readings = append(readings, *toModelReadingFromBytes(bytesData))
+			if len(readings) == limit {
+				// TODO consider limit in query builder
+				break
+			}
+		}
 		return
 	})
-
+	return
 }
 
 func (ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int) ([]models.Reading, error) {

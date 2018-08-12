@@ -70,6 +70,11 @@ func toModelEvent(src *flatcoredata.Event) *models.Event {
 	}
 }
 
+func toModelReadingFromBytes(bytesData []byte) *models.Reading {
+	flatReading := flatcoredata.GetRootAsReading(bytesData, flatbuffers.UOffsetT(0))
+	return toModelReading(flatReading)
+}
+
 func toModelReading(src *flatcoredata.Reading) *models.Reading {
 	return &models.Reading{
 		Id:       bson.ObjectId(strconv.FormatUint(src.Id(), 10)),

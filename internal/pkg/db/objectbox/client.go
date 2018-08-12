@@ -33,21 +33,46 @@ func (client *ObjectBoxClient) Connect() (err error) {
 	return
 }
 
-func (ObjectBoxClient) Events() ([]models.Event, error) {
-	panic("implement me")
+func (client *ObjectBoxClient) Events() (events []models.Event, err error) {
+	err = client.objectBox.Strict().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
+		var bytes []byte
+		for bytes, err = cursor.First(); bytes != nil; bytes, err = cursor.Next() {
+			if err != nil || bytes == nil {
+				return
+			}
+			flatEvent := flatcoredata.GetRootAsEvent(bytes, flatbuffers.UOffsetT(0))
+			events = append(events, *toModelEvent(flatEvent))
+		}
+		return
+	})
+	return
 }
 
 func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.ObjectId, err error) {
 	var id uint64
-	err = client.objectBox.RunWithCursor(1, false, func(cursor *Cursor) (err error) {
-		id, err = cursor.IdForPut(0)
+	if false {
+		err = client.objectBox.RunWithCursor(1, false, func(cursor *Cursor) (err error) {
+			id, err = cursor.IdForPut(0)
+			if err != nil {
+				return
+			}
+			flattenEntity(event, cursor.fbb, id)
+			return cursor.Put(id, false)
+
+		})
+	} else {
+		var box *Box // explicit to avoid shadowing
+		box, err = client.objectBox.Box(1)
 		if err != nil {
 			return
 		}
-		flattenEntity(event, cursor.fbb, id)
-		return cursor.Put(id, false)
-
-	})
+		id, err = box.IdForPut(0)
+		if err != nil {
+			return
+		}
+		flattenEntity(event, box.fbb, id)
+		err = box.PutAsync(id, false)
+	}
 	if err != nil {
 		return
 	}
@@ -78,8 +103,14 @@ func (client *ObjectBoxClient) EventById(idString string) (event models.Event, e
 	return
 }
 
-func (ObjectBoxClient) EventCount() (int, error) {
-	panic("implement me")
+func (client *ObjectBoxClient) EventCount() (count int, err error) {
+	err = client.objectBox.Strict().RunWithCursor(1, true, func(cursor *Cursor) (err error) {
+		var countLong uint64
+		countLong, err = cursor.Count()
+		count = int(countLong)
+		return
+	})
+	return
 }
 
 func (ObjectBoxClient) EventCountByDeviceId(id string) (int, error) {
@@ -135,19 +166,9 @@ func (client *ObjectBoxClient) Readings() (readings []models.Reading, err error)
 			}
 			flatReading := flatcoredata.GetRootAsReading(bytes, flatbuffers.UOffsetT(0))
 			readings = append(readings, *toModelReading(flatReading))
-			//len := len(readings)
-			// fmt.Printf("blub: %v\n", len)
-			// os.Stdout.Sync()
-			//if (len == 1101) {
-			//	fmt.Printf("Byebye: %v\n", len)
-			//	os.Stdout.Sync()
-			//}
 		}
 		return
 	})
-	//len := len(readings)
-	//fmt.Printf("DONE: %v\n", len)
-	//os.Stdout.Sync()
 	return
 }
 

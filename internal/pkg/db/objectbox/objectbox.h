@@ -175,12 +175,17 @@ enum DebugFlags {
     DebugFlags_LOG_ASYNC_QUEUE = 16,
 };
 
-/// Unused at the moment
-struct OB_data {
+struct OB_bytes {
     void* data;
     size_t size;
 };
-typedef struct OB_data OB_data;
+typedef struct OB_bytes OB_bytes;
+
+struct OB_bytes_array {
+    OB_bytes* bytes;
+    size_t size;
+};
+typedef struct OB_bytes_array OB_bytes_array;
 
 struct OB_table_array {
     void* tables;
@@ -267,8 +272,12 @@ int ob_box_put_async(OB_box* box, uint64_t entityId, const void* data, size_t si
 
 OB_table_array* ob_simple_query_string(OB_cursor* cursor, uint32_t propertyId, const char* value, uint32_t valueSize);
 
-void ob_data_destroy(OB_data* data);
+OB_bytes_array* ob_query_by_string(OB_cursor* cursorStruct, uint32_t propertyId, const char* value);
 
-void ob_table_array_destroy(OB_table_array* data);
+void ob_bytes_destroy(OB_bytes* bytes);
+
+void ob_bytes_array_destroy(OB_bytes_array* bytesArray);
+
+void ob_table_array_destroy(OB_table_array* tableArray);
 
 #endif //OBJECTBOX_H

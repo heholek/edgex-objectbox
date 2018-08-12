@@ -103,6 +103,11 @@ type TableArray struct {
 	tableArray *C.OB_table_array
 }
 
+type BytesArray struct {
+	bytesArray  [][]byte
+	cBytesArray *C.OB_bytes_array
+}
+
 type TxnFun func(transaction *Transaction) (err error)
 type CursorFun func(cursor *Cursor) (err error)
 
@@ -282,6 +287,13 @@ func (ob *ObjectBox) Box(entitySchemaId uint) (*Box, error) {
 	return &Box{cbox, flatbuffers.NewBuilder(512)}, nil
 }
 
+func (ob *ObjectBox) Strict() *ObjectBox {
+	if C.ob_store_await_async_completion(ob.store) != 0 {
+		fmt.Println(createError())
+	}
+	return ob
+}
+
 func (txn *Transaction) Destroy() (err error) {
 	rc := C.ob_txn_destroy(txn.txn)
 	txn.txn = nil
@@ -427,16 +439,36 @@ func (cursor *Cursor) RemoveAll() (err error) {
 	return
 }
 
-func (cursor *Cursor) FindByString(propertyId uint, value string) (tableArray TableArray, err error) {
+func (cursor *Cursor) FindByString(propertyId uint, value string) (bytesArray *BytesArray, err error) {
 	cvalue := C.CString(value)
 	defer C.free(unsafe.Pointer(cvalue))
 
-	carray := C.ob_simple_query_string(cursor.cursor, C.uint32_t(propertyId), cvalue, C.uint32_t(C.strlen(cvalue)))
-	if carray == nil {
+	cBytesArray := C.ob_query_by_string(cursor.cursor, C.uint32_t(propertyId), cvalue)
+	if cBytesArray == nil {
 		err = createError()
 		return
 	}
-	return TableArray{carray}, err
+	size := int(cBytesArray.size)
+	plainBytesArray := make([][]byte, size)
+	if size > 0 {
+		goBytesArray := (*[1 << 30]C.OB_bytes)(unsafe.Pointer(cBytesArray.bytes))[:size:size]
+		for i := 0; i < size; i++ {
+			cBytes := goBytesArray[i]
+			dataBytes := C.GoBytes(cBytes.data, C.int(cBytes.size))
+			plainBytesArray[i] = dataBytes
+		}
+	}
+
+	return &BytesArray{plainBytesArray, cBytesArray}, nil
+}
+
+func (bytesArray *BytesArray) Destroy() {
+	cBytesArray := bytesArray.cBytesArray
+	if cBytesArray != nil {
+		bytesArray.cBytesArray = nil
+		C.ob_bytes_array_destroy(cBytesArray)
+	}
+	bytesArray.bytesArray = nil
 }
 
 func (box *Box) Destroy() (err error) {

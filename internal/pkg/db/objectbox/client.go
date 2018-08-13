@@ -28,8 +28,14 @@ func (client *ObjectBoxClient) Connect() (err error) {
 	if err != nil {
 		return
 	}
-	client.objectBox, err = NewObjectBox(model, client.config.DatabaseName)
-	//client.objectBox.SetDebugFlags(DebugFlags_LOG_ASYNC_QUEUE)
+	objectBox, err := NewObjectBox(model, client.config.DatabaseName)
+	if err != nil {
+		return
+	}
+	//objectBox.SetDebugFlags(DebugFlags_LOG_ASYNC_QUEUE)
+	objectBox.RegisterBinding(EventBinding{})
+	objectBox.RegisterBinding(ReadingBinding{})
+	client.objectBox = objectBox
 	return
 }
 
@@ -50,15 +56,10 @@ func (client *ObjectBoxClient) Events() (events []models.Event, err error) {
 
 func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.ObjectId, err error) {
 	var id uint64
-	if false {
+	if true {
 		err = client.objectBox.RunWithCursor(1, false, func(cursor *Cursor) (err error) {
-			id, err = cursor.IdForPut(0)
-			if err != nil {
-				return
-			}
-			flattenEntity(event, cursor.fbb, id)
-			return cursor.Put(id, false)
-
+			id, err = cursor.Put(event)
+			return
 		})
 	} else {
 		var box *Box // explicit to avoid shadowing
@@ -66,12 +67,7 @@ func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.Obje
 		if err != nil {
 			return
 		}
-		id, err = box.IdForPut(0)
-		if err != nil {
-			return
-		}
-		flattenEntity(event, box.fbb, id)
-		err = box.PutAsync(id, false)
+		id, err = box.PutAsync(event)
 	}
 	if err != nil {
 		return
@@ -91,9 +87,9 @@ func (client *ObjectBoxClient) EventById(idString string) (event models.Event, e
 	if err != nil {
 		return
 	}
-	client.objectBox.RunWithCursor(1, true, func(cursor *Cursor) (err error) {
+	client.objectBox.Strict().RunWithCursor(1, true, func(cursor *Cursor) (err error) {
 		bytes, err := cursor.Get(uint64(id))
-		if err != nil {
+		if bytes == nil || err != nil {
 			return
 		}
 		flatEvent := flatcoredata.GetRootAsEvent(bytes, flatbuffers.UOffsetT(0))
@@ -176,25 +172,16 @@ func (client *ObjectBoxClient) AddReading(r models.Reading) (objectId bson.Objec
 	var id uint64
 	if false {
 		err = client.objectBox.RunWithCursor(2, false, func(cursor *Cursor) (err error) {
-			id, err = cursor.IdForPut(0)
-			if err != nil {
-				return
-			}
-			flattenReading(r, cursor.fbb, id)
-			return cursor.Put(id, false)
+			id, err = cursor.Put(&r)
+			return
 		})
 	} else {
-		var box *Box
+		var box *Box // Explicit to avoid shadowing
 		box, err = client.objectBox.Box(2)
 		if err != nil {
 			return
 		}
-		id, err = box.IdForPut(0)
-		if err != nil {
-			return
-		}
-		flattenReading(r, box.fbb, id)
-		err = box.PutAsync(id, false)
+		id, err = box.PutAsync(&r)
 	}
 	if err != nil {
 		return

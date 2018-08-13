@@ -25,7 +25,7 @@ func flattenEntity(event *models.Event, fbb *flatbuffers.Builder, id uint64) {
 
 }
 
-func flattenReading(reading models.Reading, fbb *flatbuffers.Builder, id uint64) {
+func flattenReading(reading *models.Reading, fbb *flatbuffers.Builder, id uint64) {
 	offsetDevice := Unavailable
 	if reading.Device != "" {
 		offsetDevice = fbb.CreateString(reading.Device)

@@ -68,10 +68,10 @@ func TestObjectBoxReadings(t *testing.T) {
 		t.Fatalf("Could not add reading: %v", err)
 	}
 	t.Logf("Added reading ID %v", objectId)
+	assert.NotEqual(t, objectId, "")
 
 	reading.Name = "reading2"
 	objectId2, err := client.AddReading(reading)
-	reading.Id = objectId2 // AddReading passes by value so we need to fix the Id manually
 	if err != nil {
 		t.Fatalf("Could not add 2nd reading: %v", err)
 	}
@@ -80,7 +80,6 @@ func TestObjectBoxReadings(t *testing.T) {
 	reading.Name = "reading3"
 	reading.Device = "device43"
 	objectId3, err := client.AddReading(reading)
-	reading.Id = objectId3 // AddReading passes by value so we need to fix the Id manually
 	if err != nil {
 		t.Fatalf("Could not add 2nd reading: %v", err)
 	}
@@ -124,7 +123,6 @@ func TestObjectBoxReadings(t *testing.T) {
 		assert.Equal(t, readings[0].Id, objectId3)
 		assert.Equal(t, readings[0].Device, "device43")
 	}
-
 }
 
 func BenchmarkObjectBox(b *testing.B) {

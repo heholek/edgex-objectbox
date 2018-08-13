@@ -43,8 +43,8 @@ func (txn *Transaction) Commit() (err error) {
 	return
 }
 
-func (txn *Transaction) Cursor(binding ObjectBinding) (*Cursor, error) {
-	ccursor := C.ob_cursor_create(txn.txn, C.uint(binding.GetTypeId()))
+func (txn *Transaction) createCursor(typeId TypeId, binding ObjectBinding) (*Cursor, error) {
+	ccursor := C.ob_cursor_create(txn.txn, C.uint(typeId))
 	if ccursor == nil {
 		return nil, createError()
 	}

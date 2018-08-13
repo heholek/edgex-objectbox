@@ -15,6 +15,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"unsafe"
 )
 
 const Unavailable = flatbuffers.UOffsetT(0)
@@ -31,12 +32,22 @@ const (
 type TypeId uint32
 
 type ObjectBinding interface {
-	GetTypeId() TypeId
-	GetTypeName() string
+	AddToModel(model *Model)
 	GetId(object interface{}) (id uint64, err error)
 	Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64)
 	ToObject(bytes []byte) interface{}
 	AppendToSlice(slice interface{}, object interface{}) (sliceNew interface{})
+}
+
+type ObjectBoxBuilder struct {
+	name          string
+	model         *Model
+	Err           error
+	lastEntityId  TypeId
+	lastEntityUid uint64
+
+	bindingsById   map[TypeId]ObjectBinding
+	bindingsByName map[string]ObjectBinding
 }
 
 type ObjectBox struct {
@@ -57,19 +68,88 @@ type BytesArray struct {
 type TxnFun func(transaction *Transaction) (err error)
 type CursorFun func(cursor *Cursor) (err error)
 
-func (ob *ObjectBox) RegisterBinding(binding ObjectBinding) {
-	id := binding.GetTypeId()
-	name := binding.GetTypeName()
-	existingBinding := ob.bindingsById[id]
-	if existingBinding != nil {
-		panic("Already registered a binding for ID " + strconv.Itoa(int(id)) + ": " + binding.GetTypeName())
+func NewObjectBoxBuilder() (builder *ObjectBoxBuilder) {
+	model, err := NewModel()
+	if err != nil {
+		panic("Could not create model: " + err.Error())
 	}
-	existingBinding = ob.bindingsByName[name]
-	if existingBinding != nil {
-		panic("Already registered a binding for name " + name + ": ID " + strconv.Itoa(int(binding.GetTypeId())))
+	builder = &ObjectBoxBuilder{}
+	builder.model = model
+	builder.bindingsById = make(map[TypeId]ObjectBinding)
+	builder.bindingsByName = make(map[string]ObjectBinding)
+	return
+}
+
+func (builder *ObjectBoxBuilder) Name(name string) *ObjectBoxBuilder {
+	builder.name = name
+	return builder
+}
+
+func (builder *ObjectBoxBuilder) RegisterBinding(binding ObjectBinding) {
+	binding.AddToModel(builder.model)
+	id := builder.model.lastEntityId
+	name := builder.model.lastEntityName
+	if id == 0 {
+		panic("No type ID; did you forget to add an entity to the model?")
 	}
-	ob.bindingsById[id] = binding
-	ob.bindingsByName[name] = binding
+	if name == "" {
+		panic("No type name")
+	}
+	existingBinding := builder.bindingsById[id]
+	if existingBinding != nil {
+		panic("Already registered a binding for ID " + strconv.Itoa(int(id)))
+	}
+	existingBinding = builder.bindingsByName[name]
+	if existingBinding != nil {
+		panic("Already registered a binding for name " + name)
+	}
+	builder.bindingsById[id] = binding
+	builder.bindingsByName[name] = binding
+}
+
+func (builder *ObjectBoxBuilder) LastEntityId(id TypeId, uid uint64) *ObjectBoxBuilder {
+	builder.lastEntityId = id
+	builder.lastEntityUid = uid
+	return builder
+}
+
+func (builder *ObjectBoxBuilder) Build() (objectBox *ObjectBox, err error) {
+	if builder.model.Err != nil {
+		err = builder.model.Err
+		return
+	}
+	if builder.Err != nil {
+		err = builder.Err
+		return
+	}
+	if builder.lastEntityId == 0 || builder.lastEntityUid == 0 {
+		panic("Configuration error: last entity ID/UID must be set")
+	}
+	builder.model.LastEntityId(builder.lastEntityId, builder.lastEntityUid)
+
+	fmt.Println("Ignoring DB name: " + builder.name)
+	cname := C.CString(builder.name)
+	defer C.free(unsafe.Pointer(cname))
+
+	objectBox = &ObjectBox{}
+	objectBox.store = C.ob_store_open(builder.model.model, nil)
+	if objectBox.store == nil {
+		objectBox = nil
+		err = createError()
+	}
+	if err == nil {
+		objectBox.bindingsById = builder.bindingsById
+		objectBox.bindingsByName = builder.bindingsByName
+	}
+	return
+}
+
+func (ob *ObjectBox) Destroy() {
+	storeToClose := ob.store
+	ob.store = nil
+	if storeToClose != nil {
+		C.ob_store_close(storeToClose)
+	}
 }
 
 func (ob *ObjectBox) BeginTxn() (txn *Transaction, err error) {
@@ -144,7 +224,7 @@ func (ob ObjectBox) getBindingByName(typeName string) ObjectBinding {
 func (ob *ObjectBox) RunWithCursor(typeId TypeId, readOnly bool, cursorFun CursorFun) (err error) {
 	binding := ob.getBindingById(typeId)
 	return ob.RunInTxn(readOnly, func(txn *Transaction) (err error) {
-		cursor, err := txn.Cursor(binding)
+		cursor, err := txn.createCursor(typeId, binding)
 		if err != nil {
 			return
 		}

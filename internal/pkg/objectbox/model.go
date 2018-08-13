@@ -9,7 +9,6 @@ package objectbox
 import "C"
 
 import (
-	"fmt"
 	"unsafe"
 )
 
@@ -63,8 +62,10 @@ const (
 )
 
 type Model struct {
-	model *C.OB_model
-	Err   error
+	model          *C.OB_model
+	lastEntityName string
+	lastEntityId   TypeId
+	Err            error
 }
 
 func NewModel() (model *Model, err error) {
@@ -77,14 +78,14 @@ func NewModel() (model *Model, err error) {
 	return
 }
 
-func (model *Model) LastEntityId(id uint32, uid uint64) {
+func (model *Model) LastEntityId(id TypeId, uid uint64) {
 	if model.Err != nil {
 		return
 	}
 	C.ob_model_last_entity_id(model.model, C.uint(id), C.ulong(uid))
 }
 
-func (model *Model) Entity(name string, id uint32, uid uint64) (err error) {
+func (model *Model) Entity(name string, id TypeId, uid uint64) (err error) {
 	if model.Err != nil {
 		return model.Err
 	}
@@ -94,22 +95,27 @@ func (model *Model) Entity(name string, id uint32, uid uint64) (err error) {
 	rc := C.ob_model_entity(model.model, cname, C.uint(id), C.ulong(uid))
 	if rc != 0 {
 		err = createError()
+		model.Err = err
+		return
 	}
+	model.lastEntityName = name
+	model.lastEntityId = id
 	return
 }
 
-func (model *Model) EntityLastPropertyId(id uint32, uid uint64) (err error) {
+func (model *Model) EntityLastPropertyId(id TypeId, uid uint64) (err error) {
 	if model.Err != nil {
 		return model.Err
 	}
 	rc := C.ob_model_entity_last_property_id(model.model, C.uint(id), C.ulong(uid))
 	if rc != 0 {
 		err = createError()
+		model.Err = err
 	}
 	return
 }
 
-func (model *Model) Property(name string, propertyType int, id uint32, uid uint64) (err error) {
+func (model *Model) Property(name string, propertyType int, id TypeId, uid uint64) (err error) {
 	if model.Err != nil {
 		return model.Err
 	}
@@ -119,6 +125,7 @@ func (model *Model) Property(name string, propertyType int, id uint32, uid uint6
 	rc := C.ob_model_property(model.model, cname, C.OBPropertyType(propertyType), C.uint(id), C.ulong(uid))
 	if rc != 0 {
 		err = createError()
+		model.Err = err
 	}
 	return
 }
@@ -130,24 +137,7 @@ func (model *Model) PropertyFlags(propertyFlags int) (err error) {
 	rc := C.ob_model_property_flags(model.model, C.OBPropertyFlags(propertyFlags))
 	if rc != 0 {
 		err = createError()
-	}
-	return
-}
-
-func NewObjectBox(model *Model, name string) (objectBox *ObjectBox, err error) {
-	fmt.Println("Ignoring name %v", name)
-	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
-
-	objectBox = &ObjectBox{}
-	objectBox.store = C.ob_store_open(model.model, nil)
-	if objectBox.store == nil {
-		objectBox = nil
-		err = createError()
-	}
-	if err == nil {
-		objectBox.bindingsById = make(map[TypeId]ObjectBinding)
-		objectBox.bindingsByName = make(map[string]ObjectBinding)
+		model.Err = err
 	}
 	return
 }

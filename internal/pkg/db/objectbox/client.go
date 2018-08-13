@@ -2,9 +2,7 @@ package objectbox
 
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/flatcoredata"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
-	"github.com/google/flatbuffers/go"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 )
@@ -41,13 +39,9 @@ func (client *ObjectBoxClient) Connect() (err error) {
 
 func (client *ObjectBoxClient) Events() (events []models.Event, err error) {
 	err = client.objectBox.Strict().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
-		var bytes []byte
-		for bytes, err = cursor.First(); bytes != nil; bytes, err = cursor.Next() {
-			if err != nil || bytes == nil {
-				return
-			}
-			flatEvent := flatcoredata.GetRootAsEvent(bytes, flatbuffers.UOffsetT(0))
-			events = append(events, *toModelEvent(flatEvent))
+		slice, err := cursor.GetAll()
+		if slice != nil {
+			events = slice.([]models.Event)
 		}
 		return
 	})
@@ -56,7 +50,7 @@ func (client *ObjectBoxClient) Events() (events []models.Event, err error) {
 
 func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.ObjectId, err error) {
 	var id uint64
-	if true {
+	if false {
 		err = client.objectBox.RunWithCursor(1, false, func(cursor *Cursor) (err error) {
 			id, err = cursor.Put(event)
 			return
@@ -88,12 +82,10 @@ func (client *ObjectBoxClient) EventById(idString string) (event models.Event, e
 		return
 	}
 	client.objectBox.Strict().RunWithCursor(1, true, func(cursor *Cursor) (err error) {
-		bytes, err := cursor.Get(uint64(id))
-		if bytes == nil || err != nil {
-			return
+		object, err := cursor.Get(uint64(id))
+		if object != nil {
+			event = *object.(*models.Event)
 		}
-		flatEvent := flatcoredata.GetRootAsEvent(bytes, flatbuffers.UOffsetT(0))
-		event = *toModelEvent(flatEvent)
 		return
 	})
 	return
@@ -155,13 +147,9 @@ func (client *ObjectBoxClient) ScrubAllEvents() (err error) {
 
 func (client *ObjectBoxClient) Readings() (readings []models.Reading, err error) {
 	err = client.objectBox.Strict().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
-		var bytes []byte
-		for bytes, err = cursor.First(); bytes != nil; bytes, err = cursor.Next() {
-			if err != nil || bytes == nil {
-				return
-			}
-			flatReading := flatcoredata.GetRootAsReading(bytes, flatbuffers.UOffsetT(0))
-			readings = append(readings, *toModelReading(flatReading))
+		slice, err := cursor.GetAll()
+		if slice != nil {
+			readings = slice.([]models.Reading)
 		}
 		return
 	})
@@ -201,11 +189,11 @@ func (client *ObjectBoxClient) ReadingById(idString string) (reading models.Read
 		return
 	}
 	client.objectBox.RunWithCursor(2, true, func(cursor *Cursor) (err error) {
-		bytes, err := cursor.Get(uint64(id))
+		object, err := cursor.Get(uint64(id))
 		if err != nil {
 			return
 		}
-		reading = *toModelReadingFromBytes(bytes)
+		reading = *object.(*models.Reading)
 		return
 	})
 	return

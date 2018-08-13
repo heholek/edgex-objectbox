@@ -2,8 +2,10 @@ package objectbox
 
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/flatcoredata"
 	. "github.com/edgexfoundry/edgex-go/internal/pkg/objectbox"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
+	"github.com/google/flatbuffers/go"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 )
@@ -18,8 +20,8 @@ func NewClient(config db.Configuration) *ObjectBoxClient {
 	return client
 }
 
-func (ObjectBoxClient) CloseSession() {
-	panic("implement me")
+func (client *ObjectBoxClient) CloseSession() {
+	client.Disconnect()
 }
 
 func (client *ObjectBoxClient) Connect() (err error) {
@@ -109,8 +111,20 @@ func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]models.Even
 	panic("implement me")
 }
 
-func (ObjectBoxClient) EventsForDevice(id string) ([]models.Event, error) {
-	panic("implement me")
+func (client *ObjectBoxClient) EventsForDevice(deviceId string) (events []models.Event, err error) {
+	client.objectBox.Strict().RunWithCursor(1, true, func(cursor *Cursor) (err error) {
+		bytesArray, err := cursor.FindByString(3, deviceId)
+		if err != nil {
+			return
+		}
+		defer bytesArray.Destroy()
+		for _, bytesData := range bytesArray.BytesArray {
+			flatEvent := flatcoredata.GetRootAsEvent(bytesData, flatbuffers.UOffsetT(0))
+			events = append(events, *toModelEvent(flatEvent))
+		}
+		return
+	})
+	return
 }
 
 func (ObjectBoxClient) EventsByCreationTime(startTime, endTime int64, limit int) ([]models.Event, error) {

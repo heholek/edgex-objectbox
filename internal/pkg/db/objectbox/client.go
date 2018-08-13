@@ -62,12 +62,7 @@ func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.Obje
 			return
 		})
 	} else {
-		var box *Box // explicit to avoid shadowing
-		box, err = client.objectBox.Box(1)
-		if err != nil {
-			return
-		}
-		id, err = box.PutAsync(event)
+		id, err = client.objectBox.Box(1).PutAsync(event)
 	}
 	if err != nil {
 		return
@@ -87,23 +82,18 @@ func (client *ObjectBoxClient) EventById(idString string) (event models.Event, e
 	if err != nil {
 		return
 	}
-	client.objectBox.Strict().RunWithCursor(1, true, func(cursor *Cursor) (err error) {
-		object, err := cursor.Get(uint64(id))
-		if object != nil {
-			event = *object.(*models.Event)
-		}
-		return
-	})
+	object, err := client.objectBox.Strict().Box(1).Get(id)
+	if object != nil {
+		event = *object.(*models.Event)
+	}
 	return
 }
 
 func (client *ObjectBoxClient) EventCount() (count int, err error) {
-	err = client.objectBox.Strict().RunWithCursor(1, true, func(cursor *Cursor) (err error) {
-		var countLong uint64
-		countLong, err = cursor.Count()
+	countLong, err := client.objectBox.Strict().Box(1).Count()
+	if err == nil {
 		count = int(countLong)
-		return
-	})
+	}
 	return
 }
 
@@ -140,25 +130,18 @@ func (ObjectBoxClient) EventsPushed() ([]models.Event, error) {
 }
 
 func (client *ObjectBoxClient) ScrubAllEvents() (err error) {
-	err = client.objectBox.RunWithCursor(2, false, func(cursor *Cursor) (err error) {
-		return cursor.RemoveAll()
-	})
+	err = client.objectBox.Strict().Box(2).RemoveAll()
 	if err != nil {
 		return
 	}
-	return client.objectBox.RunWithCursor(1, false, func(cursor *Cursor) (err error) {
-		return cursor.RemoveAll()
-	})
+	return client.objectBox.Box(1).RemoveAll()
 }
 
 func (client *ObjectBoxClient) Readings() (readings []models.Reading, err error) {
-	err = client.objectBox.Strict().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
-		slice, err := cursor.GetAll()
-		if slice != nil {
-			readings = slice.([]models.Reading)
-		}
-		return
-	})
+	slice, err := client.objectBox.Strict().Box(2).GetAll()
+	if slice != nil {
+		readings = slice.([]models.Reading)
+	}
 	return
 }
 
@@ -170,12 +153,7 @@ func (client *ObjectBoxClient) AddReading(r models.Reading) (objectId bson.Objec
 			return
 		})
 	} else {
-		var box *Box // Explicit to avoid shadowing
-		box, err = client.objectBox.Box(2)
-		if err != nil {
-			return
-		}
-		id, err = box.PutAsync(&r)
+		id, err = client.objectBox.Box(2).PutAsync(&r)
 	}
 	if err != nil {
 		return
@@ -194,24 +172,17 @@ func (client *ObjectBoxClient) ReadingById(idString string) (reading models.Read
 	if err != nil {
 		return
 	}
-	client.objectBox.RunWithCursor(2, true, func(cursor *Cursor) (err error) {
-		object, err := cursor.Get(uint64(id))
-		if err != nil {
-			return
-		}
-		reading = *object.(*models.Reading)
+	object, err := client.objectBox.Strict().Box(2).Get(id)
+	if object == nil || err != nil {
 		return
-	})
+	}
+	reading = *object.(*models.Reading)
 	return
 }
 
 func (client *ObjectBoxClient) ReadingCount() (count int, err error) {
-	err = client.objectBox.Strict().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
-		var countLong uint64
-		countLong, err = cursor.Count()
-		count = int(countLong)
-		return
-	})
+	countLong, err := client.objectBox.Strict().Box(2).Count()
+	count = int(countLong)
 	return
 }
 

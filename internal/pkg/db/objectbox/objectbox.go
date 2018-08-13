@@ -18,6 +18,8 @@ import (
 	"unsafe"
 )
 
+const Unavailable = flatbuffers.UOffsetT(0)
+
 //noinspection GoUnusedConst
 const (
 	PropertyType_Bool       = 1
@@ -83,6 +85,8 @@ type ObjectBinding interface {
 	GetTypeName() string
 	GetId(object interface{}) (id uint64, err error)
 	Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64)
+	ToObject(bytes []byte) interface{}
+	AppendToSlice(slice interface{}, object interface{}) (sliceNew interface{})
 }
 
 type Model struct {
@@ -396,7 +400,31 @@ func (cursor *Cursor) Destroy() (err error) {
 	return
 }
 
-func (cursor *Cursor) Get(id uint64) (bytes []byte, err error) {
+func (cursor *Cursor) Get(id uint64) (object interface{}, err error) {
+	bytes, err := cursor.GetBytes(id)
+	if bytes == nil || err != nil {
+		return
+	}
+	return cursor.binding.ToObject(bytes), nil
+}
+
+func (cursor *Cursor) GetAll() (slice interface{}, err error) {
+	var bytes []byte
+	binding := cursor.binding
+	slice = nil
+
+	for bytes, err = cursor.First(); bytes != nil; bytes, err = cursor.Next() {
+		if err != nil || bytes == nil {
+			slice = nil
+			return
+		}
+		object := binding.ToObject(bytes)
+		slice = binding.AppendToSlice(slice, object)
+	}
+	return slice, nil
+}
+
+func (cursor *Cursor) GetBytes(id uint64) (bytes []byte, err error) {
 	var data *C.void
 	var dataSize C.size_t
 	dataPtr := unsafe.Pointer(data) // Need ptr to an unsafe ptr here

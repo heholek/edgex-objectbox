@@ -14,8 +14,10 @@ import (
 )
 
 type Box struct {
-	box     *C.OB_box
-	binding ObjectBinding
+	objectBox *ObjectBox
+	box       *C.OB_box
+	typeId    TypeId
+	binding   ObjectBinding
 	// FIXME not synchronized:
 	fbb *flatbuffers.Builder
 }
@@ -69,5 +71,38 @@ func (box *Box) finishInternalFbbAndPutAsync(id uint64, checkForPreviousObject b
 	// Reset to have a clear state for the next caller
 	fbb.Reset()
 
+	return
+}
+
+func (box *Box) RemoveAll() (err error) {
+	return box.objectBox.RunWithCursor(box.typeId, false, func(cursor *Cursor) error {
+		return cursor.RemoveAll()
+	})
+}
+
+func (box *Box) Count() (count uint64, err error) {
+	err = box.objectBox.RunWithCursor(box.typeId, true, func(cursor *Cursor) error {
+		var errInner error
+		count, errInner = cursor.Count()
+		return errInner
+	})
+	return
+}
+
+func (box *Box) Get(id uint64) (object interface{}, err error) {
+	err = box.objectBox.RunWithCursor(box.typeId, true, func(cursor *Cursor) error {
+		var errInner error
+		object, errInner = cursor.Get(id)
+		return errInner
+	})
+	return
+}
+
+func (box *Box) GetAll() (slice interface{}, err error) {
+	err = box.objectBox.RunWithCursor(box.typeId, true, func(cursor *Cursor) error {
+		var errInner error
+		slice, errInner = cursor.GetAll()
+		return errInner
+	})
 	return
 }

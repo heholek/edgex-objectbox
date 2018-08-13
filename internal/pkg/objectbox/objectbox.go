@@ -252,13 +252,22 @@ func (ob *ObjectBox) SetDebugFlags(flags uint) (err error) {
 	return
 }
 
-func (ob *ObjectBox) Box(entitySchemaId TypeId) (*Box, error) {
-	binding := ob.getBindingById(entitySchemaId)
-	cbox := C.ob_box_create(ob.store, C.uint(entitySchemaId))
+/// Returns a Box, panics on error (see BoxOrError)
+func (ob *ObjectBox) Box(typeId TypeId) *Box {
+	box, err := ob.BoxOrError(typeId)
+	if err != nil {
+		panic("Could not create box for type ID " + strconv.Itoa(int(typeId)) + ": " + err.Error())
+	}
+	return box
+}
+
+func (ob *ObjectBox) BoxOrError(typeId TypeId) (*Box, error) {
+	binding := ob.getBindingById(typeId)
+	cbox := C.ob_box_create(ob.store, C.uint(typeId))
 	if cbox == nil {
 		return nil, createError()
 	}
-	return &Box{cbox, binding, flatbuffers.NewBuilder(512)}, nil
+	return &Box{ob, cbox, typeId, binding, flatbuffers.NewBuilder(512)}, nil
 }
 
 func (ob *ObjectBox) Strict() *ObjectBox {

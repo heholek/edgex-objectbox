@@ -2,6 +2,7 @@ package objectbox
 
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/flatcoredata"
+	. "github.com/edgexfoundry/edgex-go/internal/pkg/objectbox"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 	"github.com/google/flatbuffers/go"
 	"gopkg.in/mgo.v2/bson"

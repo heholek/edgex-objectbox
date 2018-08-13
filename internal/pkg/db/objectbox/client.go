@@ -2,6 +2,7 @@ package objectbox
 
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	. "github.com/edgexfoundry/edgex-go/internal/pkg/objectbox"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
@@ -220,7 +221,7 @@ func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) (rea
 			return
 		}
 		defer bytesArray.Destroy()
-		for _, bytesData := range bytesArray.bytesArray {
+		for _, bytesData := range bytesArray.BytesArray {
 			readings = append(readings, *toModelReadingFromBytes(bytesData))
 			if len(readings) == limit {
 				// TODO consider limit in query builder
@@ -323,8 +324,8 @@ func createCoreDataModel() (model *Model, err error) {
 
 	model.LastEntityId(2, 10002)
 
-	if model.err != nil {
-		err = model.err
+	if model.Err != nil {
+		err = model.Err
 		model = nil
 		return
 	}

@@ -9,15 +9,25 @@ import (
 	"strconv"
 )
 
+// This file could be generated in the future
 type ReadingBinding struct {
 }
 
-func (ReadingBinding) GetTypeId() TypeId {
-	return 2
-}
-
-func (ReadingBinding) GetTypeName() string {
-	return "Reading"
+func (ReadingBinding) AddToModel(model *Model) {
+	model.Entity("Reading", 2, 10002)
+	model.Property("id", PropertyType_Long, 1, 10002001)
+	model.PropertyFlags(PropertyFlags_ID)
+	model.Property("eventId", PropertyType_Long, 2, 10002002)
+	//model.Property("eventId", PropertyType_Relation, 2, 10002002)
+	//model.PropertyFlags(PropertyFlags_INDEXED)
+	model.Property("pushed", PropertyType_Long, 3, 10002003)
+	model.Property("created", PropertyType_Long, 4, 10002004)
+	model.Property("origin", PropertyType_Long, 5, 10002005)
+	model.Property("modified", PropertyType_Long, 6, 10002006)
+	model.Property("device", PropertyType_String, 7, 10002007)
+	model.Property("name", PropertyType_String, 8, 10002008)
+	model.Property("value", PropertyType_String, 9, 10002009)
+	model.EntityLastPropertyId(9, 10002009)
 }
 
 func (ReadingBinding) GetId(object interface{}) (id uint64, err error) {

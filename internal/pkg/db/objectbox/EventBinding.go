@@ -9,15 +9,21 @@ import (
 	"strconv"
 )
 
+// This file could be generated in the future
 type EventBinding struct {
 }
 
-func (EventBinding) GetTypeId() TypeId {
-	return 1
-}
-
-func (EventBinding) GetTypeName() string {
-	return "Event"
+func (EventBinding) AddToModel(model *Model) {
+	model.Entity("Event", 1, 10001)
+	model.Property("id", PropertyType_Long, 1, 10001001)
+	model.PropertyFlags(PropertyFlags_ID)
+	model.Property("pushed", PropertyType_Long, 2, 10001002)
+	model.Property("device", PropertyType_String, 3, 10001003)
+	model.Property("created", PropertyType_Long, 4, 10001004)
+	model.Property("modified", PropertyType_Long, 5, 10001005)
+	model.Property("origin", PropertyType_Long, 6, 10001006)
+	model.Property("scheduleEvent", PropertyType_String, 7, 10001007)
+	model.EntityLastPropertyId(7, 10001007)
 }
 
 func (EventBinding) GetId(object interface{}) (id uint64, err error) {

@@ -10,24 +10,21 @@ import (
 	"github.com/influxdata/influxdb/pkg/testing/assert"
 )
 
-func createClient() (*ObjectBoxClient, error) {
+func createClient() *ObjectBoxClient {
 	config := db.Configuration{
 		DatabaseName: "unit-test",
 	}
 	client := NewClient(config)
 	err := client.Connect()
 	if err != nil {
-		fmt.Println(err)
-		client = nil
+		panic("Could not connect DB client: " + err.Error())
 	}
-	return client, err
+	return client
 }
 
 func TestObjectBoxEvents(t *testing.T) {
-	client, err := createClient()
-	if err != nil {
-		return
-	}
+	client := createClient()
+	defer client.Disconnect()
 
 	event := models.Event{
 		Device: "my device",
@@ -55,7 +52,9 @@ func TestObjectBoxEvents(t *testing.T) {
 }
 
 func TestObjectBoxReadings(t *testing.T) {
-	client, err := createClient()
+	client := createClient()
+	defer client.Disconnect()
+
 	client.ScrubAllEvents()
 	client.objectBox.Strict()
 

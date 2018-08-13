@@ -9,12 +9,12 @@ package objectbox
 import "C"
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"github.com/google/flatbuffers/go"
 	"runtime"
 	"strconv"
+	"strings"
 	"unsafe"
 )
 
@@ -76,26 +76,41 @@ const (
 	DebugFlags_LOG_ASYNC_QUEUE        = 16
 )
 
+type TypeId uint32
+
+type ObjectBinding interface {
+	GetTypeId() TypeId
+	GetTypeName() string
+	GetId(object interface{}) (id uint64, err error)
+	Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64)
+}
+
 type Model struct {
 	model *C.OB_model
 	err   error
 }
 
 type ObjectBox struct {
-	store *C.OB_store
+	store          *C.OB_store
+	bindingsById   map[TypeId]ObjectBinding
+	bindingsByName map[string]ObjectBinding
 }
 
 type Transaction struct {
-	txn *C.OB_txn
+	txn       *C.OB_txn
+	objectBox *ObjectBox
 }
 
 type Cursor struct {
-	cursor *C.OB_cursor
-	fbb    *flatbuffers.Builder
+	cursor  *C.OB_cursor
+	binding ObjectBinding
+	fbb     *flatbuffers.Builder
 }
 
 type Box struct {
-	box *C.OB_box
+	box     *C.OB_box
+	binding ObjectBinding
+	// FIXME not synchronized:
 	fbb *flatbuffers.Builder
 }
 
@@ -189,7 +204,26 @@ func NewObjectBox(model *Model, name string) (objectBox *ObjectBox, err error) {
 		objectBox = nil
 		err = createError()
 	}
+	if err == nil {
+		objectBox.bindingsById = make(map[TypeId]ObjectBinding)
+		objectBox.bindingsByName = make(map[string]ObjectBinding)
+	}
 	return
+}
+
+func (ob *ObjectBox) RegisterBinding(binding ObjectBinding) {
+	id := binding.GetTypeId()
+	name := binding.GetTypeName()
+	existingBinding := ob.bindingsById[id]
+	if existingBinding != nil {
+		panic("Already registered a binding for ID " + strconv.Itoa(int(id)) + ": " + binding.GetTypeName())
+	}
+	existingBinding = ob.bindingsByName[name]
+	if existingBinding != nil {
+		panic("Already registered a binding for name " + name + ": ID " + strconv.Itoa(int(binding.GetTypeId())))
+	}
+	ob.bindingsById[id] = binding
+	ob.bindingsByName[name] = binding
 }
 
 func (ob *ObjectBox) BeginTxn() (txn *Transaction, err error) {
@@ -197,7 +231,7 @@ func (ob *ObjectBox) BeginTxn() (txn *Transaction, err error) {
 	if ctxn == nil {
 		return nil, createError()
 	}
-	return &Transaction{ctxn}, nil
+	return &Transaction{ctxn, ob}, nil
 }
 
 func (ob *ObjectBox) BeginTxnRead() (txn *Transaction, err error) {
@@ -205,7 +239,7 @@ func (ob *ObjectBox) BeginTxnRead() (txn *Transaction, err error) {
 	if ctxn == nil {
 		return nil, createError()
 	}
-	return &Transaction{ctxn}, nil
+	return &Transaction{ctxn, ob}, nil
 }
 
 func (ob *ObjectBox) RunInTxn(readOnly bool, txnFun TxnFun) (err error) {
@@ -220,17 +254,11 @@ func (ob *ObjectBox) RunInTxn(readOnly bool, txnFun TxnFun) (err error) {
 		return
 	}
 
-	gid := getGID()
 	//fmt.Println(">>> START TX")
 	//os.Stdout.Sync()
 
 	err = txnFun(txn)
 
-	gid2 := getGID()
-
-	if gid != gid2 {
-		panic(fmt.Sprintf("GID %v vs. %v", gid, gid2))
-	}
 	//fmt.Println("<<< END TX")
 	//os.Stdout.Sync()
 
@@ -249,9 +277,28 @@ func (ob *ObjectBox) RunInTxn(readOnly bool, txnFun TxnFun) (err error) {
 	return
 }
 
-func (ob *ObjectBox) RunWithCursor(entityId uint, readOnly bool, cursorFun CursorFun) (err error) {
+func (ob ObjectBox) getBindingById(typeId TypeId) ObjectBinding {
+	binding := ob.bindingsById[typeId]
+	if binding == nil {
+		// Configuration error by the dev, OK to panic
+		panic("Configuration error; no binding registered for type ID " + strconv.Itoa(int(typeId)))
+	}
+	return binding
+}
+
+func (ob ObjectBox) getBindingByName(typeName string) ObjectBinding {
+	binding := ob.bindingsByName[strings.ToLower(typeName)]
+	if binding == nil {
+		// Configuration error by the dev, OK to panic
+		panic("Configuration error; no binding registered for type name " + typeName)
+	}
+	return binding
+}
+
+func (ob *ObjectBox) RunWithCursor(typeId TypeId, readOnly bool, cursorFun CursorFun) (err error) {
+	binding := ob.getBindingById(typeId)
 	return ob.RunInTxn(readOnly, func(txn *Transaction) (err error) {
-		cursor, err := txn.Cursor(entityId)
+		cursor, err := txn.Cursor(binding)
 		if err != nil {
 			return
 		}
@@ -279,12 +326,13 @@ func (ob *ObjectBox) SetDebugFlags(flags uint) (err error) {
 	return
 }
 
-func (ob *ObjectBox) Box(entitySchemaId uint) (*Box, error) {
+func (ob *ObjectBox) Box(entitySchemaId TypeId) (*Box, error) {
+	binding := ob.getBindingById(entitySchemaId)
 	cbox := C.ob_box_create(ob.store, C.uint(entitySchemaId))
 	if cbox == nil {
 		return nil, createError()
 	}
-	return &Box{cbox, flatbuffers.NewBuilder(512)}, nil
+	return &Box{cbox, binding, flatbuffers.NewBuilder(512)}, nil
 }
 
 func (ob *ObjectBox) Strict() *ObjectBox {
@@ -319,15 +367,16 @@ func (txn *Transaction) Commit() (err error) {
 	return
 }
 
-func (txn *Transaction) Cursor(entitySchemaId uint) (*Cursor, error) {
-	ccursor := C.ob_cursor_create(txn.txn, C.uint(entitySchemaId))
+func (txn *Transaction) Cursor(binding ObjectBinding) (*Cursor, error) {
+	ccursor := C.ob_cursor_create(txn.txn, C.uint(binding.GetTypeId()))
 	if ccursor == nil {
 		return nil, createError()
 	}
-	return &Cursor{ccursor, flatbuffers.NewBuilder(512)}, nil
+	return &Cursor{ccursor, binding, flatbuffers.NewBuilder(512)}, nil
 }
 
 func (txn *Transaction) CursorForName(entitySchemaName string) (*Cursor, error) {
+	binding := txn.objectBox.getBindingByName(entitySchemaName)
 	cname := C.CString(entitySchemaName)
 	defer C.free(unsafe.Pointer(cname))
 
@@ -335,7 +384,7 @@ func (txn *Transaction) CursorForName(entitySchemaName string) (*Cursor, error) 
 	if ccursor == nil {
 		return nil, createError()
 	}
-	return &Cursor{ccursor, flatbuffers.NewBuilder(512)}, nil
+	return &Cursor{ccursor, binding, flatbuffers.NewBuilder(512)}, nil
 }
 
 func (cursor *Cursor) Destroy() (err error) {
@@ -402,7 +451,21 @@ func (cursor *Cursor) Count() (count uint64, err error) {
 	return uint64(cCount), nil
 }
 
-func (cursor *Cursor) Put(id uint64, checkForPreviousObject bool) (err error) {
+func (cursor *Cursor) Put(object interface{}) (id uint64, err error) {
+	idFromObject, err := cursor.binding.GetId(object)
+	if err != nil {
+		return
+	}
+	checkForPreviousValue := idFromObject != 0
+	id, err = cursor.IdForPut(idFromObject)
+	if err != nil {
+		return
+	}
+	cursor.binding.Flatten(object, cursor.fbb, id)
+	return id, cursor.finishInternalFbbAndPut(id, checkForPreviousValue)
+}
+
+func (cursor *Cursor) finishInternalFbbAndPut(id uint64, checkForPreviousObject bool) (err error) {
 	fbb := cursor.fbb
 	fbb.Finish(fbb.EndObject())
 	bytes := fbb.FinishedBytes()
@@ -488,7 +551,21 @@ func (box *Box) IdForPut(idCandidate uint64) (id uint64, err error) {
 	return
 }
 
-func (box *Box) PutAsync(id uint64, checkForPreviousObject bool) (err error) {
+func (box *Box) PutAsync(object interface{}) (id uint64, err error) {
+	idFromObject, err := box.binding.GetId(object)
+	if err != nil {
+		return
+	}
+	checkForPreviousValue := idFromObject != 0
+	id, err = box.IdForPut(idFromObject)
+	if err != nil {
+		return
+	}
+	box.binding.Flatten(object, box.fbb, id)
+	return id, box.finishInternalFbbAndPutAsync(id, checkForPreviousValue)
+}
+
+func (box *Box) finishInternalFbbAndPutAsync(id uint64, checkForPreviousObject bool) (err error) {
 	fbb := box.fbb
 	fbb.Finish(fbb.EndObject())
 	bytes := fbb.FinishedBytes()
@@ -512,13 +589,4 @@ func (box *Box) PutAsync(id uint64, checkForPreviousObject bool) (err error) {
 func createError() error {
 	msg := C.ob_last_error_message()
 	return errors.New(C.GoString(msg))
-}
-
-func getGID() uint64 {
-	b := make([]byte, 64)
-	b = b[:runtime.Stack(b, false)]
-	b = bytes.TrimPrefix(b, []byte("goroutine "))
-	b = b[:bytes.IndexByte(b, ' ')]
-	n, _ := strconv.ParseUint(string(b), 10, 64)
-	return n
 }

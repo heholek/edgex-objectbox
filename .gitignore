@@ -6,6 +6,9 @@ glide.lock
 docker/docker-compose.yml
 .project
 
+# build files
+docs/_build/
+
 # binary files
 cmd/core-command/core-command
 cmd/core-data/core-data

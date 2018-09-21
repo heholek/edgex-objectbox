@@ -3,9 +3,7 @@ package objectbox
 import (
 	"testing"
 
-	"fmt"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/test"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 	"github.com/influxdata/influxdb/pkg/testing/assert"
 )
@@ -123,17 +121,4 @@ func TestObjectBoxReadings(t *testing.T) {
 		assert.Equal(t, readings[0].Id, objectId3)
 		assert.Equal(t, readings[0].Device, "device43")
 	}
-}
-
-func BenchmarkObjectBox(b *testing.B) {
-	config := db.Configuration{
-		DatabaseName: "benchmark-test",
-	}
-	client := NewClient(config)
-	err := client.Connect()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	test.BenchmarkDB(b, client)
 }

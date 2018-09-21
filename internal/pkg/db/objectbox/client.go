@@ -187,7 +187,7 @@ func (client *ObjectBoxClient) ScrubAllEvents() (err error) {
 }
 
 func (client *ObjectBoxClient) Readings() (readings []models.Reading, err error) {
-	slice, err := client.readingBox.GetAll()
+	slice, err := client.readingBoxForReads().GetAll()
 	if slice != nil {
 		readings = slice.([]models.Reading)
 	}

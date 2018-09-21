@@ -56,37 +56,38 @@ func TestObjectBoxReadings(t *testing.T) {
 	defer client.Disconnect()
 
 	client.ScrubAllEvents()
-	client.objectBox.Strict()
+	countPre, err := client.eventBox.Count()
+	assert.NoError(t, err)
+	ok := assert.Equal(t, countPre, uint64(0))
+	countPre, err = client.readingBox.Count()
+	ok = ok && assert.Equal(t, countPre, uint64(0))
+	if !ok {
+		panic("Non-zero counts")
+	}
 
 	reading := models.Reading{
 		Name:   "reading1",
 		Device: "device42",
 	}
 	objectId, err := client.AddReading(reading)
-	if err != nil {
-		t.Fatalf("Could not add reading: %v", err)
-	}
+	assert.NoError(t, err)
 	t.Logf("Added reading ID %v", objectId)
 	assert.NotEqual(t, objectId, "")
 
 	reading.Name = "reading2"
 	objectId2, err := client.AddReading(reading)
-	if err != nil {
-		t.Fatalf("Could not add 2nd reading: %v", err)
-	}
+	assert.NoError(t, err)
+
 	t.Logf("Added 2nd reading ID %v", objectId2)
 
 	reading.Name = "reading3"
 	reading.Device = "device43"
 	objectId3, err := client.AddReading(reading)
-	if err != nil {
-		t.Fatalf("Could not add 2nd reading: %v", err)
-	}
+	assert.NoError(t, err)
+
 	t.Logf("Added 3rd reading ID %v", objectId3)
 	count, err := client.ReadingCount()
-	if err != nil {
-		t.Fatalf("Could not count readings: %v", err)
-	}
+	assert.NoError(t, err)
 
 	assert.Equal(t, count, 3)
 

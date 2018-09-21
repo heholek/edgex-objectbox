@@ -2,9 +2,9 @@ package objectbox
 
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/flatcoredata"
-	. "github.com/edgexfoundry/edgex-go/internal/pkg/objectbox"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 	"github.com/google/flatbuffers/go"
+	. "github.com/objectbox/objectbox-go/objectbox"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 )
@@ -85,10 +85,11 @@ func (ReadingBinding) ToObject(bytes []byte) interface{} {
 	return toModelReading(flatReading)
 }
 
+func (ReadingBinding) MakeSlice(capacity int) interface{} {
+	return make([]models.Reading, 0, capacity)
+}
+
 func (ReadingBinding) AppendToSlice(slice interface{}, object interface{}) (sliceNew interface{}) {
-	if slice == nil {
-		slice = make([]models.Reading, 0, 16)
-	}
 	return append(slice.([]models.Reading), *object.(*models.Reading))
 }
 

@@ -3,9 +3,9 @@ package objectbox
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/flatcoredata"
-	. "github.com/edgexfoundry/edgex-go/internal/pkg/objectbox"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 	"github.com/google/flatbuffers/go"
+	. "github.com/objectbox/objectbox-go/objectbox"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 )
@@ -13,11 +13,39 @@ import (
 type ObjectBoxClient struct {
 	config    db.Configuration
 	objectBox *ObjectBox
+
+	eventBox   *Box
+	readingBox *Box
+
+	strictReads bool
+	asyncPut    bool
 }
 
 func NewClient(config db.Configuration) *ObjectBoxClient {
 	client := &ObjectBoxClient{config: config}
 	return client
+}
+
+func (client *ObjectBoxClient) getStore() *ObjectBox {
+	store := client.objectBox
+	if client.strictReads {
+		store.AwaitAsyncCompletion()
+	}
+	return store
+}
+
+func (client *ObjectBoxClient) getEventBox() *Box {
+	if client.strictReads {
+		client.objectBox.AwaitAsyncCompletion()
+	}
+	return client.eventBox
+}
+
+func (client *ObjectBoxClient) getReadingBox() *Box {
+	if client.strictReads {
+		client.objectBox.AwaitAsyncCompletion()
+	}
+	return client.readingBox
 }
 
 func (client *ObjectBoxClient) CloseSession() {
@@ -34,10 +62,16 @@ func (client *ObjectBoxClient) Connect() (err error) {
 		return
 	}
 	client.objectBox = objectBox
+	client.eventBox = objectBox.Box(1)
+	client.readingBox = objectBox.Box(2)
+	client.asyncPut = true
+	client.strictReads = true
 	return
 }
 
 func (client *ObjectBoxClient) Disconnect() {
+	client.eventBox = nil
+	client.readingBox = nil
 	objectBoxToDestroy := client.objectBox
 	client.objectBox = nil
 	if objectBoxToDestroy != nil {
@@ -46,25 +80,23 @@ func (client *ObjectBoxClient) Disconnect() {
 }
 
 func (client *ObjectBoxClient) Events() (events []models.Event, err error) {
-	err = client.objectBox.Strict().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
-		slice, err := cursor.GetAll()
-		if slice != nil {
-			events = slice.([]models.Event)
-		}
-		return
-	})
+	slice, err := client.getEventBox().GetAll()
+	if slice != nil {
+		events = slice.([]models.Event)
+	}
 	return
+}
+
+func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]models.Event, error) {
+	panic("implement me")
 }
 
 func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.ObjectId, err error) {
 	var id uint64
-	if false {
-		err = client.objectBox.RunWithCursor(1, false, func(cursor *Cursor) (err error) {
-			id, err = cursor.Put(event)
-			return
-		})
+	if client.asyncPut {
+		id, err = client.getEventBox().PutAsync(event)
 	} else {
-		id, err = client.objectBox.Box(1).PutAsync(event)
+		id, err = client.getEventBox().Put(event)
 	}
 	if err != nil {
 		return
@@ -84,7 +116,7 @@ func (client *ObjectBoxClient) EventById(idString string) (event models.Event, e
 	if err != nil {
 		return
 	}
-	object, err := client.objectBox.Strict().Box(1).Get(id)
+	object, err := client.getEventBox().Get(id)
 	if object != nil {
 		event = *object.(*models.Event)
 	}
@@ -92,7 +124,7 @@ func (client *ObjectBoxClient) EventById(idString string) (event models.Event, e
 }
 
 func (client *ObjectBoxClient) EventCount() (count int, err error) {
-	countLong, err := client.objectBox.Strict().Box(1).Count()
+	countLong, err := client.getEventBox().Count()
 	if err == nil {
 		count = int(countLong)
 	}
@@ -112,7 +144,7 @@ func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]models.Even
 }
 
 func (client *ObjectBoxClient) EventsForDevice(deviceId string) (events []models.Event, err error) {
-	client.objectBox.Strict().RunWithCursor(1, true, func(cursor *Cursor) (err error) {
+	client.getStore().RunWithCursor(1, true, func(cursor *Cursor) (err error) {
 		bytesArray, err := cursor.FindByString(3, deviceId)
 		if err != nil {
 			return
@@ -144,15 +176,15 @@ func (ObjectBoxClient) EventsPushed() ([]models.Event, error) {
 }
 
 func (client *ObjectBoxClient) ScrubAllEvents() (err error) {
-	err = client.objectBox.Strict().Box(2).RemoveAll()
+	err = client.getEventBox().RemoveAll()
 	if err != nil {
 		return
 	}
-	return client.objectBox.Box(1).RemoveAll()
+	return client.getReadingBox().RemoveAll()
 }
 
 func (client *ObjectBoxClient) Readings() (readings []models.Reading, err error) {
-	slice, err := client.objectBox.Strict().Box(2).GetAll()
+	slice, err := client.getReadingBox().GetAll()
 	if slice != nil {
 		readings = slice.([]models.Reading)
 	}
@@ -161,13 +193,10 @@ func (client *ObjectBoxClient) Readings() (readings []models.Reading, err error)
 
 func (client *ObjectBoxClient) AddReading(r models.Reading) (objectId bson.ObjectId, err error) {
 	var id uint64
-	if false {
-		err = client.objectBox.RunWithCursor(2, false, func(cursor *Cursor) (err error) {
-			id, err = cursor.Put(&r)
-			return
-		})
+	if client.asyncPut {
+		id, err = client.getReadingBox().PutAsync(&r)
 	} else {
-		id, err = client.objectBox.Box(2).PutAsync(&r)
+		id, err = client.getReadingBox().Put(&r)
 	}
 	if err != nil {
 		return
@@ -186,7 +215,7 @@ func (client *ObjectBoxClient) ReadingById(idString string) (reading models.Read
 	if err != nil {
 		return
 	}
-	object, err := client.objectBox.Strict().Box(2).Get(id)
+	object, err := client.getReadingBox().Get(id)
 	if object == nil || err != nil {
 		return
 	}
@@ -195,7 +224,7 @@ func (client *ObjectBoxClient) ReadingById(idString string) (reading models.Read
 }
 
 func (client *ObjectBoxClient) ReadingCount() (count int, err error) {
-	countLong, err := client.objectBox.Strict().Box(2).Count()
+	countLong, err := client.getReadingBox().Count()
 	count = int(countLong)
 	return
 }
@@ -205,7 +234,7 @@ func (ObjectBoxClient) DeleteReadingById(id string) error {
 }
 
 func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) (readings []models.Reading, err error) {
-	client.objectBox.Strict().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
+	client.getStore().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
 		bytesArray, err := cursor.FindByString(7, deviceId)
 		if err != nil {
 			return

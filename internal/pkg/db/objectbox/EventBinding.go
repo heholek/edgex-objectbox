@@ -2,9 +2,9 @@ package objectbox
 
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/flatcoredata"
-	. "github.com/edgexfoundry/edgex-go/internal/pkg/objectbox"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 	"github.com/google/flatbuffers/go"
+	. "github.com/objectbox/objectbox-go/objectbox"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 )
@@ -74,9 +74,10 @@ func toModelEvent(src *flatcoredata.Event) *models.Event {
 	}
 }
 
+func (EventBinding) MakeSlice(capacity int) interface{} {
+	return make([]models.Event, 0, capacity)
+}
+
 func (EventBinding) AppendToSlice(slice interface{}, object interface{}) interface{} {
-	if slice == nil {
-		slice = make([]models.Event, 0, 16)
-	}
 	return append(slice.([]models.Event), *object.(*models.Event))
 }

@@ -8,7 +8,9 @@ package test
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
@@ -675,6 +677,8 @@ func BenchmarkDB(b *testing.B, db interfaces.DBClient) {
 }
 
 func benchmarkReadings(b *testing.B, db interfaces.DBClient) {
+	// Plain IDs do not require .hex(); must use reflect to avoid import cycle to identify DB
+	plainIDs := strings.Contains(reflect.TypeOf(db).Name(), "ObjectBox")
 
 	// Remove previous events and readings
 	db.ScrubAllEvents()
@@ -704,7 +708,11 @@ func benchmarkReadings(b *testing.B, db interfaces.DBClient) {
 		if err != nil {
 			b.Fatalf("Error add reading: %v", err)
 		}
-		readings[i] = id.Hex()
+		if plainIDs {
+			readings[i] = string(id)
+		} else {
+			readings[i] = id.Hex()
+		}
 	}
 
 	b.Run("Readings", func(b *testing.B) {

@@ -20,3 +20,16 @@ func BenchmarkObjectBox(b *testing.B) {
 	}
 	test.BenchmarkDB(b, client)
 }
+
+func TestBenchmarkFixedNObjectBox(t *testing.T) {
+	config := db.Configuration{
+		DatabaseName: "benchmark-test",
+	}
+	client := NewClient(config)
+	err := client.Connect()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	test.BenchmarkDBFixedN(client, true)
+}

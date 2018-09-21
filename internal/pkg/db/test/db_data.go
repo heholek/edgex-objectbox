@@ -839,3 +839,93 @@ func benchmarkEvents(b *testing.B, db interfaces.DBClient) {
 		}
 	})
 }
+
+func BenchmarkDBFixedN(db interfaces.DBClient, verify bool) {
+	defer db.CloseSession()
+	benchmarkReadingsN(db, verify)
+}
+
+func benchmarkReadingsN(db interfaces.DBClient, verify bool) {
+	// Plain IDs do not require .hex(); must use reflect to avoid import cycle to identify DB
+	dbType := reflect.TypeOf(db).String()
+	println("\nBenchmarking " + dbType)
+	println("---------------------------------------------")
+	plainIDs := strings.Contains(dbType, "ObjectBox")
+
+	// Remove any events and readings before and after test
+	db.ScrubAllEvents()
+	defer db.ScrubAllEvents()
+
+	count := 100000
+	countPostfix := "[" + strconv.Itoa(count) + "]"
+	readings := make([]string, count)
+	RunBenchmarkN(db, "AddReading", count, func(ctx *BenchmarkContext) error {
+		reading := models.Reading{}
+		reading.Name = "test" + strconv.Itoa(ctx.I)
+		reading.Device = "device" + strconv.Itoa(ctx.I/100)
+		ctx.StartClock()
+		id, err := db.AddReading(reading)
+		ctx.StopClock()
+		if plainIDs {
+			readings[ctx.I] = string(id)
+		} else {
+			readings[ctx.I] = id.Hex()
+		}
+		return err
+	})
+
+	RunBenchmarkN(db, "Readings"+countPostfix, 10, func(ctx *BenchmarkContext) error {
+		readings, err := db.Readings()
+		ctx.StopClock()
+		size := len(readings)
+		if verify && size != count {
+			panic("Unexpected size: " + strconv.Itoa(size))
+		}
+		return err
+	})
+
+	RunBenchmarkN(db, "ReadingCount"+countPostfix, 100, func(ctx *BenchmarkContext) error {
+		size, err := db.ReadingCount()
+		ctx.StopClock()
+		if verify && size != count {
+			panic("Unexpected size: " + strconv.Itoa(size))
+		}
+		return err
+	})
+
+	RunBenchmarkN(db, "ReadingById", count, func(ctx *BenchmarkContext) error {
+		id := readings[ctx.I]
+		ctx.StartClock()
+		reading, err := db.ReadingById(id)
+		ctx.StopClock()
+
+		if verify && ((plainIDs && string(reading.Id) != id) || (!plainIDs && reading.Id.Hex() != id)) {
+			println(reading.String())
+			panic("Expected ID " + id + " but got " + string(reading.Id))
+		}
+
+		return err
+	})
+
+	RunBenchmarkN(db, "ReadingsByDevice", 100, func(ctx *BenchmarkContext) error {
+		device := "device" + strconv.Itoa(ctx.I)
+		ctx.StartClock()
+		slice, err := db.ReadingsByDevice(device, 100)
+		ctx.StopClock()
+
+		if verify {
+			if len(slice) != 100 {
+				panic("Unexpected slice size: " + strconv.Itoa(len(slice)))
+			}
+
+			for idx, reading := range slice {
+				if reading.Device != device {
+					println("[" + strconv.Itoa(idx) + "] " + reading.String())
+					panic("Expected device " + device + " but got " + reading.Device)
+				}
+			}
+		}
+		return err
+	})
+
+}

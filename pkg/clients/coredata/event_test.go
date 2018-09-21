@@ -17,12 +17,14 @@ package coredata
 
 import (
 	"fmt"
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/pkg/clients/types"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/edgexfoundry/edgex-go/internal"
+	"github.com/edgexfoundry/edgex-go/pkg/clients"
+	"github.com/edgexfoundry/edgex-go/pkg/clients/types"
 )
 
 const (
@@ -53,7 +55,8 @@ func TestMarkPushed(t *testing.T) {
 		ServiceKey:  internal.CoreDataServiceKey,
 		Path:        EventUriPath,
 		UseRegistry: false,
-		Url:         url}
+		Url:         url,
+		Interval:    clients.ClientMonitorDefault}
 
 	ec := NewEventClient(params, mockEventEndpoint{})
 
@@ -95,7 +98,8 @@ func TestGetEvents(t *testing.T) {
 		ServiceKey:  internal.CoreDataServiceKey,
 		Path:        EventUriPath,
 		UseRegistry: false,
-		Url:         url}
+		Url:         url,
+		Interval:    clients.ClientMonitorDefault}
 
 	ec := NewEventClient(params, mockEventEndpoint{})
 
@@ -125,7 +129,8 @@ func TestNewEventClientWithConsul(t *testing.T) {
 		ServiceKey:  internal.CoreDataServiceKey,
 		Path:        EventUriPath,
 		UseRegistry: true,
-		Url:         deviceUrl}
+		Url:         deviceUrl,
+		Interval:    clients.ClientMonitorDefault}
 
 	ec := NewEventClient(params, mockEventEndpoint{})
 

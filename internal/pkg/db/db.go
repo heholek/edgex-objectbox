@@ -22,13 +22,13 @@ import (
 const (
 	// Databases
 	MongoDB  = "mongodb"
-	InfluxDB = "influxdb"
 	MemoryDB = "memorydb"
 
 	// Data
 	EventsCollection          = "event"
 	ReadingsCollection        = "reading"
 	ValueDescriptorCollection = "valueDescriptor"
+	ExportCollection         = "exportConfiguration"
 
 	// Metadata
 	Device           = "device"
@@ -52,6 +52,7 @@ var (
 )
 
 type Configuration struct {
+	DbType       string
 	Host         string
 	Port         int
 	Timeout      int

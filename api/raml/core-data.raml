@@ -270,7 +270,7 @@ schemas:
                 description: for unknown or unanticipated issues. 
 /event/removeold/age/{age}: 
     displayName: Event Resource (by age)
-    description: example - http://localhost:48080/api/v1/event/removeold/age/14718091620000
+    description: example - http://localhost:48080/api/v1/event/removeold/age/604800000
     uriParameters: 
         age: 
             displayName: age
@@ -881,3 +881,11 @@ schemas:
                 description: return value of "pong"
             "503": 
                 description: for unknown or unanticipated issues
+/config:
+    displayName: Config Resource
+    description: Example - http://localhost:48080/api/v1/config
+    get:
+        description: Fetch the current state of the service's configuration.
+        responses:
+            "200":
+                description: The service's configuration as JSON document

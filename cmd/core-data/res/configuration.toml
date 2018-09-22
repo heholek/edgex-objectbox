@@ -6,6 +6,18 @@ ServiceUpdateLastConnected = false
 StartupMsg = 'This is the Core Data Microservice'
 Timeout = 5000
 ValidateCheck = false
+DBType = 'redisdb'
+MongoDBUserName = ''
+MongoDBPassword = ''
+MongoDatabaseName = 'coredata'
+MongoDBHost = 'localhost'
+MongoDBPort = 27017
+MongoDBConnectTimeout = 5000
+RedisHost = 'localhost'
+RedisPort = 6379
+ConsulHost = 'localhost'
+ConsulCheckAddress = 'http://localhost:48080/api/v1/ping'
+ConsulPort = 8500
 
 [Service]
 BootTimeout = 30000

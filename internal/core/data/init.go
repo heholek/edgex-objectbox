@@ -18,6 +18,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db/mongo"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db/redis"
+
 	"github.com/edgexfoundry/edgex-go/internal"
 	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
 	"github.com/edgexfoundry/edgex-go/internal/core/data/messaging"
@@ -139,12 +142,17 @@ func connectToDatabase() error {
 }
 
 // Return the dbClient interface
-func newDBClient(dbType string, config db.Configuration) (interfaces.DBClient, error) {
+func newDBClient(dbType string) (interfaces.DBClient, error) {
+	dbConfig := db.Configuration{}
 	switch dbType {
 	case db.MongoDB:
 		return mongo.NewClient(config), nil
 	case db.MemoryDB:
 		return &memory.MemDB{}, nil
+	case db.RedisDB:
+		dbConfig.Host = Configuration.RedisHost
+		dbConfig.Port = Configuration.RedisPort
+		return redis.NewClient(dbConfig)
 	default:
 		return nil, db.ErrUnsupportedDatabase
 	}

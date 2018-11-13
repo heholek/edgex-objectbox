@@ -25,9 +25,9 @@ import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/memory"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/mongo"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db/redis"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/startup"
 	"github.com/edgexfoundry/edgex-go/pkg/clients"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/redis"
 	"github.com/edgexfoundry/edgex-go/pkg/clients/logging"
 	"github.com/edgexfoundry/edgex-go/pkg/clients/notifications"
 	"github.com/edgexfoundry/edgex-go/pkg/clients/types"
@@ -221,9 +221,7 @@ func newDBClient(dbType string, config db.Configuration) (interfaces.DBClient, e
 	case db.MemoryDB:
 		return &memory.MemDB{}, nil
 	case db.RedisDB:
-		dbConfig.Host = Configuration.RedisHost
-		dbConfig.Port = Configuration.RedisPort
-		return redis.NewClient(dbConfig)
+		return redis.NewClient(config)
 	default:
 		return nil, db.ErrUnsupportedDatabase
 	}

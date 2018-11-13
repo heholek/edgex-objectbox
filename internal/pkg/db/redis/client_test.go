@@ -85,3 +85,20 @@ func BenchmarkRedisDB(b *testing.B) {
 
 	test.BenchmarkDB(b, rc)
 }
+
+func TestBenchmarkFixedNRedis(t *testing.T) {
+
+	t.Log("This benchmark needs to have a running Redis on localhost")
+
+	config := db.Configuration{
+		Host: redisHost,
+		Port: redisPort,
+	}
+
+	client, err := NewClient(config)
+	if err != nil {
+		t.Fatalf("Could not connect with Redis: %v", err)
+	}
+
+	test.BenchmarkDBFixedN(client, true)
+}

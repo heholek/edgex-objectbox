@@ -32,8 +32,6 @@ import (
 	"github.com/gorilla/context"
 )
 
-var bootTimeout int = 30000 //Once we start the V2 configuration rework, this will be config driven
-
 func main() {
 	start := time.Now()
 	var useConsul bool
@@ -46,7 +44,7 @@ func main() {
 	flag.Usage = usage.HelpCallback
 	flag.Parse()
 
-	params := startup.BootParams{UseConsul: useConsul, UseProfile: useProfile, BootTimeout: bootTimeout}
+	params := startup.BootParams{UseConsul: useConsul, UseProfile: useProfile, BootTimeout: internal.BootTimeoutDefault}
 	startup.Bootstrap(params, data.Retry, logBeforeInit)
 
 	ok := data.Init(useConsul)
@@ -74,7 +72,7 @@ func main() {
 }
 
 func logBeforeInit(err error) {
-	l := logger.NewClient(internal.CoreDataServiceKey, false, "")
+	l := logger.NewClient(internal.CoreDataServiceKey, false, "", logger.InfoLog)
 	l.Error(err.Error())
 }
 

@@ -16,27 +16,35 @@ package logger
 // Logging client for the Go implementation of edgexfoundry
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
+	"github.com/edgexfoundry/edgex-go/pkg/clients/types"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/edgexfoundry/edgex-go/pkg/clients"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
+// These constants identify the log levels in order of increasing severity.
 const (
-	TRACE = "TRACE"
-	DEBUG = "DEBUG"
-	WARN  = "WARN"
-	INFO  = "INFO"
-	ERROR = "ERROR"
+	TraceLog = "TRACE"
+	DebugLog = "DEBUG"
+	InfoLog  = "INFO"
+	WarnLog  = "WARN"
+	ErrorLog = "ERROR"
 )
 
+var LogLevels = []string{
+	TraceLog,
+	DebugLog,
+	InfoLog,
+	WarnLog,
+	ErrorLog}
+
 type LoggingClient interface {
+	SetLogLevel(logLevel string) error
 	Debug(msg string, labels ...string) error
 	Error(msg string, labels ...string) error
 	Info(msg string, labels ...string) error
@@ -48,17 +56,23 @@ type EdgeXLogger struct {
 	owningServiceName string
 	remoteEnabled     bool
 	logTarget         string
+	logLevel          *string
 	stdOutLogger      *log.Logger
 	fileLogger        *log.Logger
 }
 
 // Create a new logging client for the owning service
-func NewClient(owningServiceName string, isRemote bool, logTarget string) LoggingClient {
+func NewClient(owningServiceName string, isRemote bool, logTarget string, logLevel string) LoggingClient {
+	if !IsValidLogLevel(logLevel) {
+		logLevel = InfoLog
+	}
+
 	// Set up logging client
 	lc := EdgeXLogger{
 		owningServiceName: owningServiceName,
 		remoteEnabled:     isRemote,
 		logTarget:         logTarget,
+		logLevel:          &logLevel,
 	}
 
 	//If local logging, verify directory exists
@@ -71,14 +85,38 @@ func NewClient(owningServiceName string, isRemote bool, logTarget string) Loggin
 	lc.fileLogger = &log.Logger{}
 	lc.fileLogger.SetFlags(log.Ldate | log.Ltime)
 
+
 	return lc
+}
+
+// IsValidLogLevel checks if is a valid log level
+func IsValidLogLevel(l string) bool {
+	for _, name := range LogLevels {
+		if name == l {
+			return true
+		}
+	}
+	return false
 }
 
 // Send the log out as a REST request
 func (lc EdgeXLogger) log(logLevel string, msg string, labels []string) error {
+	// Check minimum log level
+	for _, name := range LogLevels {
+		if name == *lc.logLevel {
+			break
+		}
+		if name == logLevel {
+			return nil
+		}
+	}
+
+	lc.stdOutLogger.SetPrefix(fmt.Sprintf("%s: ", logLevel))
+	lc.stdOutLogger.Println(msg)
+
 	if !lc.remoteEnabled {
 		// Save to logging file if path was set
-		return lc.saveToLogFile(string(logLevel), msg)
+		return lc.saveToLogFile(logLevel, msg)
 	}
 
 	// Send to logging service
@@ -113,39 +151,40 @@ func verifyLogDirectory(path string) {
 	}
 }
 
+// SetLogLevel sets minimum severity log level
+func (lc EdgeXLogger) SetLogLevel(logLevel string) error {
+	if IsValidLogLevel(logLevel) == true {
+		*lc.logLevel = logLevel
+
+		return nil
+	}
+
+	return types.ErrNotFound{}
+}
+
 // Log an INFO level message
 func (lc EdgeXLogger) Info(msg string, labels ...string) error {
-	lc.stdOutLogger.SetPrefix("INFO: ")
-	lc.stdOutLogger.Println(msg)
-	return lc.log(INFO, msg, labels)
+	return lc.log(InfoLog, msg, labels)
 }
 
 // Log a TRACE level message
 func (lc EdgeXLogger) Trace(msg string, labels ...string) error {
-	lc.stdOutLogger.SetPrefix("TRACE: ")
-	lc.stdOutLogger.Println(msg)
-	return lc.log(TRACE, msg, labels)
+	return lc.log(TraceLog, msg, labels)
 }
 
 // Log a DEBUG level message
 func (lc EdgeXLogger) Debug(msg string, labels ...string) error {
-	lc.stdOutLogger.SetPrefix("DEBUG: ")
-	lc.stdOutLogger.Println(msg)
-	return lc.log(DEBUG, msg, labels)
+	return lc.log(DebugLog, msg, labels)
 }
 
 // Log a WARN level message
 func (lc EdgeXLogger) Warn(msg string, labels ...string) error {
-	lc.stdOutLogger.SetPrefix("WARN: ")
-	lc.stdOutLogger.Println(msg)
-	return lc.log(WARN, msg, labels)
+	return lc.log(WarnLog, msg, labels)
 }
 
 // Log an ERROR level message
 func (lc EdgeXLogger) Error(msg string, labels ...string) error {
-	lc.stdOutLogger.SetPrefix("ERROR: ")
-	lc.stdOutLogger.Println(msg)
-	return lc.log(ERROR, msg, labels)
+	return lc.log(ErrorLog, msg, labels)
 }
 
 // Build the log entry object
@@ -165,33 +204,12 @@ func (lc EdgeXLogger) sendLog(logEntry models.LogEntry) error {
 		return nil
 	}
 
-	reqBody, err := json.Marshal(logEntry)
-	if err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, lc.logTarget, bytes.NewBuffer(reqBody))
-	if err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
-	req.Header.Add("Content-Type", "application/json")
-	client := &http.Client{}
-
-	// Asynchronous call
-	go lc.makeRequest(client, req)
+	go func() {
+		_, err := clients.PostJsonRequest(lc.logTarget, logEntry)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}()
 
 	return nil
-}
-
-// Function to call in a goroutine
-func (lc EdgeXLogger) makeRequest(client *http.Client, request *http.Request) {
-	resp, err := client.Do(request)
-	if err == nil {
-		defer resp.Body.Close()
-		resp.Close = true
-	} else {
-		fmt.Println(err.Error())
-	}
 }

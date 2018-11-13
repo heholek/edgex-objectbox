@@ -65,7 +65,7 @@ func Retry(useConsul bool, useProfile string, timeout int, wait *sync.WaitGroup,
 			} else {
 				// Setup Logging
 				logTarget := setLoggingTarget()
-				LoggingClient = logger.NewClient(internal.CoreDataServiceKey, Configuration.Logging.EnableRemote, logTarget)
+				LoggingClient = logger.NewClient(internal.CoreDataServiceKey, Configuration.Logging.EnableRemote, logTarget, Configuration.Logging.Level)
 				//Initialize service clients
 				initializeClients(useConsul)
 			}
@@ -161,13 +161,13 @@ func newDBClient(dbType string) (interfaces.DBClient, error) {
 func initializeConfiguration(useConsul bool, useProfile string) (*ConfigurationStruct, error) {
 	//We currently have to load configuration from filesystem first in order to obtain ConsulHost/Port
 	conf := &ConfigurationStruct{}
-	err := config.LoadFromFileV2(useProfile, conf)
+	err := config.LoadFromFile(useProfile, conf)
 	if err != nil {
 		return nil, err
 	}
 
 	if useConsul {
-		err := connectToConsul(conf)
+		conf, err = connectToConsul(conf)
 		if err != nil {
 			return nil, err
 		}
@@ -175,47 +175,43 @@ func initializeConfiguration(useConsul bool, useProfile string) (*ConfigurationS
 	return conf, nil
 }
 
-func connectToConsul(conf *ConfigurationStruct) error {
+func connectToConsul(conf *ConfigurationStruct) (*ConfigurationStruct, error) {
 	//Obtain ConsulConfig
 	cfg := consulclient.NewConsulConfig(conf.Registry, conf.Service, internal.CoreDataServiceKey)
 	// Register the service in Consul
 	err := consulclient.ConsulInit(cfg)
 
 	if err != nil {
-		return fmt.Errorf("connection to Consul could not be made: %v", err.Error())
-	} else {
-		// Update configuration data from Consul
-		updateCh := make(chan interface{})
-		errCh := make(chan error)
-		dec := consulclient.NewConsulDecoder(conf.Registry)
-		dec.Target = &ConfigurationStruct{}
-		dec.Prefix = internal.ConfigV2Stem + internal.CoreDataServiceKey
-		dec.ErrCh = errCh
-		dec.UpdateCh = updateCh
-
-		defer dec.Close()
-		defer close(updateCh)
-		defer close(errCh)
-		go dec.Run()
-
-		select {
-		case <-time.After(2 * time.Second):
-			err = errors.New("timeout loading config from registry")
-		case ex := <-errCh:
-			err = errors.New(ex.Error())
-		case raw := <-updateCh:
-			actual, ok := raw.(*ConfigurationStruct)
-			if !ok {
-				return errors.New("type check failed")
-			}
-			Configuration = actual
-		}
-
-		if err != nil {
-			return err
-		}
+		return conf, fmt.Errorf("connection to Consul could not be made: %v", err.Error())
 	}
-	return nil
+	// Update configuration data from Consul
+	updateCh := make(chan interface{})
+	errCh := make(chan error)
+	dec := consulclient.NewConsulDecoder(conf.Registry)
+	dec.Target = &ConfigurationStruct{}
+	dec.Prefix = internal.ConfigV2Stem + internal.CoreDataServiceKey
+	dec.ErrCh = errCh
+	dec.UpdateCh = updateCh
+
+	defer dec.Close()
+	defer close(updateCh)
+	defer close(errCh)
+	go dec.Run()
+
+	select {
+	case <-time.After(2 * time.Second):
+		err = errors.New("timeout loading config from registry")
+	case ex := <-errCh:
+		err = errors.New(ex.Error())
+	case raw := <-updateCh:
+		actual, ok := raw.(*ConfigurationStruct)
+		if !ok {
+			return conf, errors.New("type check failed")
+		}
+		conf = actual
+	}
+
+	return conf, err
 }
 
 func listenForConfigChanges() {

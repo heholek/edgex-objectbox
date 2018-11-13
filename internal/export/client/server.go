@@ -7,17 +7,15 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"runtime"
 
+	"github.com/edgexfoundry/edgex-go/internal"
+	"github.com/edgexfoundry/edgex-go/pkg/clients"
 	"github.com/go-zoo/bone"
-
-)
-
-const (
-	apiV1Registration = "/api/v1/registration"
-	apiV1Ping         = "/api/v1/ping"
 )
 
 func replyPing(w http.ResponseWriter, r *http.Request) {
@@ -27,29 +25,85 @@ func replyPing(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, str)
 }
 
+func replyConfig(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	encode(Configuration, w)
+}
+
+// Helper function for encoding things for returning from REST calls
+func encode(i interface{}, w http.ResponseWriter) {
+	w.Header().Add("Content-Type", "application/json")
+
+	enc := json.NewEncoder(w)
+	err := enc.Encode(i)
+	// Problems encoding
+	if err != nil {
+		LoggingClient.Error("Error encoding the data: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func replyMetrics(w http.ResponseWriter, r *http.Request) {
+
+	var t internal.Telemetry
+
+	if r.Body != nil {
+		defer r.Body.Close()
+	}
+
+	// The micro-service is to be considered the System Of Record (SOR) in terms of accurate information.
+	// Fetch metrics for the scheduler service.
+	var rtm runtime.MemStats
+
+	// Read full memory stats
+	runtime.ReadMemStats(&rtm)
+
+	// Miscellaneous memory stats
+	t.Alloc = rtm.Alloc
+	t.TotalAlloc = rtm.TotalAlloc
+	t.Sys = rtm.Sys
+	t.Mallocs = rtm.Mallocs
+	t.Frees = rtm.Frees
+
+	// Live objects = Mallocs - Frees
+	t.LiveObjects = t.Mallocs - t.Frees
+
+	encode(t, w)
+
+	return
+}
+
 // HTTPServer function
 func httpServer() http.Handler {
 	mux := bone.New()
 
-	mux.Get(apiV1Ping, http.HandlerFunc(replyPing))
+	// Ping Resource
+	mux.Get(clients.ApiPingRoute, http.HandlerFunc(replyPing))
+
+	// Configuration
+	mux.Get(clients.ApiConfigRoute, http.HandlerFunc(replyConfig))
+
+	// Metrics
+	mux.Get(clients.ApiMetricsRoute, http.HandlerFunc(replyMetrics))
 
 	// Registration
-	mux.Get(apiV1Registration+"/:id", http.HandlerFunc(getRegByID))
-	mux.Get(apiV1Registration+"/reference/:type", http.HandlerFunc(getRegList))
-	mux.Get(apiV1Registration, http.HandlerFunc(getAllReg))
-	mux.Get(apiV1Registration+"/name/:name", http.HandlerFunc(getRegByName))
-	mux.Post(apiV1Registration, http.HandlerFunc(addReg))
-	mux.Put(apiV1Registration, http.HandlerFunc(updateReg))
-	mux.Delete(apiV1Registration+"/id/:id", http.HandlerFunc(delRegByID))
-	mux.Delete(apiV1Registration+"/name/:name", http.HandlerFunc(delRegByName))
+	mux.Get(clients.ApiRegistrationRoute+"/:id", http.HandlerFunc(getRegByID))
+	mux.Get(clients.ApiRegistrationRoute+"/reference/:type", http.HandlerFunc(getRegList))
+	mux.Get(clients.ApiRegistrationRoute, http.HandlerFunc(getAllReg))
+	mux.Get(clients.ApiRegistrationRoute+"/name/:name", http.HandlerFunc(getRegByName))
+	mux.Post(clients.ApiRegistrationRoute, http.HandlerFunc(addReg))
+	mux.Put(clients.ApiRegistrationRoute, http.HandlerFunc(updateReg))
+	mux.Delete(clients.ApiRegistrationRoute+"/id/:id", http.HandlerFunc(delRegByID))
+	mux.Delete(clients.ApiRegistrationRoute+"/name/:name", http.HandlerFunc(delRegByName))
 
 	return mux
 }
 
-func StartHTTPServer(config ConfigurationStruct, errChan chan error) {
+func StartHTTPServer(errChan chan error) {
 	go func() {
-		p := fmt.Sprintf(":%d", config.Port)
-		LoggingClient.Info(fmt.Sprintf("Starting Export Client: %s", p))
+		p := fmt.Sprintf(":%d", Configuration.Service.Port)
 		errChan <- http.ListenAndServe(p, httpServer())
 	}()
 }

@@ -29,9 +29,8 @@ import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/startup"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/usage"
 	"github.com/edgexfoundry/edgex-go/pkg/clients/logging"
+	"github.com/gorilla/context"
 )
-
-var bootTimeout int = 30000 //Once we start the V2 configuration rework, this will be config driven
 
 func main() {
 	start := time.Now()
@@ -45,10 +44,10 @@ func main() {
 	flag.Usage = usage.HelpCallback
 	flag.Parse()
 
-	params := startup.BootParams{UseConsul: useConsul, UseProfile: useProfile, BootTimeout: bootTimeout}
+	params := startup.BootParams{UseConsul: useConsul, UseProfile: useProfile, BootTimeout: internal.BootTimeoutDefault}
 	startup.Bootstrap(params, metadata.Retry, logBeforeInit)
 
-	ok := metadata.Init()
+	ok := metadata.Init(useConsul)
 	if !ok {
 		logBeforeInit(fmt.Errorf("%s: Service bootstrap failed!", internal.CoreMetaDataServiceKey))
 		return
@@ -57,23 +56,23 @@ func main() {
 	metadata.LoggingClient.Info("Service dependencies resolved...")
 	metadata.LoggingClient.Info(fmt.Sprintf("Starting %s %s ", internal.CoreMetaDataServiceKey, edgex.Version))
 
-	http.TimeoutHandler(nil, time.Millisecond*time.Duration(metadata.Configuration.ServiceTimeout), "Request timed out")
-	metadata.LoggingClient.Info(metadata.Configuration.AppOpenMsg, "")
+	http.TimeoutHandler(nil, time.Millisecond*time.Duration(metadata.Configuration.Service.Timeout), "Request timed out")
+	metadata.LoggingClient.Info(metadata.Configuration.Service.StartupMsg, "")
 
 	errs := make(chan error, 2)
 	listenForInterrupt(errs)
-	startHttpServer(errs, metadata.Configuration.ServicePort)
+	startHttpServer(errs, metadata.Configuration.Service.Port)
 
 	// Time it took to start service
 	metadata.LoggingClient.Info("Service started in: "+time.Since(start).String(), "")
-	metadata.LoggingClient.Info("Listening on port: " + strconv.Itoa(metadata.Configuration.ServicePort))
+	metadata.LoggingClient.Info("Listening on port: " + strconv.Itoa(metadata.Configuration.Service.Port))
 	c := <-errs
 	metadata.Destruct()
 	metadata.LoggingClient.Warn(fmt.Sprintf("terminating: %v", c))
 }
 
 func logBeforeInit(err error) {
-	l := logger.NewClient(internal.CoreMetaDataServiceKey, false, "")
+	l := logger.NewClient(internal.CoreMetaDataServiceKey, false, "", logger.InfoLog)
 	l.Error(err.Error())
 }
 
@@ -88,6 +87,6 @@ func listenForInterrupt(errChan chan error) {
 func startHttpServer(errChan chan error, port int) {
 	go func() {
 		r := metadata.LoadRestRoutes()
-		errChan <- http.ListenAndServe(":"+strconv.Itoa(port), r)
+		errChan <- http.ListenAndServe(":"+strconv.Itoa(port), context.ClearHandler(r))
 	}()
 }

@@ -18,6 +18,8 @@ package agent
 
 import (
 	"net/http"
+	"fmt"
+	"encoding/json"
 )
 
 // Test if the service is working
@@ -28,4 +30,13 @@ func pingHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		LoggingClient.Error("Error writing pong: " + err.Error())
 	}
+}
+
+func ProcessResponse(response string) map[string]interface{} {
+	rsp := make(map[string]interface{})
+	err := json.Unmarshal([]byte(response), &rsp)
+	if err != nil {
+		LoggingClient.Error(fmt.Sprintf("ERROR: {%v}", err))
+	}
+	return rsp
 }

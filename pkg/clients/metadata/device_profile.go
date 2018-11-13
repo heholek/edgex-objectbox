@@ -14,9 +14,7 @@
 package metadata
 
 import (
-	"bytes"
 	"encoding/json"
-	"net/http"
 	"net/url"
 
 	"github.com/edgexfoundry/edgex-go/pkg/clients"
@@ -32,6 +30,9 @@ type DeviceProfileClient interface {
 	DeviceProfile(id string) (models.DeviceProfile, error)
 	DeviceProfiles() ([]models.DeviceProfile, error)
 	DeviceProfileForName(name string) (models.DeviceProfile, error)
+	Update(dp models.DeviceProfile) error
+	Upload(yamlString string) (string, error)
+	UploadFile(yamlFilePath string) (string, error)
 }
 
 type DeviceProfileRestClient struct {
@@ -63,210 +64,69 @@ func (d *DeviceProfileRestClient) init(params types.EndpointParams) {
 	}
 }
 
+// Helper method to request and decode a device profile
+func (dpc *DeviceProfileRestClient) requestDeviceProfile(url string) (models.DeviceProfile, error) {
+	data, err := clients.GetRequest(url)
+	if err != nil {
+		return models.DeviceProfile{}, err
+	}
+
+	dp := models.DeviceProfile{}
+	err = json.Unmarshal(data, &dp)
+	return dp, err
+}
+
+// Helper method to request and decode a device profile slice
+func (dpc *DeviceProfileRestClient) requestDeviceProfileSlice(url string) ([]models.DeviceProfile, error) {
+	data, err := clients.GetRequest(url)
+	if err != nil {
+		return []models.DeviceProfile{}, err
+	}
+
+	dpSlice := make([]models.DeviceProfile, 0)
+	err = json.Unmarshal(data, &dpSlice)
+	return dpSlice, err
+}
+
 // Add a new device profile to metadata
 func (dpc *DeviceProfileRestClient) Add(dp *models.DeviceProfile) (string, error) {
-	jsonStr, err := json.Marshal(dp)
-	if err != nil {
-		return "", err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, dpc.url, bytes.NewReader(jsonStr))
-	if err != nil {
-		return "", err
-	}
-
-	resp, err := makeRequest(req)
-	if err != nil {
-		return "", err
-	}
-	if resp == nil {
-		return "", ErrResponseNil
-	}
-	defer resp.Body.Close()
-
-	// Get the body
-	bodyBytes, err := getBody(resp)
-	if err != nil {
-		return "", err
-	}
-	bodyString := string(bodyBytes)
-
-	// Check the response code
-	if resp.StatusCode != http.StatusOK {
-		return "", types.NewErrServiceClient(resp.StatusCode, bodyBytes)
-	}
-
-	return bodyString, nil
+	return clients.PostJsonRequest(dpc.url, dp)
 }
 
 // Delete a device profile (specified by id)
 func (dpc *DeviceProfileRestClient) Delete(id string) error {
-	req, err := http.NewRequest(http.MethodDelete, dpc.url+"/id/"+id, nil)
-	if err != nil {
-		return err
-	}
-
-	resp, err := makeRequest(req)
-	if err != nil {
-		return err
-	}
-	if resp == nil {
-		return ErrResponseNil
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		// Get the response body
-		bodyBytes, err := getBody(resp)
-		if err != nil {
-			return err
-		}
-
-		return types.NewErrServiceClient(resp.StatusCode, bodyBytes)
-	}
-
-	return nil
+	return clients.DeleteRequest(dpc.url + "/id/" + id)
 }
 
 // Delete a device profile (specified by name)
 func (dpc *DeviceProfileRestClient) DeleteByName(name string) error {
-	req, err := http.NewRequest(http.MethodDelete, dpc.url+"/name/"+url.QueryEscape(name), nil)
-	if err != nil {
-		return err
-	}
-
-	resp, err := makeRequest(req)
-	if err != nil {
-		return err
-	}
-	if resp == nil {
-		return ErrResponseNil
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		// Get the response body
-		bodyBytes, err := getBody(resp)
-		if err != nil {
-			return err
-		}
-
-		return types.NewErrServiceClient(resp.StatusCode, bodyBytes)
-	}
-
-	return nil
+	return clients.DeleteRequest(dpc.url + "/name/" + url.QueryEscape(name))
 }
 
 // Get the device profile by id
 func (dpc *DeviceProfileRestClient) DeviceProfile(id string) (models.DeviceProfile, error) {
-	req, err := http.NewRequest(http.MethodGet, dpc.url+"/"+id, nil)
-	if err != nil {
-		return models.DeviceProfile{}, err
-	}
-
-	// Make the request and get response
-	resp, err := makeRequest(req)
-	if err != nil {
-		return models.DeviceProfile{}, err
-	}
-	if resp == nil {
-		return models.DeviceProfile{}, ErrResponseNil
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		// Get the response body
-		bodyBytes, err := getBody(resp)
-		if err != nil {
-			return models.DeviceProfile{}, err
-		}
-
-		return models.DeviceProfile{}, types.NewErrServiceClient(resp.StatusCode, bodyBytes)
-	}
-
-	return dpc.decodeDeviceProfile(resp)
+	return dpc.requestDeviceProfile(dpc.url + "/" + id)
 }
 
 // Get a list of all devices
 func (dpc *DeviceProfileRestClient) DeviceProfiles() ([]models.DeviceProfile, error) {
-	req, err := http.NewRequest(http.MethodGet, dpc.url, nil)
-	if err != nil {
-		return []models.DeviceProfile{}, err
-	}
-
-	// Make the request and get response
-	resp, err := makeRequest(req)
-	if err != nil {
-		return []models.DeviceProfile{}, err
-	}
-	if resp == nil {
-		return []models.DeviceProfile{}, ErrResponseNil
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		// Get the response body
-		bodyBytes, err := getBody(resp)
-		if err != nil {
-			return []models.DeviceProfile{}, err
-		}
-
-		return []models.DeviceProfile{}, types.NewErrServiceClient(resp.StatusCode, bodyBytes)
-	}
-	return dpc.decodeDeviceProfileSlice(resp)
+	return dpc.requestDeviceProfileSlice(dpc.url)
 }
 
 // Get the device profile by name
 func (dpc *DeviceProfileRestClient) DeviceProfileForName(name string) (models.DeviceProfile, error) {
-	req, err := http.NewRequest(http.MethodGet, dpc.url+"/name/"+name, nil)
-	if err != nil {
-		return models.DeviceProfile{}, err
-	}
-
-	// Make the request and get response
-	resp, err := makeRequest(req)
-	if err != nil {
-		return models.DeviceProfile{}, err
-	}
-	if resp == nil {
-		return models.DeviceProfile{}, ErrResponseNil
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		// Get the response body
-		bodyBytes, err := getBody(resp)
-		if err != nil {
-			return models.DeviceProfile{}, err
-		}
-
-		return models.DeviceProfile{}, types.NewErrServiceClient(resp.StatusCode, bodyBytes)
-	}
-
-	return dpc.decodeDeviceProfile(resp)
+	return dpc.requestDeviceProfile(dpc.url + "/name/" + name)
 }
 
-// Help method to decode a device profile slice
-func (dpc *DeviceProfileRestClient) decodeDeviceProfileSlice(resp *http.Response) ([]models.DeviceProfile, error) {
-	dec := json.NewDecoder(resp.Body)
-	dSlice := []models.DeviceProfile{}
-
-	err := dec.Decode(&dSlice)
-	if err != nil {
-		return []models.DeviceProfile{}, err
-	}
-
-	return dSlice, err
+// Update an existing device profile in metadata
+func (dpc *DeviceProfileRestClient) Update(dp models.DeviceProfile) error {
+	return clients.UpdateRequest(dpc.url, dp)
 }
 
-// Helper method to decode and return a device profile
-func (dpc *DeviceProfileRestClient) decodeDeviceProfile(resp *http.Response) (models.DeviceProfile, error) {
-	dec := json.NewDecoder(resp.Body)
-	ds := models.DeviceProfile{}
-	err := dec.Decode(&ds)
-	if err != nil {
-		return models.DeviceProfile{}, err
-	}
+func (dpc *DeviceProfileRestClient) Upload(yamlString string) (string, error) {
+	return clients.PostRequest(dpc.url+"/upload", []byte(yamlString), clients.ContentYaml)
+}
 
-	return ds, err
+func (dpc *DeviceProfileRestClient) UploadFile(yamlFilePath string) (string, error) {
+	return clients.UploadFileRequest(dpc.url+"/uploadfile", yamlFilePath)
 }

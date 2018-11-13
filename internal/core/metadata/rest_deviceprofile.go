@@ -34,7 +34,7 @@ func restGetAllDeviceProfiles(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
-	if len(res) > Configuration.ReadMaxLimit {
+	if len(res) > Configuration.Service.ReadMaxLimit {
 		err := errors.New("Max limit exceeded with request for profiles")
 		http.Error(w, err.Error(), http.StatusRequestEntityTooLarge)
 		LoggingClient.Error(err.Error(), "")
@@ -629,7 +629,7 @@ func restGetYamlProfileById(w http.ResponseWriter, r *http.Request) {
 	w.Write(out)
 }
 
-// Notify the associated device services for the addressable
+// Notify the associated device services for changes in the device profile
 func notifyProfileAssociates(dp models.DeviceProfile, action string) error {
 	// Get the devices
 	var d []models.Device

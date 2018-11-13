@@ -1,10 +1,7 @@
 DeviceUpdateLastConnected = false
 MetaDataCheck = false
 PersistData = true
-ReadMaxLimit = 100
 ServiceUpdateLastConnected = false
-StartupMsg = 'This is the Core Data Microservice'
-Timeout = 5000
 ValidateCheck = false
 DBType = 'redisdb'
 MongoDBUserName = ''
@@ -26,6 +23,9 @@ CheckInterval = '10s'
 Host = 'localhost'
 Port = 48080
 Protocol = 'http'
+ReadMaxLimit = 100
+StartupMsg = 'This is the Core Data Microservice'
+Timeout = 5000
 
 [Registry]
 Host = 'localhost'
@@ -35,6 +35,7 @@ Type = 'consul'
 [Logging]
 EnableRemote = false
 File = './logs/edgex-core-data.log'
+Level = 'INFO'
 
 [Clients]
   [Clients.Metadata]

@@ -12,15 +12,13 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-
-	"github.com/edgexfoundry/edgex-go/internal/export"
+	"runtime"
 
 	"github.com/go-zoo/bone"
-)
-
-const (
-	apiV1NotifyRegistrations = "/api/v1/notify/registrations"
-	apiV1Ping                = "/api/v1/ping"
+	"github.com/edgexfoundry/edgex-go/internal/export"
+	"github.com/edgexfoundry/edgex-go/pkg/clients"
+	"github.com/edgexfoundry/edgex-go/pkg/models"
+	"github.com/edgexfoundry/edgex-go/internal"
 )
 
 func replyPing(w http.ResponseWriter, r *http.Request) {
@@ -28,6 +26,12 @@ func replyPing(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	str := `pong`
 	io.WriteString(w, str)
+}
+
+func replyConfig(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	encode(Configuration, w)
 }
 
 func replyNotifyRegistrations(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +43,7 @@ func replyNotifyRegistrations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	update := export.NotifyUpdate{}
+	update := models.NotifyUpdate{}
 	if err := json.Unmarshal(data, &update); err != nil {
 		LoggingClient.Error(fmt.Sprintf("Failed to parse %X", data))
 		w.WriteHeader(http.StatusBadRequest)
@@ -47,7 +51,7 @@ func replyNotifyRegistrations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if update.Name == "" || update.Operation == "" {
-		LoggingClient.Error(fmt.Sprintf("Missing json field: %s",  update.Name))
+		LoggingClient.Error(fmt.Sprintf("Missing json field: %s", update.Name))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -63,11 +67,64 @@ func replyNotifyRegistrations(w http.ResponseWriter, r *http.Request) {
 	RefreshRegistrations(update)
 }
 
+func replyMetrics(w http.ResponseWriter, r *http.Request) {
+
+	var t internal.Telemetry
+
+	if r.Body != nil {
+		defer r.Body.Close()
+	}
+
+	// The micro-service is to be considered the System Of Record (SOR) in terms of accurate information.
+	// Fetch metrics for the scheduler service.
+	var rtm runtime.MemStats
+
+	// Read full memory stats
+	runtime.ReadMemStats(&rtm)
+
+	// Miscellaneous memory stats
+	t.Alloc = rtm.Alloc
+	t.TotalAlloc = rtm.TotalAlloc
+	t.Sys = rtm.Sys
+	t.Mallocs = rtm.Mallocs
+	t.Frees = rtm.Frees
+
+	// Live objects = Mallocs - Frees
+	t.LiveObjects = t.Mallocs - t.Frees
+
+	encode(t, w)
+
+	return
+}
+
+// Helper function for encoding things for returning from REST calls
+func encode(i interface{}, w http.ResponseWriter) {
+	w.Header().Add("Content-Type", "application/json")
+
+	enc := json.NewEncoder(w)
+	err := enc.Encode(i)
+	// Problems encoding
+	if err != nil {
+		LoggingClient.Error("Error encoding the data: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 // HTTPServer function
 func httpServer() http.Handler {
 	mux := bone.New()
-	mux.Get(apiV1Ping, http.HandlerFunc(replyPing))
-	mux.Put(apiV1NotifyRegistrations, http.HandlerFunc(replyNotifyRegistrations))
+
+	// Ping Resource
+	mux.Get(clients.ApiPingRoute, http.HandlerFunc(replyPing))
+
+	// Configuration
+	mux.Get(clients.ApiConfigRoute, http.HandlerFunc(replyConfig))
+
+	// Metrics
+	mux.Get(clients.ApiMetricsRoute, http.HandlerFunc(replyMetrics))
+
+	mux.Put(clients.ApiNotifyRegistrationRoute, http.HandlerFunc(replyNotifyRegistrations))
 
 	return mux
 }

@@ -8,8 +8,6 @@ package logging
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -17,17 +15,16 @@ import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/consul"
 	"github.com/edgexfoundry/edgex-go/pkg/clients/logging"
-)
-
-const (
-	PingApiPath = "/api/v1/ping"
+	"github.com/pkg/errors"
 )
 
 var Configuration *ConfigurationStruct
 var dbClient persistence
 var LoggingClient logger.LoggingClient
+var chConfig chan interface{} //A channel for use by ConsulDecoder in detecting configuration mods.
 
 func Retry(useConsul bool, useProfile string, timeout int, wait *sync.WaitGroup, ch chan error) {
+	LoggingClient = newPrivateLogger()
 	until := time.Now().Add(time.Millisecond * time.Duration(timeout))
 	for time.Now().Before(until) {
 		var err error
@@ -42,9 +39,6 @@ func Retry(useConsul bool, useProfile string, timeout int, wait *sync.WaitGroup,
 					wait.Done()
 					return
 				}
-			} else {
-				// Setup local service logging to file.
-				LoggingClient = logger.NewClient(internal.SupportLoggingServiceKey, false, Configuration.LoggingFile)
 			}
 		}
 
@@ -65,9 +59,13 @@ func Retry(useConsul bool, useProfile string, timeout int, wait *sync.WaitGroup,
 	return
 }
 
-func Init() bool {
+func Init(useConsul bool) bool {
 	if Configuration == nil || dbClient == nil {
 		return false
+	}
+	if useConsul {
+		chConfig = make(chan interface{})
+		go listenForConfigChanges()
 	}
 	return true
 }
@@ -76,6 +74,10 @@ func Destruct() {
 	if dbClient != nil {
 		dbClient.closeSession()
 		dbClient = nil
+	}
+	if chConfig != nil {
+		close(chConfig)
+		chConfig = nil
 	}
 }
 
@@ -88,7 +90,7 @@ func initializeConfiguration(useConsul bool, useProfile string) (*ConfigurationS
 	}
 
 	if useConsul {
-		err := connectToConsul(conf)
+		conf, err = connectToConsul(conf)
 		if err != nil {
 			return nil, err
 		}
@@ -96,39 +98,92 @@ func initializeConfiguration(useConsul bool, useProfile string) (*ConfigurationS
 	return conf, nil
 }
 
-func connectToConsul(conf *ConfigurationStruct) error {
-	// Initialize service on Consul
-	err := consulclient.ConsulInit(consulclient.ConsulConfig{
-		ServiceName:    internal.SupportLoggingServiceKey,
-		ServicePort:    conf.Port,
-		ServiceAddress: conf.Hostname,
-		CheckAddress:   "http://" + conf.Hostname + ":" + strconv.Itoa(conf.Port) + PingApiPath,
-		CheckInterval:  conf.CheckInterval,
-		ConsulAddress:  conf.ConsulHost,
-		ConsulPort:     conf.ConsulPort,
-	})
+func connectToConsul(conf *ConfigurationStruct) (*ConfigurationStruct, error) {
+	//Obtain ConsulConfig
+	cfg := consulclient.NewConsulConfig(conf.Registry, conf.Service, internal.SupportLoggingServiceKey)
+	// Register the service in Consul
+	err := consulclient.ConsulInit(cfg)
 
 	if err != nil {
-		return fmt.Errorf("connection to Consul could not be made: %v", err.Error())
-	} else {
-		// Update configuration data from Consul
-		if err := consulclient.CheckKeyValuePairs(conf, internal.SupportLoggingServiceKey, strings.Split(conf.ConsulProfilesActive, ";")); err != nil {
-			return fmt.Errorf("error getting key/values from Consul: %v", err.Error())
+		return conf, fmt.Errorf("connection to Consul could not be made: %v", err.Error())
+	}
+	// Update configuration data from Consul
+	updateCh := make(chan interface{})
+	errCh := make(chan error)
+	dec := consulclient.NewConsulDecoder(conf.Registry)
+	dec.Target = &ConfigurationStruct{}
+	dec.Prefix = internal.ConfigV2Stem + internal.SupportLoggingServiceKey
+	dec.ErrCh = errCh
+	dec.UpdateCh = updateCh
+
+	defer dec.Close()
+	defer close(updateCh)
+	defer close(errCh)
+	go dec.Run()
+
+	select {
+	case <-time.After(2 * time.Second):
+		err = errors.New("timeout loading config from registry")
+	case ex := <-errCh:
+		err = errors.New(ex.Error())
+	case raw := <-updateCh:
+		actual, ok := raw.(*ConfigurationStruct)
+		if !ok {
+			return conf, errors.New("type check failed")
+		}
+		conf = actual
+		//Check that information was successfully read from Consul
+		if len(conf.Persistence) == 0 {
+			return nil, errors.New("error reading from Consul")
 		}
 	}
-	return nil
+	return conf, err
+}
+
+func listenForConfigChanges() {
+	errCh := make(chan error)
+	dec := consulclient.NewConsulDecoder(Configuration.Registry)
+	dec.Target = &ConfigurationStruct{}
+	dec.Prefix = internal.ConfigV2Stem + internal.SupportLoggingServiceKey
+	dec.ErrCh = errCh
+	dec.UpdateCh = chConfig
+
+	defer dec.Close()
+	defer close(errCh)
+
+	go dec.Run()
+	for {
+		select {
+		case ex := <-errCh:
+			LoggingClient.Error(ex.Error())
+		case raw, ok := <-chConfig:
+			if ok {
+				actual, ok := raw.(*ConfigurationStruct)
+				if !ok {
+					LoggingClient.Error("listenForConfigChanges() type check failed")
+				}
+				Configuration = actual //Mutex needed?
+			} else {
+				return
+			}
+		}
+	}
 }
 
 func getPersistence() error {
-	if Configuration.Persistence == PersistenceFile {
-		dbClient = &fileLog{filename: Configuration.LoggingFile}
-	} else if Configuration.Persistence == PersistenceMongo {
+	switch Configuration.Persistence {
+	case PersistenceFile:
+		dbClient = &fileLog{filename: Configuration.Logging.File}
+	case PersistenceDB:
+		// TODO: Integrate db layer with internal/pkg/db/ types so we can support other databases
 		ms, err := connectToMongo()
 		if err != nil {
 			return err
 		} else {
 			dbClient = &mongoLog{session: ms}
 		}
+	default:
+		return errors.New(fmt.Sprintf("unrecognized value Configuration.Persistence: %s", Configuration.Persistence))
 	}
 	return nil
 }

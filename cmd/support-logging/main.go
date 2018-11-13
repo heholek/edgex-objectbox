@@ -26,8 +26,6 @@ import (
 	"github.com/edgexfoundry/edgex-go/pkg/clients/logging"
 )
 
-var bootTimeout int = 30000 //Once we start the V2 configuration rework, this will be config driven
-
 func main() {
 	start := time.Now()
 	var useConsul bool
@@ -40,10 +38,10 @@ func main() {
 	flag.Usage = usage.HelpCallback
 	flag.Parse()
 
-	params := startup.BootParams{UseConsul: useConsul, UseProfile: useProfile, BootTimeout: bootTimeout}
+	params := startup.BootParams{UseConsul: useConsul, UseProfile: useProfile, BootTimeout: internal.BootTimeoutDefault}
 	startup.Bootstrap(params, logging.Retry, logBeforeInit)
 
-	ok := logging.Init()
+	ok := logging.Init(useConsul)
 	if !ok {
 		time.Sleep(time.Millisecond * time.Duration(15))
 		logBeforeInit(fmt.Errorf("%s: Service bootstrap failed!", internal.SupportLoggingServiceKey))
@@ -57,7 +55,7 @@ func main() {
 
 	// Time it took to start service
 	logging.LoggingClient.Info("Service started in: "+time.Since(start).String(), "")
-	logging.LoggingClient.Info("Listening on port: "+strconv.Itoa(logging.Configuration.Port), "")
+	logging.LoggingClient.Info("Listening on port: "+strconv.Itoa(logging.Configuration.Service.Port), "")
 	startHTTPServer(errs)
 
 	c := <-errs
@@ -66,7 +64,7 @@ func main() {
 }
 
 func logBeforeInit(err error) {
-	l := logger.NewClient(internal.SupportLoggingServiceKey, false, "")
+	l := logger.NewClient(internal.SupportLoggingServiceKey, false, "", logger.InfoLog)
 	l.Error(err.Error())
 }
 
@@ -80,7 +78,7 @@ func listenForInterrupt(errChan chan error) {
 
 func startHTTPServer(errChan chan error) {
 	go func() {
-		p := fmt.Sprintf(":%d", logging.Configuration.Port)
+		p := fmt.Sprintf(":%d", logging.Configuration.Service.Port)
 		errChan <- http.ListenAndServe(p, logging.HttpServer())
 	}()
 }

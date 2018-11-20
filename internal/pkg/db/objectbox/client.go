@@ -2,12 +2,11 @@ package objectbox
 
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/flatcoredata"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
-	"github.com/google/flatbuffers/go"
 	. "github.com/objectbox/objectbox-go/objectbox"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
+	"sync"
 )
 
 type ObjectBoxClient struct {
@@ -16,6 +15,12 @@ type ObjectBoxClient struct {
 
 	eventBox   *Box
 	readingBox *Box
+
+	queryEventByDeviceId      *Query
+	queryEventByDeviceIdMutex sync.Mutex
+
+	queryReadingByDeviceId      *Query
+	queryReadingByDeviceIdMutex sync.Mutex
 
 	strictReads bool
 	asyncPut    bool
@@ -69,6 +74,21 @@ func (client *ObjectBoxClient) Connect() (err error) {
 	client.readingBox = objectBox.Box(2)
 	client.asyncPut = true
 	client.strictReads = true
+
+	queryBuilder := objectBox.Query(1)
+	queryBuilder.StringEq(3, "", true)
+	client.queryEventByDeviceId, err = queryBuilder.Build()
+	if err != nil {
+		return
+	}
+
+	queryBuilder = objectBox.Query(2)
+	queryBuilder.StringEq(7, "", true)
+	client.queryReadingByDeviceId, err = queryBuilder.Build()
+	if err != nil {
+		return
+	}
+
 	return
 }
 
@@ -78,7 +98,7 @@ func (client *ObjectBoxClient) Disconnect() {
 	objectBoxToDestroy := client.objectBox
 	client.objectBox = nil
 	if objectBoxToDestroy != nil {
-		objectBoxToDestroy.Destroy()
+		objectBoxToDestroy.Close()
 	}
 }
 
@@ -148,15 +168,11 @@ func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]models.Even
 
 func (client *ObjectBoxClient) EventsForDevice(deviceId string) (events []models.Event, err error) {
 	client.storeForReads().RunWithCursor(1, true, func(cursor *Cursor) (err error) {
-		bytesArray, err := cursor.FindByString(3, deviceId)
-		if err != nil {
-			return
-		}
-		defer bytesArray.Destroy()
-		for _, bytesData := range bytesArray.BytesArray {
-			flatEvent := flatcoredata.GetRootAsEvent(bytesData, flatbuffers.UOffsetT(0))
-			events = append(events, *toModelEvent(flatEvent))
-		}
+		client.queryEventByDeviceIdMutex.Lock()
+		client.queryEventByDeviceId.SetParamString(3, deviceId)
+		slice, err := client.queryEventByDeviceId.Find(cursor)
+		client.queryEventByDeviceIdMutex.Unlock()
+		events = slice.([]models.Event)
 		return
 	})
 	return
@@ -238,18 +254,11 @@ func (ObjectBoxClient) DeleteReadingById(id string) error {
 
 func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) (readings []models.Reading, err error) {
 	client.storeForReads().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
-		bytesArray, err := cursor.FindByString(7, deviceId)
-		if err != nil {
-			return
-		}
-		defer bytesArray.Destroy()
-		for _, bytesData := range bytesArray.BytesArray {
-			readings = append(readings, *toModelReadingFromBytes(bytesData))
-			if len(readings) == limit {
-				// TODO consider limit in query builder
-				break
-			}
-		}
+		client.queryReadingByDeviceIdMutex.Lock()
+		client.queryReadingByDeviceId.SetParamString(7, deviceId)
+		slice, err := client.queryReadingByDeviceId.Find(cursor)
+		client.queryReadingByDeviceIdMutex.Unlock()
+		readings = slice.([]models.Reading)
 		return
 	})
 	return

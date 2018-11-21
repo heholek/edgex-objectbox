@@ -31,11 +31,7 @@ func (ReadingBinding) AddToModel(model *Model) {
 }
 
 func (ReadingBinding) GetId(object interface{}) (id uint64, err error) {
-	reading, ok := object.(*models.Reading)
-	if !ok {
-		// Programming error, OK to panic
-		panic("Object has wrong type")
-	}
+	reading := object.(*models.Reading)
 	idString := string(reading.Id)
 	if idString == "" {
 		return 0, nil

@@ -62,9 +62,10 @@ func (client *ObjectBoxClient) CloseSession() {
 
 func (client *ObjectBoxClient) Connect() (err error) {
 	builder := NewObjectBoxBuilder().Name(client.config.DatabaseName).LastEntityId(2, 10002)
+	builder.LastIndexId(1, 20002007) // Index for Reading.Device
 	//objectBox.SetDebugFlags(DebugFlags_LOG_ASYNC_QUEUE)
 	builder.RegisterBinding(EventBinding{})
-	builder.RegisterBinding(ReadingBinding{})
+	builder.RegisterBinding(ReadingBinding{indexDevice: false}) // TODO make this configurable once EdgeX allows this
 	objectBox, err := builder.Build()
 	if err != nil {
 		return

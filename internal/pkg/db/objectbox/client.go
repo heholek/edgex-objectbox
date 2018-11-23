@@ -168,14 +168,11 @@ func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]models.Even
 }
 
 func (client *ObjectBoxClient) EventsForDevice(deviceId string) (events []models.Event, err error) {
-	client.storeForReads().RunWithCursor(1, true, func(cursor *Cursor) (err error) {
-		client.queryEventByDeviceIdMutex.Lock()
-		client.queryEventByDeviceId.SetParamString(3, deviceId)
-		slice, err := client.queryEventByDeviceId.Find(cursor)
-		client.queryEventByDeviceIdMutex.Unlock()
-		events = slice.([]models.Event)
-		return
-	})
+	client.queryEventByDeviceIdMutex.Lock()
+	client.queryEventByDeviceId.SetParamString(3, deviceId)
+	slice, err := client.queryEventByDeviceId.Find()
+	client.queryEventByDeviceIdMutex.Unlock()
+	events = slice.([]models.Event)
 	return
 }
 
@@ -254,14 +251,11 @@ func (ObjectBoxClient) DeleteReadingById(id string) error {
 }
 
 func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) (readings []models.Reading, err error) {
-	client.storeForReads().RunWithCursor(2, true, func(cursor *Cursor) (err error) {
-		client.queryReadingByDeviceIdMutex.Lock()
-		client.queryReadingByDeviceId.SetParamString(7, deviceId)
-		slice, err := client.queryReadingByDeviceId.Find(cursor)
-		client.queryReadingByDeviceIdMutex.Unlock()
-		readings = slice.([]models.Reading)
-		return
-	})
+	client.queryReadingByDeviceIdMutex.Lock()
+	client.queryReadingByDeviceId.SetParamString(7, deviceId)
+	slice, err := client.queryReadingByDeviceId.Find()
+	client.queryReadingByDeviceIdMutex.Unlock()
+	readings = slice.([]models.Reading)
 	return
 }
 

@@ -27,11 +27,7 @@ func (EventBinding) AddToModel(model *Model) {
 }
 
 func (EventBinding) GetId(object interface{}) (id uint64, err error) {
-	event, ok := object.(*models.Event)
-	if !ok {
-		// Programming error, OK to panic
-		panic("Object has wrong type")
-	}
+	event := object.(*models.Event)
 	idString := string(event.ID)
 	if idString == "" {
 		return 0, nil

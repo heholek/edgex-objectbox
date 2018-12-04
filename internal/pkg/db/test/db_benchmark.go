@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
 	"math"
+	"runtime"
 	"strconv"
 	"time"
 )
@@ -52,6 +53,8 @@ func RunBenchmarkN(db interfaces.DBClient, name string, n int, f func(ctx *Bench
 
 	ctx := BenchmarkContext{db: db}
 
+	runtime.GC() // Do GC before to avoid unrelated GC affecting results
+	runtime.GC() // Run twice to catch objects with finalizers too
 	for i := 0; i < n; i++ {
 		ctx.I = i
 		ctx.start = time.Now()

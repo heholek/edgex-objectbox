@@ -853,7 +853,7 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool) {
 	plainIDs := strings.Contains(dbType, "ObjectBox")
 
 	// Remove any events and readings before and after test
-	db.ScrubAllEvents()
+	_ = db.ScrubAllEvents()
 	defer db.ScrubAllEvents()
 
 	count := 100000

@@ -27,6 +27,7 @@ type ObjectBoxClient struct {
 }
 
 func NewClient(config db.Configuration) *ObjectBoxClient {
+	println(VersionInfo())
 	client := &ObjectBoxClient{config: config}
 	return client
 }

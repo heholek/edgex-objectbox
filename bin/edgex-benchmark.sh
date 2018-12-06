@@ -131,6 +131,8 @@ then
     echo " done."
 fi
 
+## class Sectors {
+
 function initializeDiskStats() {
 	PART=$(findmnt -n -o SOURCE --target "$1" | cut -f3 -d/ |sed 's/p[0-9]$//')
 	DEV=$(for f in /sys/block/* 
@@ -140,8 +142,7 @@ function initializeDiskStats() {
 				fi			
 		 done
 		 )
- }
-
+}
 
 function sectorsWrittenInDisk() { 
 	if [[ "$DEV" ]]
@@ -152,11 +153,21 @@ function sectorsWrittenInDisk() {
 	fi
 }
 
+getResetWrittenSectors() {
+	if sync && WRITTEN_SECTORS2=$(sectorsWrittenInDisk) ; then
+		
+		log "$1: Written sectors: " $(( $WRITTEN_SECTORS2 - $WRITTEN_SECTORS ))
+		echo "$ENGINE $(( $WRITTEN_SECTORS2 - $WRITTEN_SECTORS ))" |tee -a $DATADIR/$ENGINE.iostats
+		WRITTEN_SECTORS=$WRITTEN_SECTORS2
+	fi 
+}
+
+## } // sectors
+
 ## XXX Trick: we put code.greencentral.de's code into github.com's directory
 if ! [ -d $GOPATH//src/github.com/objectbox/objectbox-go ]; then
     mkdir -vp $GOPATH/src/github.com/objectbox/
-    git clone  git@code.greencentral.de:objectbox/objectbox-go.git -b dev $GOPATH/src/github.com/objectbox/objectbox-go
-    #git -C $GOPATH/src/github.com/objectbox/objectbox-go checkout <commit-id>
+    git clone  git@code.greencentral.de:objectbox/objectbox-go.git -b dev $GOPATH/src/github.com/objectbox/objectbox-go    
 fi
 
 
@@ -205,6 +216,7 @@ case ${TMPMODE:-no} in
         *)
         die "Bad --ram option. Options: yes|no|auto"
 esac
+
 initializeDiskStats $TMPDIR
 
 if ! ${SOME_TEST_ENABLED:-false}
@@ -253,7 +265,7 @@ function addDependencyFile() {
 
 if ${ENABLE_OBX}; then 
     addDependencyFile $TMPDIR/___TestBenchmarkFixedNObjectBox_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_objectbox
-    addDependencyFile $(ldconfig -p |grep libobjectbox|awk '{print $NF}')
+    addDependencyFile $(ldconfig -p | awk '/libobjectbox.so/ {print $NF}')
 fi
 
 if ${ENABLE_MONGO}; then 
@@ -311,6 +323,9 @@ addConfigCmd "cpufreq-info -p"  cpufreq-info  -p
 addConfigCmd prio bash -c 'chrt -v -p $$ | sed "s/$$/PID/g"'
 addConfigCmd mongod-version mongod --version
 addConfigCmd redis-server-version redis-server --version
+addConfigCmd hdType cat /sys/class/block/${PART}/device/model || ## If it doesn't work for the tmp dir, we register it for the rootfs, just in case it's the same
+   addConfigCmd rootHdType bash -c 'cat /sys/class/block/$(findmnt -n -o SOURCE --target / | cut -f3 -d/ |sed "s/p[0-9]$//")/device/model'
+
 cc -o $TMPDIR/obx_version_core_string -lobjectbox -xc - <<EOP
 #include <stdio.h>
 extern const char* obx_version_core_string(void);  //header file is probably not available here
@@ -426,12 +441,12 @@ function run_redis() {
     cd $DBDIR
     \time -vao "$DATADIR/redis-server.times" -- redis-server $TESTDIR/redis.conf >& $DATADIR/redis-server.log & REDIS_PID=$!    
     cd -
-    trap "kill $(pgrep -P $REDIS_PID)" EXIT
+    trap "pgrep -P $REDIS_PID |xargs -r kill " EXIT
     sleep 1
     log "Now starting redis test..."
     WRITTEN_SECTORS=$(sync ; sectorsWrittenInDisk) || log "Disk stats are not available for partition $PART"
     execute redis ${TMPDIR}/___TestBenchmarkFixedNRedis_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_redis -test.v -test.run '^TestBenchmarkFixedNRedis$'
-    kill $(pgrep -P $REDIS_PID) || log "Redis not there"
+    pgrep -P $REDIS_PID |xargs -r kill || log "Redis not there"
     trap EXIT
     wait $REDIS_PID   # We kill the actual process but wait for the "time" process, which is our shell's child
     
@@ -468,7 +483,7 @@ function run_mongo() {
         \time -vao mongo-setup.times -- mongod   --smallfiles --unixSocketPrefix=/tmp  --dbpath=$DBPATH & MONGO_PID=$!
         trap "kill $MONGO_PID" EXIT
         waitForTcpOpen 27017 60
-        kill $(pgrep -P $MONGO_PID)  || log "Mongo server not there"
+        pgrep -P $MONGO_PID |xargs -r kill || log "Mongo server not there"
         cd $DBPATH
         log "Waiting for Mongo to finish..."
         wait $MONGO_PID
@@ -498,7 +513,7 @@ function run_mongo() {
     echo Now starting mongo test... >&2
     execute mongo ${TMPDIR}/___TestBenchmarkFixedNMongo_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_mongo  '^TestBenchmarkFixedNMongo$'
     log "Test finished, killing Mongo..."
-    kill $(pgrep -P $MONGO_PID) || log "Mongo server not there"
+    pgrep -P $MONGO_PID | xargs -r kill || log "Mongo server not there"
 
     wait $MONGO_PID
 
@@ -507,14 +522,6 @@ function run_mongo() {
 }
 
 
-getResetWrittenSectors() {
-	if sync && WRITTEN_SECTORS2=$(sectorsWrittenInDisk) ; then
-		
-		log "$1: Written sectors: " $(( $WRITTEN_SECTORS2 - $WRITTEN_SECTORS ))
-		echo "$ENGINE $(( $WRITTEN_SECTORS2 - $WRITTEN_SECTORS ))" |tee -a $DATADIR/$ENGINE.iostats
-		WRITTEN_SECTORS=$WRITTEN_SECTORS2
-	fi 
-}
 
 for i in $(seq 1 $N)
  do
@@ -539,11 +546,11 @@ echo "== Success in $SECONDS seconds. Hash == $RUNHASH :)" >&2
 ## Evaluation
 
 cd $DATADIR
-if [ -f obx.log ]; then 
-    logs="$(ls -f {redis,mongo}.log 2> /dev/null)" || log  "not all engines available"
+if [ -f obx.csv ]; then 
+    logs="$(ls -f {redis,mongo}.csv 2> /dev/null | xargs -r echo)" || log  "not all engines available"
     if [[ $logs ]]; then
         for col in {1..5}; do            
-            echo Factors $logs, col $col:  $(tail -qn 1 obx.log $logs |awk -v col=$(( $col  + 2 )) 'NR==1 { ref=$col; next; } $col && NR >1 { printf ref / $col; } ' ) || true
+            echo "Factors $logs, col $col:  $(tail -qn 1 obx.csv $logs |awk -v col=$(( $col  + 2 )) 'NR==1 { ref=$col; next; } $col && NR >1 { printf ref / $col " "; } ' )"|| true
         done
     else
         log "Only obx available"

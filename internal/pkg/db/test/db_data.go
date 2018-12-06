@@ -842,10 +842,11 @@ func benchmarkEvents(b *testing.B, db interfaces.DBClient) {
 
 func BenchmarkDBFixedN(db interfaces.DBClient, verify bool) {
 	defer db.CloseSession()
-	benchmarkReadingsN(db, verify)
+	durable := true
+	benchmarkReadingsN(db, verify, durable)
 }
 
-func benchmarkReadingsN(db interfaces.DBClient, verify bool) {
+func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 	// Plain IDs do not require .hex(); must use reflect to avoid import cycle to identify DB
 	dbType := reflect.TypeOf(db).String()
 	println("\nBenchmarking " + dbType)
@@ -865,7 +866,7 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool) {
 		reading.Device = "device" + strconv.Itoa(ctx.I/100)
 		ctx.StartClock()
 		id, err := db.AddReading(reading)
-		if ctx.I == count-1 {
+		if durable && ctx.I == count-1 {
 			// Last one; ensure DBs actually made data durable
 			db.EnsureAllDurable()
 		}

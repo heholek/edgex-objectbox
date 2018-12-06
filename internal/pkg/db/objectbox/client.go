@@ -62,30 +62,34 @@ func (client *ObjectBoxClient) CloseSession() {
 }
 
 func (client *ObjectBoxClient) Connect() (err error) {
-	builder := NewObjectBoxBuilder().Name(client.config.DatabaseName).LastEntityId(2, 10002)
-	builder.LastIndexId(1, 20002007) // Index for Reading.Device
+	model := NewModel()
+	model.GeneratorVersion(1)
+	model.RegisterBinding(EventBinding{})
+	model.RegisterBinding(ReadingBinding{indexDevice: false}) // TODO make this configurable once EdgeX allows this
+	model.LastEntityId(2, 10002)
+	model.LastIndexId(1, 20002007) // Index for Reading.Device
+
+	builder := NewBuilder().Directory(client.config.DatabaseName).Model(model)
 	//objectBox.SetDebugFlags(DebugFlags_LOG_ASYNC_QUEUE)
-	builder.RegisterBinding(EventBinding{})
-	builder.RegisterBinding(ReadingBinding{indexDevice: false}) // TODO make this configurable once EdgeX allows this
 	objectBox, err := builder.Build()
 	if err != nil {
 		return
 	}
 	client.objectBox = objectBox
-	client.eventBox = objectBox.Box(1)
-	client.readingBox = objectBox.Box(2)
+	client.eventBox = objectBox.InternalBox(1)
+	client.readingBox = objectBox.InternalBox(2)
 	client.asyncPut = true
 	client.strictReads = true
 
-	queryBuilder := objectBox.Query(1)
-	queryBuilder.StringEq(3, "", true)
+	queryBuilder := objectBox.InternalNewQueryBuilder(1)
+	queryBuilder.StringEquals(3, "", true)
 	client.queryEventByDeviceId, err = queryBuilder.Build()
 	if err != nil {
 		return
 	}
 
-	queryBuilder = objectBox.Query(2)
-	queryBuilder.StringEq(7, "", true)
+	queryBuilder = objectBox.InternalNewQueryBuilder(2)
+	queryBuilder.StringEquals(7, "", true)
 	client.queryReadingByDeviceId, err = queryBuilder.Build()
 	if err != nil {
 		return
@@ -170,7 +174,7 @@ func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]models.Even
 
 func (client *ObjectBoxClient) EventsForDevice(deviceId string) (events []models.Event, err error) {
 	client.queryEventByDeviceIdMutex.Lock()
-	client.queryEventByDeviceId.SetParamString(3, deviceId)
+	client.queryEventByDeviceId.InternalSetParamString(3, deviceId)
 	slice, err := client.queryEventByDeviceId.Find()
 	client.queryEventByDeviceIdMutex.Unlock()
 	events = slice.([]models.Event)
@@ -253,7 +257,7 @@ func (ObjectBoxClient) DeleteReadingById(id string) error {
 
 func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) (readings []models.Reading, err error) {
 	client.queryReadingByDeviceIdMutex.Lock()
-	client.queryReadingByDeviceId.SetParamString(7, deviceId)
+	client.queryReadingByDeviceId.InternalSetParamString(7, deviceId)
 	slice, err := client.queryReadingByDeviceId.Find()
 	client.queryReadingByDeviceIdMutex.Unlock()
 	readings = slice.([]models.Reading)

@@ -9,8 +9,19 @@ import (
 	"strconv"
 )
 
+const Unavailable = flatbuffers.UOffsetT(0)
+
 // This file could be generated in the future
 type EventBinding struct {
+}
+
+func (binding EventBinding) SetId(object interface{}, id uint64) error {
+	object.(*models.Event).ID = bson.ObjectId(strconv.FormatUint(id, 10))
+	return nil
+}
+
+func (binding EventBinding) GeneratorVersion() int {
+	return 1
 }
 
 func (EventBinding) AddToModel(model *Model) {

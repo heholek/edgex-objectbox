@@ -342,13 +342,26 @@ top -bn1 > $DATADIR/top.txt
 echo "Load averages:"
 cat /proc/loadavg | tee $DATADIR/loadavg.txt
 
+function nextid() {
+    LAST_ID_FILE=$DATADIR/lastid
+    LOCKFILE=$DATADIR/lockfile
+     (
+         flock -n 9 || exit 1
+         LAST_ID=$(cat ${LAST_ID_FILE}  || echo 0)
+         NEXT_ID=$(( $LAST_ID + 1 )) 
+         echo $NEXT_ID > ${LAST_ID_FILE}
+         echo $NEXT_ID
+       ) 9>${LOCKFILE}
+}
+
 function execute() {
     ENGINE=$1
-    log "Executing $1, repetition $i..."
+    EXEC_LOG_FILE=$DATADIR/$ENGINE-out.${EXECUTION_SEQ_ID}.txt
+    log "Executing $1, repetition $i... writing to ${EXEC_LOG_FILE}"
     shift
     STATUS=0
 	WRITTEN_SECTORS=$(sync; sectorsWrittenInDisk) || log "Disk stats are not available for partition $PART"
-    \time -v -o $TIMESTMPFILE -- "$@"  | tee $DATADIR/$ENGINE-out.txt $TTY_OR_EMPTY > $TMPF || STATUS=$?
+    \time -v -o $TIMESTMPFILE -- "$@"  |& tee ${EXEC_LOG_FILE} $TTY_OR_EMPTY > $TMPF || STATUS=${PIPESTATUS[0]}
     getResetWrittenSectors $ENGINE
     case $STATUS in
     130)
@@ -505,7 +518,8 @@ getResetWrittenSectors() {
 
 for i in $(seq 1 $N)
  do
-    log "Iteration #$i"
+    EXECUTION_SEQ_ID=$(nextid)
+    log "Iteration #$i. Seq id: ${EXECUTION_SEQ_ID}"
 
     ${ENABLE_OBX}   && run_objectbox
     ${ENABLE_REDIS} && run_redis

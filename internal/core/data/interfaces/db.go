@@ -187,4 +187,8 @@ type DBClient interface {
 
 	// Delete all value descriptors
 	ScrubAllValueDescriptors() error
+
+	// Ensures that all pending data modifications is stored durable; this a synchronous call waiting for durability.
+	// Use this to ensure critical data is safe. Also useful for making benchmarks more consistent across DBs.
+	EnsureAllDurable()
 }

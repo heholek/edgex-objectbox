@@ -296,7 +296,7 @@ TAB=$'\t'
 function addConfigCmd() {
     local key="$1"
     shift
-    EXTRA_STATE="${EXTRA_STATE:-}${key}${TAB}$("$@" | sed 's/\n/\\n/g')"$NL
+    EXTRA_STATE="${EXTRA_STATE:-}${key}${TAB}$("$@" | tr '\n' ' ')"$NL
 }
 
 function addVar() {
@@ -322,7 +322,7 @@ rm -f $TMPDIR/obx_version_core_string
 RUNHASH=$(
         (
         xargs -r md5sum <<< "${DEPENDENCIES:-}" |  
-            awk '{print gensub(/.*\//, "", "g") " " $1 ; }'    ## basename file and swap with md5sum
+            awk '{print gensub(/.*\//, "", "g", $2) " " $1 ; }'    ## basename file and swap with md5sum
         echo $EXTRA_STATE
         ) | md5sum - | cut -f1 -d ' ')
 
@@ -336,6 +336,11 @@ then
         echo "$EXTRA_STATE"
         )  | tee  $DATADIR/config.txt
 fi
+
+lscpu > $DATADIR/cpu.txt
+top -bn1 > $DATADIR/top.txt
+echo "Load averages:"
+cat /proc/loadavg | tee $DATADIR/loadavg.txt
 
 function execute() {
     ENGINE=$1
@@ -519,9 +524,15 @@ echo "== Success in $SECONDS seconds. Hash == $RUNHASH :)" >&2
 
 ## Evaluation
 
-for col in {1..5}; do    
-    logs=$(echo $DATADIR/{obx,redis,mongo}.log) || echo not all engines available
-    echo Factors redis, mongo, col $col:  $(tail -qn 1 $logs |awk -v col=$(( $col  + 2 )) 'NR==1 { ref=$col; next; } $col && NR >1 { printf ref / $col; } ' ) || true
-done
+cd $DATADIR
+if [ -f obx.log ]; then 
+    logs="$(ls -f {redis,mongo}.log 2> /dev/null)" || log  "not all engines available"
+    if [[ $logs ]]; then
+        for col in {1..5}; do            
+            echo Factors $logs, col $col:  $(tail -qn 1 obx.log $logs |awk -v col=$(( $col  + 2 )) 'NR==1 { ref=$col; next; } $col && NR >1 { printf ref / $col; } ' ) || true
+        done
+    else
+        log "Only obx available"
+    fi
+fi
 
-echo

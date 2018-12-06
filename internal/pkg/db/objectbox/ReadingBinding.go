@@ -14,6 +14,15 @@ type ReadingBinding struct {
 	indexDevice bool
 }
 
+func (binding ReadingBinding) SetId(object interface{}, id uint64) error {
+	object.(*models.Reading).Id = bson.ObjectId(strconv.FormatUint(id, 10))
+	return nil
+}
+
+func (binding ReadingBinding) GeneratorVersion() int {
+	return 1
+}
+
 func (binding ReadingBinding) AddToModel(model *Model) {
 	model.Entity("Reading", 2, 10002)
 	model.Property("id", PropertyType_Long, 1, 10002001)

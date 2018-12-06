@@ -319,3 +319,7 @@ func (ObjectBoxClient) ValueDescriptorsByType(t string) ([]models.ValueDescripto
 func (ObjectBoxClient) ScrubAllValueDescriptors() error {
 	panic("implement me")
 }
+
+func (client *ObjectBoxClient) EnsureAllDurable() {
+	client.objectBox.AwaitAsyncCompletion()
+}

@@ -865,6 +865,10 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool) {
 		reading.Device = "device" + strconv.Itoa(ctx.I/100)
 		ctx.StartClock()
 		id, err := db.AddReading(reading)
+		if ctx.I == count-1 {
+			// Last one; ensure DBs actually made data durable
+			db.EnsureAllDurable()
+		}
 		ctx.StopClock()
 		if plainIDs {
 			readings[ctx.I] = string(id)

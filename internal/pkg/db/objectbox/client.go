@@ -320,6 +320,7 @@ func (ObjectBoxClient) ScrubAllValueDescriptors() error {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) EnsureAllDurable() {
+func (client *ObjectBoxClient) EnsureAllDurable(async bool) error {
 	client.objectBox.AwaitAsyncCompletion()
+	return nil
 }

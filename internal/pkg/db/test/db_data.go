@@ -868,7 +868,7 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 		id, err := db.AddReading(reading)
 		if durable && ctx.I == count-1 {
 			// Last one; ensure DBs actually made data durable
-			db.EnsureAllDurable()
+			db.EnsureAllDurable(false)
 		}
 		ctx.StopClock()
 		if plainIDs {

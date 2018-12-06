@@ -190,5 +190,5 @@ type DBClient interface {
 
 	// Ensures that all pending data modifications is stored durable; this a synchronous call waiting for durability.
 	// Use this to ensure critical data is safe. Also useful for making benchmarks more consistent across DBs.
-	EnsureAllDurable()
+	EnsureAllDurable(async bool) error
 }

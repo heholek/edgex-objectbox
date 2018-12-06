@@ -373,7 +373,7 @@ function execute() {
     0)
       cat $TIMESTMPFILE >> $DATADIR/$ENGINE.times
         echo -e "$(date '+%Y-%m-%d %R')\t$(< $TMPF sed -n  's/.*(\([0-9.]\+\) iterations per second.*/\1/p' | tr '.\n' ',\t' )" |
-            tee  $TTY_OR_EMPTY >> ${DATADIR}/${ENGINE}.log
+            tee  $TTY_OR_EMPTY >> ${DATADIR}/${ENGINE}.csv
             ;;
     *)
         log "$ENGINE failed $STATUS: "

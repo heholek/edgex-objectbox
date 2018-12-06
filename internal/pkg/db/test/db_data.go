@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
 	dbp "github.com/edgexfoundry/edgex-go/internal/pkg/db"
@@ -868,9 +869,14 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 		id, err := db.AddReading(reading)
 		if durable && ctx.I == count-1 {
 			// Last one; ensure DBs actually made data durable
+			durableStart := time.Now()
 			db.EnsureAllDurable(false)
+			ctx.StopClock() // Stop asap before logging
+			durableDuration := time.Since(durableStart)
+			println("Making changes durable: " + durableDuration.String())
+		} else {
+			ctx.StopClock()
 		}
-		ctx.StopClock()
 		if plainIDs {
 			readings[ctx.I] = string(id)
 		} else {

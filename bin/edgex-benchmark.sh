@@ -8,7 +8,7 @@ function die() { printf "%4d: ERROR: %s\n" $SECONDS "$*" ; exit 1 ; }
 
 TESTDIR=$PWD
 WIPE_DATADIR=false
-OBJECTBOX_DB_DIR=benchmark-test
+OBJECTBOX_DB_DIR=db-benchmark-fixed-test
 
 
 export GIT_TERMINAL_PROMPT=1

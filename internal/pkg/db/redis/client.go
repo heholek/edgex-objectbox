@@ -89,3 +89,9 @@ func getConnection() (conn redis.Conn, err error) {
 	conn = currClient.Pool.Get()
 	return conn, nil
 }
+
+func (c *Client) EnsureAllDurable() {
+	conn := c.Pool.Get()
+	defer conn.Close()
+	_, _ = conn.Do("SAVE")
+}

@@ -53,7 +53,7 @@ func TestObjectBoxReadings(t *testing.T) {
 	client := createClient()
 	defer client.Disconnect()
 
-	client.ScrubAllEvents()
+	assert.NoError(t, client.ScrubAllEvents())
 	countPre, err := client.eventBox.Count()
 	assert.NoError(t, err)
 	ok := assert.Equal(t, countPre, uint64(0))

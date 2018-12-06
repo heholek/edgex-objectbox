@@ -2,10 +2,10 @@ package objectbox
 
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 	. "github.com/objectbox/objectbox-go/objectbox"
 	"gopkg.in/mgo.v2/bson"
-	"strconv"
 	"sync"
 )
 
@@ -13,13 +13,13 @@ type ObjectBoxClient struct {
 	config    db.Configuration
 	objectBox *ObjectBox
 
-	eventBox   *Box
-	readingBox *Box
+	eventBox   *obx.EventBox
+	readingBox *obx.ReadingBox
 
-	queryEventByDeviceId      *Query
+	queryEventByDeviceId      *obx.EventQuery
 	queryEventByDeviceIdMutex sync.Mutex
 
-	queryReadingByDeviceId      *Query
+	queryReadingByDeviceId      *obx.ReadingQuery
 	queryReadingByDeviceIdMutex sync.Mutex
 
 	strictReads bool
@@ -42,7 +42,7 @@ func (client *ObjectBoxClient) storeForReads() *ObjectBox {
 }
 
 // Considers client.strictReads
-func (client *ObjectBoxClient) eventBoxForReads() *Box {
+func (client *ObjectBoxClient) eventBoxForReads() *obx.EventBox {
 	if client.strictReads {
 		client.objectBox.AwaitAsyncCompletion()
 	}
@@ -50,7 +50,7 @@ func (client *ObjectBoxClient) eventBoxForReads() *Box {
 }
 
 // Considers client.strictReads
-func (client *ObjectBoxClient) readingBoxForReads() *Box {
+func (client *ObjectBoxClient) readingBoxForReads() *obx.ReadingBox {
 	if client.strictReads {
 		client.objectBox.AwaitAsyncCompletion()
 	}
@@ -61,41 +61,30 @@ func (client *ObjectBoxClient) CloseSession() {
 	client.Disconnect()
 }
 
-func (client *ObjectBoxClient) Connect() (err error) {
-	model := NewModel()
-	model.GeneratorVersion(1)
-	model.RegisterBinding(EventBinding{})
-	model.RegisterBinding(ReadingBinding{indexDevice: false}) // TODO make this configurable once EdgeX allows this
-	model.LastEntityId(2, 10002)
-	model.LastIndexId(1, 20002007) // Index for Reading.Device
-
-	builder := NewBuilder().Directory(client.config.DatabaseName).Model(model)
-	//objectBox.SetDebugFlags(DebugFlags_LOG_ASYNC_QUEUE)
-	objectBox, err := builder.BuildOrError()
+func (client *ObjectBoxClient) Connect() error {
+	objectBox, err := NewBuilder().Directory(client.config.DatabaseName).Model(obx.ObjectBoxModel()).Build()
 	if err != nil {
-		return
+		return err
 	}
+	//objectBox.SetDebugFlags(DebugFlags_LOG_ASYNC_QUEUE)
+
 	client.objectBox = objectBox
-	client.eventBox = objectBox.InternalBox(1)
-	client.readingBox = objectBox.InternalBox(2)
+	client.eventBox = obx.BoxForEvent(objectBox)
+	client.readingBox = obx.BoxForReading(objectBox)
 	client.asyncPut = true
 	client.strictReads = true
 
-	queryBuilder := objectBox.InternalNewQueryBuilder(1)
-	queryBuilder.StringEquals(3, "", true)
-	client.queryEventByDeviceId, err = queryBuilder.Build()
+	client.queryEventByDeviceId, err = client.eventBox.QueryOrError(obx.Event_.Device.Equals("", true))
 	if err != nil {
-		return
+		return err
 	}
 
-	queryBuilder = objectBox.InternalNewQueryBuilder(2)
-	queryBuilder.StringEquals(7, "", true)
-	client.queryReadingByDeviceId, err = queryBuilder.Build()
+	client.queryReadingByDeviceId, err = client.readingBox.QueryOrError(obx.Reading_.Device.Equals("", true))
 	if err != nil {
-		return
+		return err
 	}
 
-	return
+	return err
 }
 
 func (client *ObjectBoxClient) Disconnect() {
@@ -108,12 +97,19 @@ func (client *ObjectBoxClient) Disconnect() {
 	}
 }
 
-func (client *ObjectBoxClient) Events() (events []models.Event, err error) {
+func (client *ObjectBoxClient) Events() ([]models.Event, error) {
 	slice, err := client.eventBoxForReads().GetAll()
-	if slice != nil {
-		events = slice.([]models.Event)
+	if err != nil {
+		return nil, err
 	}
-	return
+
+	// TODO this needs to be done by the binding
+	var events = make([]models.Event, 0, len(slice))
+	for _, ptr := range slice {
+		events = append(events, *ptr)
+	}
+
+	return events, nil
 }
 
 func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]models.Event, error) {
@@ -121,7 +117,7 @@ func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]models.Event, error
 }
 
 func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.ObjectId, err error) {
-	var id uint64
+	var id string
 	if client.asyncPut {
 		id, err = client.eventBox.PutAsync(event)
 	} else {
@@ -131,25 +127,20 @@ func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.Obje
 		return
 	}
 
-	stringId := bson.ObjectId(strconv.FormatUint(id, 10))
-	event.ID = stringId
-	return stringId, nil
+	event.ID = bson.ObjectId(id)
+	return event.ID, nil
 }
 
 func (client *ObjectBoxClient) UpdateEvent(e models.Event) error {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) EventById(idString string) (event models.Event, err error) {
-	id, err := strconv.ParseUint(idString, 10, 64)
-	if err != nil {
-		return
+func (client *ObjectBoxClient) EventById(idString string) (models.Event, error) {
+	object, err := client.eventBoxForReads().Get(idString)
+	if object == nil || err != nil {
+		return models.Event{}, err
 	}
-	object, err := client.eventBoxForReads().Get(id)
-	if object != nil {
-		event = *object.(*models.Event)
-	}
-	return
+	return *object, nil
 }
 
 func (client *ObjectBoxClient) EventCount() (count int, err error) {
@@ -172,13 +163,23 @@ func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]models.Even
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) EventsForDevice(deviceId string) (events []models.Event, err error) {
+func (client *ObjectBoxClient) EventsForDevice(deviceId string) ([]models.Event, error) {
 	client.queryEventByDeviceIdMutex.Lock()
-	client.queryEventByDeviceId.InternalSetParamString(3, deviceId)
+	client.queryEventByDeviceId.InternalSetParamString(obx.Event_.Device.Id, deviceId)
 	slice, err := client.queryEventByDeviceId.Find()
 	client.queryEventByDeviceIdMutex.Unlock()
-	events = slice.([]models.Event)
-	return
+
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO this needs to be done by the binding
+	var events = make([]models.Event, 0, len(slice))
+	for _, ptr := range slice {
+		events = append(events, *ptr)
+	}
+
+	return events, nil
 }
 
 func (ObjectBoxClient) EventsByCreationTime(startTime, endTime int64, limit int) ([]models.Event, error) {
@@ -205,16 +206,23 @@ func (client *ObjectBoxClient) ScrubAllEvents() (err error) {
 	return client.readingBoxForReads().RemoveAll()
 }
 
-func (client *ObjectBoxClient) Readings() (readings []models.Reading, err error) {
+func (client *ObjectBoxClient) Readings() ([]models.Reading, error) {
 	slice, err := client.readingBoxForReads().GetAll()
-	if slice != nil {
-		readings = slice.([]models.Reading)
+	if err != nil {
+		return nil, err
 	}
-	return
+
+	// TODO this needs to be done by the binding
+	var readings = make([]models.Reading, 0, len(slice))
+	for _, ptr := range slice {
+		readings = append(readings, *ptr)
+	}
+
+	return readings, nil
 }
 
 func (client *ObjectBoxClient) AddReading(r models.Reading) (objectId bson.ObjectId, err error) {
-	var id uint64
+	var id string
 	if client.asyncPut {
 		id, err = client.readingBox.PutAsync(&r)
 	} else {
@@ -223,26 +231,20 @@ func (client *ObjectBoxClient) AddReading(r models.Reading) (objectId bson.Objec
 	if err != nil {
 		return
 	}
-	stringId := bson.ObjectId(strconv.FormatUint(id, 10))
-	r.Id = stringId
-	return stringId, nil
+	r.Id = bson.ObjectId(id)
+	return r.Id, nil
 }
 
 func (ObjectBoxClient) UpdateReading(r models.Reading) error {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) ReadingById(idString string) (reading models.Reading, err error) {
-	id, err := strconv.ParseUint(idString, 10, 64)
-	if err != nil {
-		return
-	}
-	object, err := client.readingBoxForReads().Get(id)
+func (client *ObjectBoxClient) ReadingById(idString string) (models.Reading, error) {
+	object, err := client.readingBoxForReads().Get(idString)
 	if object == nil || err != nil {
-		return
+		return models.Reading{}, err
 	}
-	reading = *object.(*models.Reading)
-	return
+	return *object, nil
 }
 
 func (client *ObjectBoxClient) ReadingCount() (count int, err error) {
@@ -255,13 +257,23 @@ func (ObjectBoxClient) DeleteReadingById(id string) error {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) (readings []models.Reading, err error) {
+func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]models.Reading, error) {
 	client.queryReadingByDeviceIdMutex.Lock()
-	client.queryReadingByDeviceId.InternalSetParamString(7, deviceId)
+	client.queryReadingByDeviceId.InternalSetParamString(obx.Reading_.Device.Id, deviceId)
 	slice, err := client.queryReadingByDeviceId.Find()
 	client.queryReadingByDeviceIdMutex.Unlock()
-	readings = slice.([]models.Reading)
-	return
+
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO this needs to be done by the binding
+	var readings = make([]models.Reading, 0, len(slice))
+	for _, ptr := range slice {
+		readings = append(readings, *ptr)
+	}
+
+	return readings, nil
 }
 
 func (ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int) ([]models.Reading, error) {

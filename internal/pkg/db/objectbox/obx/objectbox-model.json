@@ -1,0 +1,88 @@
+{
+  "comment": [
+    "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+    "ObjectBox manages crucial IDs for your object model. See docs for details.",
+    "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs."
+  ],
+  "entities": [
+    {
+      "id": "1:3265861363892097666",
+      "name": "Reading",
+      "lastPropertyId": "8:9137277974737209706",
+      "properties": [
+        {
+          "id": "1:2576545678551266117",
+          "name": "Id"
+        },
+        {
+          "id": "2:3103381566796494532",
+          "name": "Pushed"
+        },
+        {
+          "id": "3:4633520858368257570",
+          "name": "Created"
+        },
+        {
+          "id": "4:8768181063589245434",
+          "name": "Origin"
+        },
+        {
+          "id": "5:5309626729124006671",
+          "name": "Modified"
+        },
+        {
+          "id": "6:5429580072525114953",
+          "name": "Device"
+        },
+        {
+          "id": "7:6236109473949377403",
+          "name": "Name"
+        },
+        {
+          "id": "8:9137277974737209706",
+          "name": "Value"
+        }
+      ]
+    },
+    {
+      "id": "2:1178265010818176999",
+      "name": "Event",
+      "lastPropertyId": "7:6873756094930880265",
+      "properties": [
+        {
+          "id": "1:5343741603054182294",
+          "name": "ID"
+        },
+        {
+          "id": "2:988356205886230658",
+          "name": "Pushed"
+        },
+        {
+          "id": "3:547494163242520795",
+          "name": "Device"
+        },
+        {
+          "id": "4:4835403394493985943",
+          "name": "Created"
+        },
+        {
+          "id": "5:7876073989912232265",
+          "name": "Modified"
+        },
+        {
+          "id": "6:5439191943825546728",
+          "name": "Origin"
+        },
+        {
+          "id": "7:6873756094930880265",
+          "name": "Event"
+        }
+      ]
+    }
+  ],
+  "lastEntityId": "2:1178265010818176999",
+  "lastIndexId": "",
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": []
+}

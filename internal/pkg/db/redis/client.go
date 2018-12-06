@@ -90,8 +90,13 @@ func getConnection() (conn redis.Conn, err error) {
 	return conn, nil
 }
 
-func (c *Client) EnsureAllDurable() {
+func (c *Client) EnsureAllDurable(async bool) (err error) {
 	conn := c.Pool.Get()
 	defer conn.Close()
-	_, _ = conn.Do("SAVE")
+	if async {
+		_, err = conn.Do("BGSAVE")
+	} else {
+		_, err = conn.Do("SAVE")
+	}
+	return
 }

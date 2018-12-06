@@ -389,8 +389,10 @@ function execute() {
         ;;
     0)
       cat $TIMESTMPFILE >> $DATADIR/$ENGINE.times
-        echo -e "$(date '+%Y-%m-%d %R')\t$(< $TMPF sed -n  's/.*(\([0-9.]\+\) iterations per second.*/\1/p' | tr '.\n' ',\t' )" |
-            tee  $TTY_OR_EMPTY >> ${DATADIR}/${ENGINE}.csv
+        ( echo -ne "$(date '+%Y-%m-%d %R')\t$(< $TMPF sed -n  's/.*(\([0-9.]\+\) iterations per second.*/\1/p' | tr '.\n' ',\t' )" 
+            < $TMPF sed -n 's/^Making changes durable: \(.*\)ms$/\t\1/p' | tr '.\n' ',\t'
+            echo
+        ) | tee  $TTY_OR_EMPTY >> ${DATADIR}/${ENGINE}.csv
             ;;
     *)
         log "$ENGINE failed $STATUS: "
@@ -533,8 +535,6 @@ for i in $(seq 1 $N)
     ${ENABLE_OBX}   && run_objectbox
     ${ENABLE_REDIS} && run_redis
     ${ENABLE_MONGO} && run_mongo
-
-
 
     if ! ${ERRORS:-false}
     then

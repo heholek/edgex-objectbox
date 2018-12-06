@@ -36,6 +36,9 @@ function showHelp() {
     echo "  -O|--obx              - Enable Objectbox test"
     echo "  -R|--redis            - Enable Redis test"
     echo "  -M|--mongo            - Enable Mongo test"
+    
+    echo "  --remove-gopath       - Wipe the GOPATH"
+    echo "  --remove-gopath=even-if-std - Wipe the GOPATH even if its the standard one (~/go)"
     echo
     cat <<END
  * The software source must have been deployed to the current GOPATH:  ${GOPATH}
@@ -164,32 +167,35 @@ getResetWrittenSectors() {
 
 ## } // sectors
 
-## XXX Trick: we put code.greencentral.de's code into github.com's directory
-if ! [ -d $GOPATH//src/github.com/objectbox/objectbox-go ]; then
-    mkdir -vp $GOPATH/src/github.com/objectbox/
-    git clone  git@code.greencentral.de:objectbox/objectbox-go.git -b dev $GOPATH/src/github.com/objectbox/objectbox-go    
+OBXGO_PKG=github.com/objectbox/objectbox-go
+
+if ! [ -d $GOPATH/src/${OBXGO_PKG} ]; then
+    mkdir -vp $GOPATH/src/$(dirname ${OBXGO_PKG})
+    git clone  ${OBXGO_REPO:-git@${OBXGO_PKG}} -b ${OBXGO_BRANCH:-master} $GOPATH/src/${OBXGO_PKG}
 fi
 
+EDGEX_PKG=github.com/edgexfoundry/edgex-go
 
-if ! [ -d $GOPATH/src/github.com/edgexfoundry/edgex-go ]; then
-    mkdir -vp $GOPATH/src/github.com/edgexfoundry
-    git clone  ssh://gitolite@greencentral.de/edgex-go-objectbox -b objectbox-redis $GOPATH/src/github.com/edgexfoundry/edgex-go
+if ! [ -d $GOPATH/src/${EDGEX_PKG} ]; then
+    mkdir -vp $GOPATH/src/$(dirname ${EDGEX_PKG})
+    git clone  ${EDGEX_REPO:-https://${EDGEX_PKG}.git} -b  ${EDGEX_BRANCH:-master} $GOPATH/src/${EDGEX_PKG}
     for pkg in \
         "github.com/google/flatbuffers/go" \
-        github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox  \
-        github.com/edgexfoundry/edgex-go/internal/pkg/db/mongo \
-        github.com/edgexfoundry/edgex-go/internal/pkg/db/redis
+        ${EDGEX_PKG}/internal/pkg/db/objectbox  \
+        ${EDGEX_PKG}/internal/pkg/db/mongo \
+        ${EDGEX_PKG}/internal/pkg/db/redis
     do
         if ! [ -d $GOPATH/src/$pkg ] ; then
-            go get -t -v "${pkg}"
+            go get -t -v "${pkg}"/...
         fi
     done
 
 
-    go get -v -t github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/...
-    go get -v -t github.com/edgexfoundry/edgex-go/internal/pkg/db/redis/...
+ 
 fi
 
+   go get -v -t github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/...
+    go get -v -t github.com/edgexfoundry/edgex-go/internal/pkg/db/redis/...
 
 case ${TMPMODE:-no} in
         on|yes)

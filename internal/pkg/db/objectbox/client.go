@@ -71,7 +71,7 @@ func (client *ObjectBoxClient) Connect() (err error) {
 
 	builder := NewBuilder().Directory(client.config.DatabaseName).Model(model)
 	//objectBox.SetDebugFlags(DebugFlags_LOG_ASYNC_QUEUE)
-	objectBox, err := builder.Build()
+	objectBox, err := builder.BuildOrError()
 	if err != nil {
 		return
 	}

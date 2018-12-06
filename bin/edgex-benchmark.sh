@@ -325,6 +325,8 @@ addConfigCmd mongod-version mongod --version
 addConfigCmd redis-server-version redis-server --version
 addConfigCmd hdType cat /sys/class/block/${PART}/device/model || ## If it doesn't work for the tmp dir, we register it for the rootfs, just in case it's the same
    addConfigCmd rootHdType bash -c 'cat /sys/class/block/$(findmnt -n -o SOURCE --target / | cut -f3 -d/ |sed "s/p[0-9]$//")/device/model'
+   
+addConfigCmd uname-a uname -a
 
 cc -o $TMPDIR/obx_version_core_string -lobjectbox -xc - <<EOP
 #include <stdio.h>

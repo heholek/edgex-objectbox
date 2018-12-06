@@ -441,7 +441,7 @@ function run_redis() {
     fi
     mkdir $DBDIR || true
     cd $DBDIR
-    \time -vao "$DATADIR/redis-server.times" -- redis-server $TESTDIR/redis.conf >& $DATADIR/redis-server.log & REDIS_PID=$!    
+    \time -vao "$DATADIR/redis-server.times" -- redis-server $TESTDIR/redis.conf >& $DATADIR/redis-server.${EXECUTION_SEQ_ID}.log & REDIS_PID=$!    
     cd -
     trap "pgrep -P $REDIS_PID |xargs -r kill " EXIT
     sleep 1
@@ -497,7 +497,7 @@ function run_mongo() {
         cd -
     fi
 
-    \time -vao $DATADIR/mongo-server.times -- mongod   --smallfiles --unixSocketPrefix=/tmp  --dbpath=$DBPATH >& $DATADIR/mongo-server.log & MONGO_PID=$!
+    \time -vao $DATADIR/mongo-server.times -- mongod   --smallfiles --unixSocketPrefix=/tmp  --dbpath=$DBPATH >& $DATADIR/mongo-server.${EXECUTION_SEQ_ID}.log & MONGO_PID=$!
     trap "kill $MONGO_PID" EXIT
     waitForTcpOpen 27017 60
     if ! kill -0 $MONGO_PID ; then

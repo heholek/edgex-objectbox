@@ -24,26 +24,21 @@ func TestObjectBoxEvents(t *testing.T) {
 	client := createClient()
 	defer client.Disconnect()
 
-	event := models.Event{
-		Device: "my device",
-	}
+	event := models.Event{Device: "my device"}
 	objectId, err := client.AddEvent(&event)
-	if err != nil {
-		t.Fatalf("Could not add event: %v", err)
-	}
+	assert.NoErr(t, err)
 	t.Logf("Added object ID %v", objectId)
+	assert.Eq(t, objectId, event.ID)
 
-	event.Device = "2nd device"
+	event = models.Event{Device: "2nd device"}
 	objectId, err = client.AddEvent(&event)
-	if err != nil {
-		t.Fatalf("Could not add 2nd event: %v", err)
-	}
+	assert.NoErr(t, err)
+
 	t.Logf("Added 2nd object ID %v", objectId)
 
 	eventRead, err := client.EventById(string(objectId))
-	if err != nil {
-		t.Fatalf("Could not get 2nd event by ID: %v", err)
-	}
+	assert.NoErr(t, err)
+
 	if event.ID != eventRead.ID || event.Device != eventRead.Device {
 		t.Fatalf("Event data error: %v vs. %v", event, eventRead)
 	}

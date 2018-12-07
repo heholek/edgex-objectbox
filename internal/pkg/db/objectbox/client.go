@@ -132,7 +132,6 @@ func (client *Client) AddEvent(event *models.Event) (objectId bson.ObjectId, err
 	}
 
 	stringId := bson.ObjectId(strconv.FormatUint(id, 10))
-	event.ID = stringId
 	return stringId, nil
 }
 
@@ -228,7 +227,6 @@ func (client *Client) AddReading(r models.Reading) (objectId bson.ObjectId, err 
 		return
 	}
 	stringId := bson.ObjectId(strconv.FormatUint(id, 10))
-	r.Id = stringId
 	return stringId, nil
 }
 

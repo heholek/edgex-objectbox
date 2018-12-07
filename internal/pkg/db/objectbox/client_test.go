@@ -10,7 +10,7 @@ import (
 
 func createClient() *ObjectBoxClient {
 	config := db.Configuration{
-		DatabaseName: "unit-test",
+		DatabaseName: "db-unit-test",
 	}
 	client := NewClient(config)
 	err := client.Connect()

@@ -10,7 +10,7 @@ import (
 
 func BenchmarkObjectBox(b *testing.B) {
 	config := db.Configuration{
-		DatabaseName: "benchmark-test",
+		DatabaseName: "db-benchmark-test",
 	}
 	client := NewClient(config)
 	err := client.Connect()
@@ -23,7 +23,7 @@ func BenchmarkObjectBox(b *testing.B) {
 
 func TestBenchmarkFixedNObjectBox(t *testing.T) {
 	config := db.Configuration{
-		DatabaseName: "benchmark-test",
+		DatabaseName: "db-benchmark-fixed-test",
 	}
 	client := NewClient(config)
 	err := client.Connect()

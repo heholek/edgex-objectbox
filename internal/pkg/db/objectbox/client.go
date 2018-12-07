@@ -261,6 +261,10 @@ func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) (rea
 	slice, err := client.queryReadingByDeviceId.Find()
 	client.queryReadingByDeviceIdMutex.Unlock()
 	readings = slice.([]models.Reading)
+	if limit > 0 && limit < len(readings) { // TODO clarify semantics of limit == 0
+		// TODO put limit in the query
+		readings = readings[:limit]
+	}
 	return
 }
 

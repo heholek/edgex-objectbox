@@ -852,7 +852,7 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 	dbType := reflect.TypeOf(db).String()
 	println("\nBenchmarking " + dbType)
 	println("---------------------------------------------")
-	plainIDs := strings.Contains(dbType, "ObjectBox")
+	plainIDs := strings.Contains(dbType, "objectbox")
 
 	// Remove any events and readings before and after test
 	_ = db.ScrubAllEvents()

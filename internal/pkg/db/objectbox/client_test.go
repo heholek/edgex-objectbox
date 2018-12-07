@@ -8,7 +8,7 @@ import (
 	"github.com/objectbox/objectbox-go/test/assert"
 )
 
-func createClient() *ObjectBoxClient {
+func createClient() *Client {
 	config := db.Configuration{
 		DatabaseName: "db-unit-test",
 	}

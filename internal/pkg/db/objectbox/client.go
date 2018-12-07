@@ -174,9 +174,13 @@ func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]models.Even
 
 func (client *ObjectBoxClient) EventsForDevice(deviceId string) (events []models.Event, err error) {
 	client.queryEventByDeviceIdMutex.Lock()
-	client.queryEventByDeviceId.InternalSetParamString(3, deviceId)
+	defer client.queryEventByDeviceIdMutex.Unlock()
+
+	err = client.queryEventByDeviceId.InternalSetParamString(3, deviceId)
+	if err != nil {
+		return nil, err
+	}
 	slice, err := client.queryEventByDeviceId.Find()
-	client.queryEventByDeviceIdMutex.Unlock()
 	events = slice.([]models.Event)
 	return
 }
@@ -257,9 +261,13 @@ func (ObjectBoxClient) DeleteReadingById(id string) error {
 
 func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) (readings []models.Reading, err error) {
 	client.queryReadingByDeviceIdMutex.Lock()
-	client.queryReadingByDeviceId.InternalSetParamString(7, deviceId)
+	defer client.queryReadingByDeviceIdMutex.Unlock()
+
+	err = client.queryReadingByDeviceId.InternalSetParamString(7, deviceId)
+	if err != nil {
+		return nil, err
+	}
 	slice, err := client.queryReadingByDeviceId.Find()
-	client.queryReadingByDeviceIdMutex.Unlock()
 	readings = slice.([]models.Reading)
 	if limit > 0 && limit < len(readings) { // TODO clarify semantics of limit == 0
 		// TODO put limit in the query

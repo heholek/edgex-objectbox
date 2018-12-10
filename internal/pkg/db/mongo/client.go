@@ -101,3 +101,9 @@ func (mc *MongoClient) deleteById(col string, id string) error {
 	err := s.DB(mc.database.Name).C(col).RemoveId(bson.ObjectIdHex(id))
 	return errorMap(err)
 }
+
+func (mc *MongoClient) EnsureAllDurable(async bool) error {
+	s := mc.getSessionCopy()
+	defer s.Close()
+	return mc.database.Session.Fsync(async)
+}

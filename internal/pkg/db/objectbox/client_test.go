@@ -5,12 +5,12 @@ import (
 
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
-	"github.com/influxdata/influxdb/pkg/testing/assert"
+	"github.com/objectbox/objectbox-go/test/assert"
 )
 
-func createClient() *ObjectBoxClient {
+func createClient() *Client {
 	config := db.Configuration{
-		DatabaseName: "unit-test",
+		DatabaseName: "db-unit-test",
 	}
 	client := NewClient(config)
 	err := client.Connect()
@@ -24,26 +24,21 @@ func TestObjectBoxEvents(t *testing.T) {
 	client := createClient()
 	defer client.Disconnect()
 
-	event := models.Event{
-		Device: "my device",
-	}
+	event := models.Event{Device: "my device"}
 	objectId, err := client.AddEvent(&event)
-	if err != nil {
-		t.Fatalf("Could not add event: %v", err)
-	}
+	assert.NoErr(t, err)
 	t.Logf("Added object ID %v", objectId)
+	assert.Eq(t, objectId, event.ID)
 
-	event.Device = "2nd device"
+	event = models.Event{Device: "2nd device"}
 	objectId, err = client.AddEvent(&event)
-	if err != nil {
-		t.Fatalf("Could not add 2nd event: %v", err)
-	}
+	assert.NoErr(t, err)
+
 	t.Logf("Added 2nd object ID %v", objectId)
 
 	eventRead, err := client.EventById(string(objectId))
-	if err != nil {
-		t.Fatalf("Could not get 2nd event by ID: %v", err)
-	}
+	assert.NoErr(t, err)
+
 	if event.ID != eventRead.ID || event.Device != eventRead.Device {
 		t.Fatalf("Event data error: %v vs. %v", event, eventRead)
 	}
@@ -53,72 +48,59 @@ func TestObjectBoxReadings(t *testing.T) {
 	client := createClient()
 	defer client.Disconnect()
 
-	client.ScrubAllEvents()
+	assert.NoErr(t, client.ScrubAllEvents())
 	countPre, err := client.eventBox.Count()
-	assert.NoError(t, err)
-	ok := assert.Equal(t, countPre, uint64(0))
+	assert.NoErr(t, err)
+	assert.Eq(t, uint64(0), countPre)
 	countPre, err = client.readingBox.Count()
-	ok = ok && assert.Equal(t, countPre, uint64(0))
-	if !ok {
-		panic("Non-zero counts")
-	}
+	assert.Eq(t, uint64(0), countPre)
 
-	reading := models.Reading{
-		Name:   "reading1",
-		Device: "device42",
-	}
-	objectId, err := client.AddReading(reading)
-	assert.NoError(t, err)
+	objectId, err := client.AddReading(models.Reading{Name: "reading1", Device: "device42"})
+	assert.NoErr(t, err)
 	t.Logf("Added reading ID %v", objectId)
-	assert.NotEqual(t, objectId, "")
+	assert.NotEq(t, "", objectId)
 
-	reading.Name = "reading2"
-	objectId2, err := client.AddReading(reading)
-	assert.NoError(t, err)
+	objectId2, err := client.AddReading(models.Reading{Name: "reading2", Device: "device42"})
+	assert.NoErr(t, err)
 
 	t.Logf("Added 2nd reading ID %v", objectId2)
 
-	reading.Name = "reading3"
-	reading.Device = "device43"
-	objectId3, err := client.AddReading(reading)
-	assert.NoError(t, err)
+	objectId3, err := client.AddReading(models.Reading{Name: "reading3", Device: "device43"})
+	assert.NoErr(t, err)
 
 	t.Logf("Added 3rd reading ID %v", objectId3)
 	count, err := client.ReadingCount()
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 
-	assert.Equal(t, count, 3)
+	assert.Eq(t, 3, count)
 
 	readingRead, err := client.ReadingById(string(objectId2))
 	if err != nil {
 		t.Fatalf("Could not get 2nd reading by ID: %v", err)
 	}
-	assert.Equal(t, readingRead.Id, objectId2)
-	assert.Equal(t, readingRead.Device, "device42")
+	assert.Eq(t, objectId2, readingRead.Id)
+	assert.Eq(t, "device42", readingRead.Device)
 
 	all, err := client.Readings()
-	assert.NoError(t, err)
-	if assert.Equal(t, len(all), 3) {
-		assert.Equal(t, all[0].Device, "device42")
-		assert.Equal(t, all[1].Device, "device42")
-		assert.Equal(t, all[2].Device, "device43")
-	}
+	assert.NoErr(t, err)
+	assert.Eq(t, 3, len(all))
+	assert.Eq(t, "device42", all[0].Device)
+	assert.Eq(t, "device42", all[1].Device)
+	assert.Eq(t, "device43", all[2].Device)
 
 	readings, err := client.ReadingsByDevice("device42", 10)
-	if assert.Equal(t, len(readings), 2) {
-		assert.Equal(t, readings[0].Id, objectId)
-		assert.Equal(t, readings[0].Device, "device42")
-		assert.Equal(t, readings[1].Id, objectId2)
-		assert.Equal(t, readings[1].Device, "device42")
-	}
+	assert.Eq(t, 2, len(readings))
+	assert.Eq(t, objectId, readings[0].Id)
+	assert.Eq(t, "device42", readings[0].Device)
+	assert.Eq(t, objectId2, readings[1].Id)
+	assert.Eq(t, "device42", readings[1].Device)
 
 	// Limit
 	readings, err = client.ReadingsByDevice("device42", 1)
-	assert.Equal(t, len(readings), 1)
+	assert.Eq(t, 1, len(readings))
 
 	readings, err = client.ReadingsByDevice("device43", 10)
-	if assert.Equal(t, len(readings), 1) {
-		assert.Equal(t, readings[0].Id, objectId3)
-		assert.Equal(t, readings[0].Device, "device43")
-	}
+	assert.Eq(t, 1, len(readings))
+	assert.Eq(t, objectId3, readings[0].Id)
+	assert.Eq(t, "device43", readings[0].Device)
 }

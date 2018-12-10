@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type ObjectBoxClient struct {
+type Client struct {
 	config    db.Configuration
 	objectBox *ObjectBox
 
@@ -26,14 +26,14 @@ type ObjectBoxClient struct {
 	asyncPut    bool
 }
 
-func NewClient(config db.Configuration) *ObjectBoxClient {
+func NewClient(config db.Configuration) *Client {
 	println(VersionInfo())
-	client := &ObjectBoxClient{config: config}
+	client := &Client{config: config}
 	return client
 }
 
 // Considers client.strictReads
-func (client *ObjectBoxClient) storeForReads() *ObjectBox {
+func (client *Client) storeForReads() *ObjectBox {
 	store := client.objectBox
 	if client.strictReads {
 		store.AwaitAsyncCompletion()
@@ -42,7 +42,7 @@ func (client *ObjectBoxClient) storeForReads() *ObjectBox {
 }
 
 // Considers client.strictReads
-func (client *ObjectBoxClient) eventBoxForReads() *Box {
+func (client *Client) eventBoxForReads() *Box {
 	if client.strictReads {
 		client.objectBox.AwaitAsyncCompletion()
 	}
@@ -50,18 +50,18 @@ func (client *ObjectBoxClient) eventBoxForReads() *Box {
 }
 
 // Considers client.strictReads
-func (client *ObjectBoxClient) readingBoxForReads() *Box {
+func (client *Client) readingBoxForReads() *Box {
 	if client.strictReads {
 		client.objectBox.AwaitAsyncCompletion()
 	}
 	return client.readingBox
 }
 
-func (client *ObjectBoxClient) CloseSession() {
+func (client *Client) CloseSession() {
 	client.Disconnect()
 }
 
-func (client *ObjectBoxClient) Connect() (err error) {
+func (client *Client) Connect() (err error) {
 	model := NewModel()
 	model.GeneratorVersion(1)
 	model.RegisterBinding(EventBinding{})
@@ -71,7 +71,7 @@ func (client *ObjectBoxClient) Connect() (err error) {
 
 	builder := NewBuilder().Directory(client.config.DatabaseName).Model(model)
 	//objectBox.SetDebugFlags(DebugFlags_LOG_ASYNC_QUEUE)
-	objectBox, err := builder.Build()
+	objectBox, err := builder.BuildOrError()
 	if err != nil {
 		return
 	}
@@ -98,7 +98,7 @@ func (client *ObjectBoxClient) Connect() (err error) {
 	return
 }
 
-func (client *ObjectBoxClient) Disconnect() {
+func (client *Client) Disconnect() {
 	client.eventBox = nil
 	client.readingBox = nil
 	objectBoxToDestroy := client.objectBox
@@ -108,7 +108,7 @@ func (client *ObjectBoxClient) Disconnect() {
 	}
 }
 
-func (client *ObjectBoxClient) Events() (events []models.Event, err error) {
+func (client *Client) Events() (events []models.Event, err error) {
 	slice, err := client.eventBoxForReads().GetAll()
 	if slice != nil {
 		events = slice.([]models.Event)
@@ -116,11 +116,11 @@ func (client *ObjectBoxClient) Events() (events []models.Event, err error) {
 	return
 }
 
-func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]models.Event, error) {
+func (client *Client) EventsWithLimit(limit int) ([]models.Event, error) {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.ObjectId, err error) {
+func (client *Client) AddEvent(event *models.Event) (objectId bson.ObjectId, err error) {
 	var id uint64
 	if client.asyncPut {
 		id, err = client.eventBox.PutAsync(event)
@@ -132,15 +132,14 @@ func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.Obje
 	}
 
 	stringId := bson.ObjectId(strconv.FormatUint(id, 10))
-	event.ID = stringId
 	return stringId, nil
 }
 
-func (client *ObjectBoxClient) UpdateEvent(e models.Event) error {
+func (client *Client) UpdateEvent(e models.Event) error {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) EventById(idString string) (event models.Event, err error) {
+func (client *Client) EventById(idString string) (event models.Event, err error) {
 	id, err := strconv.ParseUint(idString, 10, 64)
 	if err != nil {
 		return
@@ -152,7 +151,7 @@ func (client *ObjectBoxClient) EventById(idString string) (event models.Event, e
 	return
 }
 
-func (client *ObjectBoxClient) EventCount() (count int, err error) {
+func (client *Client) EventCount() (count int, err error) {
 	countLong, err := client.eventBoxForReads().Count()
 	if err == nil {
 		count = int(countLong)
@@ -160,44 +159,48 @@ func (client *ObjectBoxClient) EventCount() (count int, err error) {
 	return
 }
 
-func (ObjectBoxClient) EventCountByDeviceId(id string) (int, error) {
+func (Client) EventCountByDeviceId(id string) (int, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) DeleteEventById(id string) error {
+func (Client) DeleteEventById(id string) error {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]models.Event, error) {
+func (Client) EventsForDeviceLimit(id string, limit int) ([]models.Event, error) {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) EventsForDevice(deviceId string) (events []models.Event, err error) {
+func (client *Client) EventsForDevice(deviceId string) (events []models.Event, err error) {
 	client.queryEventByDeviceIdMutex.Lock()
-	client.queryEventByDeviceId.InternalSetParamString(3, deviceId)
+	defer client.queryEventByDeviceIdMutex.Unlock()
+
+	err = client.queryEventByDeviceId.InternalSetParamString(3, deviceId)
+	if err != nil {
+		return nil, err
+	}
 	slice, err := client.queryEventByDeviceId.Find()
-	client.queryEventByDeviceIdMutex.Unlock()
 	events = slice.([]models.Event)
 	return
 }
 
-func (ObjectBoxClient) EventsByCreationTime(startTime, endTime int64, limit int) ([]models.Event, error) {
+func (Client) EventsByCreationTime(startTime, endTime int64, limit int) ([]models.Event, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ReadingsByDeviceAndValueDescriptor(deviceId, valueDescriptor string, limit int) ([]models.Reading, error) {
+func (Client) ReadingsByDeviceAndValueDescriptor(deviceId, valueDescriptor string, limit int) ([]models.Reading, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) EventsOlderThanAge(age int64) ([]models.Event, error) {
+func (Client) EventsOlderThanAge(age int64) ([]models.Event, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) EventsPushed() ([]models.Event, error) {
+func (Client) EventsPushed() ([]models.Event, error) {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) ScrubAllEvents() (err error) {
+func (client *Client) ScrubAllEvents() (err error) {
 	err = client.eventBox.RemoveAll()
 	if err != nil {
 		return
@@ -205,7 +208,7 @@ func (client *ObjectBoxClient) ScrubAllEvents() (err error) {
 	return client.readingBoxForReads().RemoveAll()
 }
 
-func (client *ObjectBoxClient) Readings() (readings []models.Reading, err error) {
+func (client *Client) Readings() (readings []models.Reading, err error) {
 	slice, err := client.readingBoxForReads().GetAll()
 	if slice != nil {
 		readings = slice.([]models.Reading)
@@ -213,7 +216,7 @@ func (client *ObjectBoxClient) Readings() (readings []models.Reading, err error)
 	return
 }
 
-func (client *ObjectBoxClient) AddReading(r models.Reading) (objectId bson.ObjectId, err error) {
+func (client *Client) AddReading(r models.Reading) (objectId bson.ObjectId, err error) {
 	var id uint64
 	if client.asyncPut {
 		id, err = client.readingBox.PutAsync(&r)
@@ -224,15 +227,14 @@ func (client *ObjectBoxClient) AddReading(r models.Reading) (objectId bson.Objec
 		return
 	}
 	stringId := bson.ObjectId(strconv.FormatUint(id, 10))
-	r.Id = stringId
 	return stringId, nil
 }
 
-func (ObjectBoxClient) UpdateReading(r models.Reading) error {
+func (Client) UpdateReading(r models.Reading) error {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) ReadingById(idString string) (reading models.Reading, err error) {
+func (client *Client) ReadingById(idString string) (reading models.Reading, err error) {
 	id, err := strconv.ParseUint(idString, 10, 64)
 	if err != nil {
 		return
@@ -245,77 +247,90 @@ func (client *ObjectBoxClient) ReadingById(idString string) (reading models.Read
 	return
 }
 
-func (client *ObjectBoxClient) ReadingCount() (count int, err error) {
+func (client *Client) ReadingCount() (count int, err error) {
 	countLong, err := client.readingBoxForReads().Count()
 	count = int(countLong)
 	return
 }
 
-func (ObjectBoxClient) DeleteReadingById(id string) error {
+func (Client) DeleteReadingById(id string) error {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) (readings []models.Reading, err error) {
+func (client *Client) ReadingsByDevice(deviceId string, limit int) (readings []models.Reading, err error) {
 	client.queryReadingByDeviceIdMutex.Lock()
-	client.queryReadingByDeviceId.InternalSetParamString(7, deviceId)
+	defer client.queryReadingByDeviceIdMutex.Unlock()
+
+	err = client.queryReadingByDeviceId.InternalSetParamString(7, deviceId)
+	if err != nil {
+		return nil, err
+	}
 	slice, err := client.queryReadingByDeviceId.Find()
-	client.queryReadingByDeviceIdMutex.Unlock()
 	readings = slice.([]models.Reading)
+	if limit > 0 && limit < len(readings) { // TODO clarify semantics of limit == 0
+		// TODO put limit in the query
+		readings = readings[:limit]
+	}
 	return
 }
 
-func (ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int) ([]models.Reading, error) {
+func (Client) ReadingsByValueDescriptor(name string, limit int) ([]models.Reading, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ReadingsByValueDescriptorNames(names []string, limit int) ([]models.Reading, error) {
+func (Client) ReadingsByValueDescriptorNames(names []string, limit int) ([]models.Reading, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ReadingsByCreationTime(start, end int64, limit int) ([]models.Reading, error) {
+func (Client) ReadingsByCreationTime(start, end int64, limit int) ([]models.Reading, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) AddValueDescriptor(v models.ValueDescriptor) (bson.ObjectId, error) {
+func (Client) AddValueDescriptor(v models.ValueDescriptor) (bson.ObjectId, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptors() ([]models.ValueDescriptor, error) {
+func (Client) ValueDescriptors() ([]models.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) UpdateValueDescriptor(v models.ValueDescriptor) error {
+func (Client) UpdateValueDescriptor(v models.ValueDescriptor) error {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) DeleteValueDescriptorById(id string) error {
+func (Client) DeleteValueDescriptorById(id string) error {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptorByName(name string) (models.ValueDescriptor, error) {
+func (Client) ValueDescriptorByName(name string) (models.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptorsByName(names []string) ([]models.ValueDescriptor, error) {
+func (Client) ValueDescriptorsByName(names []string) ([]models.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptorById(id string) (models.ValueDescriptor, error) {
+func (Client) ValueDescriptorById(id string) (models.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptorsByUomLabel(uomLabel string) ([]models.ValueDescriptor, error) {
+func (Client) ValueDescriptorsByUomLabel(uomLabel string) ([]models.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptorsByLabel(label string) ([]models.ValueDescriptor, error) {
+func (Client) ValueDescriptorsByLabel(label string) ([]models.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptorsByType(t string) ([]models.ValueDescriptor, error) {
+func (Client) ValueDescriptorsByType(t string) ([]models.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ScrubAllValueDescriptors() error {
+func (Client) ScrubAllValueDescriptors() error {
 	panic("implement me")
+}
+
+func (client *Client) EnsureAllDurable(async bool) error {
+	client.objectBox.AwaitAsyncCompletion()
+	return nil
 }

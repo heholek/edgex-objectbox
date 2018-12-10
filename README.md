@@ -1,3 +1,17 @@
+# EdgeX ObjectBox Edition
+
+This is a fork of EdgeX Go using the [ObjectBox](https://objectbox.io) database and the [ObjectBox Go API](https://github.com/objectbox/objectbox-go).
+It is maintained by the ObjectBox team under the same license terms (Apache 2).
+
+**Supported CPUs:** ARM, x64 (x86 and special ARM versions available on request)
+
+**Supported OSes:** Linux (Ubuntu, Debian, Raspbian, etc.), macOS, Windows.
+
+**What are you building?** We'd love to [hear from you](https://docs.google.com/forms/d/e/1FAIpQLScIIVfAMUYZjkNU9Z3CNn3O_lo3yjjuEU4FSGrcFvxfeH0udA/viewform).
+
+**Current status:** Readings and Events are working for benchmarks.
+
+
 # EdgeX Foundry Services
 [![Go Report Card](https://goreportcard.com/badge/github.com/edgexfoundry/edgex-go)](https://goreportcard.com/report/github.com/edgexfoundry/edgex-go)
 [![license](https://img.shields.io/badge/license-Apache%20v2.0-blue.svg)](LICENSE)
@@ -9,6 +23,9 @@ EdgeX Foundry is a vendor-neutral open source project hosted by The Linux Founda
 ## Prerequisites
 ### pkg-config
 `go get github.com/rjeczalik/pkgconfig/cmd/pkg-config`
+
+### ObjectBox
+See the [ObjectBox Go API](https://github.com/objectbox/objectbox-go) for setup instructions.
 
 ### ZeroMQ
 Several EdgeX Foundry services depend on ZeroMQ for communications by default.

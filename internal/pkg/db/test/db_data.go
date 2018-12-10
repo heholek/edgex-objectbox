@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
 	dbp "github.com/edgexfoundry/edgex-go/internal/pkg/db"
@@ -842,15 +843,16 @@ func benchmarkEvents(b *testing.B, db interfaces.DBClient) {
 
 func BenchmarkDBFixedN(db interfaces.DBClient, verify bool) {
 	defer db.CloseSession()
-	benchmarkReadingsN(db, verify)
+	durable := true
+	benchmarkReadingsN(db, verify, durable)
 }
 
-func benchmarkReadingsN(db interfaces.DBClient, verify bool) {
+func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 	// Plain IDs do not require .hex(); must use reflect to avoid import cycle to identify DB
 	dbType := reflect.TypeOf(db).String()
 	println("\nBenchmarking " + dbType)
 	println("---------------------------------------------")
-	plainIDs := strings.Contains(dbType, "ObjectBox")
+	plainIDs := strings.Contains(dbType, "objectbox")
 
 	// Remove any events and readings before and after test
 	_ = db.ScrubAllEvents()
@@ -865,7 +867,16 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool) {
 		reading.Device = "device" + strconv.Itoa(ctx.I/100)
 		ctx.StartClock()
 		id, err := db.AddReading(reading)
-		ctx.StopClock()
+		if durable && ctx.I == count-1 {
+			// Last one; ensure DBs actually made data durable
+			durableStart := time.Now()
+			db.EnsureAllDurable(false)
+			ctx.StopClock() // Stop asap before logging
+			durableDuration := time.Since(durableStart)
+			println("Making changes durable: " + durableDuration.String())
+		} else {
+			ctx.StopClock()
+		}
 		if plainIDs {
 			readings[ctx.I] = string(id)
 		} else {

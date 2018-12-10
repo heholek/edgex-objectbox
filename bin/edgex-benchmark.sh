@@ -167,18 +167,21 @@ getResetWrittenSectors() {
 
 ## } // sectors
 
-OBXGO_PKG=github.com/objectbox/objectbox-go
+OBXGO_PKG=${OBXGO_PKG_:-github.com/objectbox/objectbox-go}
+OBXGO_BRANCH=${OBXGO_BRANCH:-edgex}
 
 if ! [ -d $GOPATH/src/${OBXGO_PKG} ]; then
     mkdir -vp $GOPATH/src/$(dirname ${OBXGO_PKG})
-    git clone  ${OBXGO_REPO:-git@${OBXGO_PKG}} -b ${OBXGO_BRANCH:-master} $GOPATH/src/${OBXGO_PKG}
+    git clone ${OBXGO_REPO:-https://@${OBXGO_PKG}}.git -b ${OBXGO_BRANCH} $GOPATH/src/${OBXGO_PKG}
 fi
 
-EDGEX_PKG=github.com/edgexfoundry/edgex-go
+EDGEX_PKG=${EDGEX_PKG:-github.com/edgexfoundry/edgex-go}
+EDGEX_BRANCH=${EDGEX_BRANCH:-objectbox-redis}
+EDGEX_REPO=${EDGEX_REPO:-https://github.com/objectbox/edgex-objectbox.git}
 
 if ! [ -d $GOPATH/src/${EDGEX_PKG} ]; then
     mkdir -vp $GOPATH/src/$(dirname ${EDGEX_PKG})
-    git clone  ${EDGEX_REPO:-https://${EDGEX_PKG}.git} -b  ${EDGEX_BRANCH:-master} $GOPATH/src/${EDGEX_PKG}
+    git clone ${EDGEX_REPO} -b  ${EDGEX_BRANCH} $GOPATH/src/${EDGEX_PKG}
     for pkg in \
         "github.com/google/flatbuffers/go" \
         ${EDGEX_PKG}/internal/pkg/db/objectbox  \

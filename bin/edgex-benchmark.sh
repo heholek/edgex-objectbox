@@ -16,6 +16,7 @@ TMPFS_MOUNTPOINT=/ramtmp
 TMPDIR=/tmp
 N=1
 export GOPATH=$HOME/go
+OFFLINE=false
 
 function showHelp() {
     echo "Objectbox's $(basename $0) help:"
@@ -33,10 +34,11 @@ function showHelp() {
     echo "  -g                    - Set CPU performance to maximum"
     echo
     echo "  -a|--all-backends     - Enable all backends"
-    echo "  -O|--obx              - Enable Objectbox test"
+    echo "  -O|--objectbox        - Enable Objectbox test"
     echo "  -R|--redis            - Enable Redis test"
     echo "  -M|--mongo            - Enable Mongo test"
-
+    echo
+    echo "  --offline             - Do not try to pull latest versions"
     echo "  --remove-gopath       - Wipe the GOPATH"
     echo "  --remove-gopath=even-if-std - Wipe the GOPATH even if its the standard one (~/go)"
     echo
@@ -70,7 +72,7 @@ do
         IGNORE_ERRORS=true
         log "IGNORE_ERRORS=true"
         ;;
-    -O|--obx)
+    -O|--objectbox)
         ENABLE_OBX=true
         SOME_TEST_ENABLED=true
         ;;
@@ -92,6 +94,9 @@ do
     --gopath)
         export GOPATH=$2
         shift
+        ;;
+    --offline)
+        OFFLINE=true
         ;;
     --remove-gopath)
         if [ "$GOPATH" == $HOME/go ]
@@ -121,10 +126,11 @@ done
 
 if [[ ${CPU_GOVERNOR:-} ]]
 then
-    echo "Setting CPU clock governor to performance"
-    SAVED_GOVERNOR="$(cpufreq-info -p |awk '{print $NF}')"
-    sudo cpufreq-set -g ${CPU_GOVERNOR}
-    trap "echo Resetting CPU governor $SAVED_GOVERNOR... ; set -x ; sudo cpufreq-set -g $SAVED_GOVERNOR" EXIT
+    echo "TODO: Setting CPU clock governor to ${CPU_GOVERNOR}"
+    # TODO set for all cores
+    #SAVED_GOVERNOR="$(cpufreq-info -p |awk '{print $NF}')"
+    #sudo cpufreq-set -g ${CPU_GOVERNOR}
+    #trap "echo Resetting CPU governor $SAVED_GOVERNOR... ; set -x ; sudo cpufreq-set -g $SAVED_GOVERNOR" EXIT
 fi
 
 if ${REMOVE_GOPATH:-false}
@@ -167,38 +173,31 @@ getResetWrittenSectors() {
 
 ## } // sectors
 
-OBXGO_PKG=${OBXGO_PKG_:-github.com/objectbox/objectbox-go}
-OBXGO_BRANCH=${OBXGO_BRANCH:-edgex}
+if ${OFFLINE} ; then
+    log "Offline mode (no update checks)"
+else
+    EDGEX_PKG=${EDGEX_PKG:-github.com/edgexfoundry/edgex-go}
+    EDGEX_BRANCH=${EDGEX_BRANCH:-objectbox-redis}
+    EDGEX_REPO=${EDGEX_REPO:-https://github.com/objectbox/edgex-objectbox.git}
 
-if ! [ -d $GOPATH/src/${OBXGO_PKG} ]; then
-    mkdir -vp $GOPATH/src/$(dirname ${OBXGO_PKG})
-    git clone ${OBXGO_REPO:-https://@${OBXGO_PKG}}.git -b ${OBXGO_BRANCH} $GOPATH/src/${OBXGO_PKG}
-fi
+    if ! [ -d $GOPATH/src/${EDGEX_PKG} ]; then
+        mkdir -vp $GOPATH/src/$(dirname ${EDGEX_PKG})
+        git clone ${EDGEX_REPO} -b ${EDGEX_BRANCH} $GOPATH/src/${EDGEX_PKG}
+        for pkg in \
+            "github.com/google/flatbuffers/go" \
+            ${EDGEX_PKG}/internal/pkg/db/objectbox  \
+            ${EDGEX_PKG}/internal/pkg/db/mongo \
+            ${EDGEX_PKG}/internal/pkg/db/redis
+        do
+            if ! [ -d $GOPATH/src/$pkg ] ; then
+                go get -t -v "${pkg}"/...
+            fi
+        done
+    fi
 
-EDGEX_PKG=${EDGEX_PKG:-github.com/edgexfoundry/edgex-go}
-EDGEX_BRANCH=${EDGEX_BRANCH:-objectbox-redis}
-EDGEX_REPO=${EDGEX_REPO:-https://github.com/objectbox/edgex-objectbox.git}
-
-if ! [ -d $GOPATH/src/${EDGEX_PKG} ]; then
-    mkdir -vp $GOPATH/src/$(dirname ${EDGEX_PKG})
-    git clone ${EDGEX_REPO} -b  ${EDGEX_BRANCH} $GOPATH/src/${EDGEX_PKG}
-    for pkg in \
-        "github.com/google/flatbuffers/go" \
-        ${EDGEX_PKG}/internal/pkg/db/objectbox  \
-        ${EDGEX_PKG}/internal/pkg/db/mongo \
-        ${EDGEX_PKG}/internal/pkg/db/redis
-    do
-        if ! [ -d $GOPATH/src/$pkg ] ; then
-            go get -t -v "${pkg}"/...
-        fi
-    done
-
-
-
-fi
-
-   go get -v -t github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/...
+    go get -v -t github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/...
     go get -v -t github.com/edgexfoundry/edgex-go/internal/pkg/db/redis/...
+fi
 
 case ${TMPMODE:-no} in
         on|yes)
@@ -227,6 +226,7 @@ case ${TMPMODE:-no} in
 esac
 
 initializeDiskStats $TMPDIR
+log "Working directory, partition, device: $TMPDIR :: $PART :: $DEV"
 
 if ! ${SOME_TEST_ENABLED:-false}
 then
@@ -332,8 +332,7 @@ addConfigCmd "cpufreq-info -p"  cpufreq-info  -p
 addConfigCmd prio bash -c 'chrt -v -p $$ | sed "s/$$/PID/g"'
 addConfigCmd mongod-version mongod --version
 addConfigCmd redis-server-version redis-server --version
-addConfigCmd hdType cat /sys/class/block/${PART}/device/model || ## If it doesn't work for the tmp dir, we register it for the rootfs, just in case it's the same
-   addConfigCmd rootHdType bash -c 'cat /sys/class/block/$(findmnt -n -o SOURCE --target / | cut -f3 -d/ |sed "s/p[0-9]$//")/device/model'
+addConfigCmd device-model cat /sys/class/block/${PART//[0-9]/}/device/model
 
 addConfigCmd uname-a uname -a
 
@@ -345,6 +344,7 @@ EOP
 addConfigCmd objectbox-version $TMPDIR/obx_version_core_string
 rm -f $TMPDIR/obx_version_core_string
 
+requireBinaries gawk # RUNHASH->awk->gensub requires gawk
 RUNHASH=$(
         (
         xargs -r md5sum <<< "${DEPENDENCIES:-}" |
@@ -360,7 +360,7 @@ if mkdir -vp $DATADIR
 then
     (md5sum ${DEPENDENCIES:-}
         echo "$EXTRA_STATE"
-        )  | tee  $DATADIR/config.txt
+        )  | tee  $DATADIR/config.csv
 fi
 
 lscpu > $DATADIR/cpu.txt
@@ -420,8 +420,6 @@ function execute() {
         fi
     esac
 }
-
-
 
 function run_objectbox() {
     set -e

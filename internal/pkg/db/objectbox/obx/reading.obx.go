@@ -96,16 +96,27 @@ func (reading_EntityInfo) AddToModel(model *objectbox.Model) {
 
 // GetId is called by the ObjectBox during Put operations to check for existing ID on an object
 func (reading_EntityInfo) GetId(object interface{}) (uint64, error) {
-	if len(object.(*Reading).Id) == 0 {
+	var strId string
+	if obj, ok := object.(*Reading); ok {
+		strId = string(obj.Id)
+	} else {
+		strId = string(object.(Reading).Id)
+	}
+	if len(strId) == 0 {
 		return 0, nil
 	} else {
-		return strconv.ParseUint(string(object.(*Reading).Id), 10, 64)
+		return strconv.ParseUint(strId, 10, 64)
 	}
 }
 
 // SetId is called by the ObjectBox during Put to update an ID on an object that has just been inserted
 func (reading_EntityInfo) SetId(object interface{}, id uint64) error {
-	object.(*Reading).Id = bson.ObjectId(strconv.FormatUint(id, 10))
+	if obj, ok := object.(*Reading); ok {
+		obj.Id = bson.ObjectId(strconv.FormatUint(id, 10))
+	} else {
+		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
+		_ = object.(Reading).Id
+	}
 	return nil
 }
 

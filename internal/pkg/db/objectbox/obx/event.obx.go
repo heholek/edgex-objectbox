@@ -89,16 +89,27 @@ func (event_EntityInfo) AddToModel(model *objectbox.Model) {
 
 // GetId is called by the ObjectBox during Put operations to check for existing ID on an object
 func (event_EntityInfo) GetId(object interface{}) (uint64, error) {
-	if len(object.(*Event).ID) == 0 {
+	var strId string
+	if obj, ok := object.(*Event); ok {
+		strId = string(obj.ID)
+	} else {
+		strId = string(object.(Event).ID)
+	}
+	if len(strId) == 0 {
 		return 0, nil
 	} else {
-		return strconv.ParseUint(string(object.(*Event).ID), 10, 64)
+		return strconv.ParseUint(strId, 10, 64)
 	}
 }
 
 // SetId is called by the ObjectBox during Put to update an ID on an object that has just been inserted
 func (event_EntityInfo) SetId(object interface{}, id uint64) error {
-	object.(*Event).ID = bson.ObjectId(strconv.FormatUint(id, 10))
+	if obj, ok := object.(*Event); ok {
+		obj.ID = bson.ObjectId(strconv.FormatUint(id, 10))
+	} else {
+		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
+		_ = object.(Event).ID
+	}
 	return nil
 }
 

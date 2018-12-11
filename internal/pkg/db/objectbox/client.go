@@ -212,7 +212,7 @@ func (ObjectBoxClient) UpdateReading(r models.Reading) error {
 
 func (client *ObjectBoxClient) ReadingById(idString string) (models.Reading, error) {
 	id, err := idStringToObx(idString)
-	if err == nil {
+	if err != nil {
 		return models.Reading{}, err
 	}
 

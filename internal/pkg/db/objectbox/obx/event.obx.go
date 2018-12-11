@@ -23,7 +23,7 @@ var EventBinding = event_EntityInfo{
 
 // Event_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var Event_ = struct {
-	ID       *objectbox.PropertyStringUint64
+	ID       *objectbox.PropertyUint64
 	Pushed   *objectbox.PropertyInt64
 	Device   *objectbox.PropertyString
 	Created  *objectbox.PropertyInt64
@@ -31,7 +31,7 @@ var Event_ = struct {
 	Origin   *objectbox.PropertyInt64
 	Event    *objectbox.PropertyString
 }{
-	ID: &objectbox.PropertyStringUint64{
+	ID: &objectbox.PropertyUint64{
 		Property: &objectbox.Property{
 			Id: 1,
 		},
@@ -139,12 +139,12 @@ func (event_EntityInfo) ToObject(bytes []byte) interface{} {
 
 // MakeSlice is called by the ObjectBox to construct a new slice to hold the read objects
 func (event_EntityInfo) MakeSlice(capacity int) interface{} {
-	return make([]*Event, 0, capacity)
+	return make([]Event, 0, capacity)
 }
 
 // AppendToSlice is called by the ObjectBox to fill the slice of the read objects
 func (event_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
-	return append(slice.([]*Event), object.(*Event))
+	return append(slice.([]Event), *object.(*Event))
 }
 
 // Box provides CRUD access to Event objects
@@ -162,12 +162,8 @@ func BoxForEvent(ob *objectbox.ObjectBox) *EventBox {
 // Put synchronously inserts/updates a single object.
 // In case the ID is not specified, it would be assigned automatically (auto-increment).
 // When inserting, the Event.ID property on the passed object will be assigned the new ID as well.
-func (box *EventBox) Put(object *Event) (string, error) {
-	if id, err := box.Box.Put(object); err != nil {
-		return "", err
-	} else {
-		return strconv.FormatUint(id, 10), nil
-	}
+func (box *EventBox) Put(object *Event) (uint64, error) {
+	return box.Box.Put(object)
 }
 
 // PutAsync asynchronously inserts/updates a single object.
@@ -188,12 +184,8 @@ func (box *EventBox) Put(object *Event) (string, error) {
 //
 // Note that this method does not give you hard durability guarantees like the synchronous Put provides.
 // There is a small time window (typically 3 ms) in which the data may not have been committed durably yet.
-func (box *EventBox) PutAsync(object *Event) (string, error) {
-	if id, err := box.Box.PutAsync(object); err != nil {
-		return "", err
-	} else {
-		return strconv.FormatUint(id, 10), nil
-	}
+func (box *EventBox) PutAsync(object *Event) (uint64, error) {
+	return box.Box.PutAsync(object)
 }
 
 // PutAll inserts multiple objects in single transaction.
@@ -206,31 +198,15 @@ func (box *EventBox) PutAsync(object *Event) (string, error) {
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *EventBox) PutAll(objects []*Event) ([]string, error) {
-	ids, err := box.Box.PutAll(objects)
-	if err != nil || len(ids) == 0 {
-		return []string{}, err
-	}
-
-	var stringIds = make([]string, len(ids))
-	for i, id := range ids {
-		stringIds[i] = strconv.FormatUint(id, 10)
-	}
-
-	return stringIds, nil
+func (box *EventBox) PutAll(objects []Event) ([]uint64, error) {
+	return box.Box.PutAll(objects)
 }
 
 // Get reads a single object.
 //
 // Returns nil (and no error) in case the object with the given ID doesn't exist.
-func (box *EventBox) Get(id string) (*Event, error) {
-	idUint64, parseErr := strconv.ParseUint(id, 10, 64)
-	if parseErr != nil {
-		return nil, parseErr
-	}
-
-	object, err := box.Box.Get(idUint64)
-
+func (box *EventBox) Get(id uint64) (*Event, error) {
+	object, err := box.Box.Get(id)
 	if err != nil {
 		return nil, err
 	} else if object == nil {
@@ -240,12 +216,12 @@ func (box *EventBox) Get(id string) (*Event, error) {
 }
 
 // Get reads all stored objects
-func (box *EventBox) GetAll() ([]*Event, error) {
+func (box *EventBox) GetAll() ([]Event, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
 		return nil, err
 	}
-	return objects.([]*Event), nil
+	return objects.([]Event), nil
 }
 
 // Remove deletes a single object
@@ -287,10 +263,10 @@ type EventQuery struct {
 }
 
 // Find returns all objects matching the query
-func (query *EventQuery) Find() ([]*Event, error) {
+func (query *EventQuery) Find() ([]Event, error) {
 	objects, err := query.Query.Find()
 	if err != nil {
 		return nil, err
 	}
-	return objects.([]*Event), nil
+	return objects.([]Event), nil
 }

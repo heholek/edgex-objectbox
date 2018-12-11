@@ -23,7 +23,7 @@ var ReadingBinding = reading_EntityInfo{
 
 // Reading_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var Reading_ = struct {
-	Id       *objectbox.PropertyStringUint64
+	Id       *objectbox.PropertyUint64
 	Pushed   *objectbox.PropertyInt64
 	Created  *objectbox.PropertyInt64
 	Origin   *objectbox.PropertyInt64
@@ -32,7 +32,7 @@ var Reading_ = struct {
 	Name     *objectbox.PropertyString
 	Value    *objectbox.PropertyString
 }{
-	Id: &objectbox.PropertyStringUint64{
+	Id: &objectbox.PropertyUint64{
 		Property: &objectbox.Property{
 			Id: 1,
 		},
@@ -149,12 +149,12 @@ func (reading_EntityInfo) ToObject(bytes []byte) interface{} {
 
 // MakeSlice is called by the ObjectBox to construct a new slice to hold the read objects
 func (reading_EntityInfo) MakeSlice(capacity int) interface{} {
-	return make([]*Reading, 0, capacity)
+	return make([]Reading, 0, capacity)
 }
 
 // AppendToSlice is called by the ObjectBox to fill the slice of the read objects
 func (reading_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
-	return append(slice.([]*Reading), object.(*Reading))
+	return append(slice.([]Reading), *object.(*Reading))
 }
 
 // Box provides CRUD access to Reading objects
@@ -172,12 +172,8 @@ func BoxForReading(ob *objectbox.ObjectBox) *ReadingBox {
 // Put synchronously inserts/updates a single object.
 // In case the Id is not specified, it would be assigned automatically (auto-increment).
 // When inserting, the Reading.Id property on the passed object will be assigned the new ID as well.
-func (box *ReadingBox) Put(object *Reading) (string, error) {
-	if id, err := box.Box.Put(object); err != nil {
-		return "", err
-	} else {
-		return strconv.FormatUint(id, 10), nil
-	}
+func (box *ReadingBox) Put(object *Reading) (uint64, error) {
+	return box.Box.Put(object)
 }
 
 // PutAsync asynchronously inserts/updates a single object.
@@ -198,12 +194,8 @@ func (box *ReadingBox) Put(object *Reading) (string, error) {
 //
 // Note that this method does not give you hard durability guarantees like the synchronous Put provides.
 // There is a small time window (typically 3 ms) in which the data may not have been committed durably yet.
-func (box *ReadingBox) PutAsync(object *Reading) (string, error) {
-	if id, err := box.Box.PutAsync(object); err != nil {
-		return "", err
-	} else {
-		return strconv.FormatUint(id, 10), nil
-	}
+func (box *ReadingBox) PutAsync(object *Reading) (uint64, error) {
+	return box.Box.PutAsync(object)
 }
 
 // PutAll inserts multiple objects in single transaction.
@@ -216,31 +208,15 @@ func (box *ReadingBox) PutAsync(object *Reading) (string, error) {
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *ReadingBox) PutAll(objects []*Reading) ([]string, error) {
-	ids, err := box.Box.PutAll(objects)
-	if err != nil || len(ids) == 0 {
-		return []string{}, err
-	}
-
-	var stringIds = make([]string, len(ids))
-	for i, id := range ids {
-		stringIds[i] = strconv.FormatUint(id, 10)
-	}
-
-	return stringIds, nil
+func (box *ReadingBox) PutAll(objects []Reading) ([]uint64, error) {
+	return box.Box.PutAll(objects)
 }
 
 // Get reads a single object.
 //
 // Returns nil (and no error) in case the object with the given ID doesn't exist.
-func (box *ReadingBox) Get(id string) (*Reading, error) {
-	idUint64, parseErr := strconv.ParseUint(id, 10, 64)
-	if parseErr != nil {
-		return nil, parseErr
-	}
-
-	object, err := box.Box.Get(idUint64)
-
+func (box *ReadingBox) Get(id uint64) (*Reading, error) {
+	object, err := box.Box.Get(id)
 	if err != nil {
 		return nil, err
 	} else if object == nil {
@@ -250,12 +226,12 @@ func (box *ReadingBox) Get(id string) (*Reading, error) {
 }
 
 // Get reads all stored objects
-func (box *ReadingBox) GetAll() ([]*Reading, error) {
+func (box *ReadingBox) GetAll() ([]Reading, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
 		return nil, err
 	}
-	return objects.([]*Reading), nil
+	return objects.([]Reading), nil
 }
 
 // Remove deletes a single object
@@ -297,10 +273,10 @@ type ReadingQuery struct {
 }
 
 // Find returns all objects matching the query
-func (query *ReadingQuery) Find() ([]*Reading, error) {
+func (query *ReadingQuery) Find() ([]Reading, error) {
 	objects, err := query.Query.Find()
 	if err != nil {
 		return nil, err
 	}
-	return objects.([]*Reading), nil
+	return objects.([]Reading), nil
 }

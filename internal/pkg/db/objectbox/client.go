@@ -98,18 +98,7 @@ func (client *ObjectBoxClient) Disconnect() {
 }
 
 func (client *ObjectBoxClient) Events() ([]models.Event, error) {
-	slice, err := client.eventBoxForReads().GetAll()
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO this needs to be done by the binding
-	var events = make([]models.Event, 0, len(slice))
-	for _, ptr := range slice {
-		events = append(events, *ptr)
-	}
-
-	return events, nil
+	return client.eventBoxForReads().GetAll()
 }
 
 func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]models.Event, error) {
@@ -117,7 +106,7 @@ func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]models.Event, error
 }
 
 func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.ObjectId, err error) {
-	var id string
+	var id uint64
 	if client.asyncPut {
 		id, err = client.eventBox.PutAsync(event)
 	} else {
@@ -127,7 +116,7 @@ func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.Obje
 		return
 	}
 
-	event.ID = bson.ObjectId(id)
+	event.ID = idObxToBson(id)
 	return event.ID, nil
 }
 
@@ -136,7 +125,12 @@ func (client *ObjectBoxClient) UpdateEvent(e models.Event) error {
 }
 
 func (client *ObjectBoxClient) EventById(idString string) (models.Event, error) {
-	object, err := client.eventBoxForReads().Get(idString)
+	id, err := idStringToObx(idString)
+	if err != nil {
+		return models.Event{}, err
+	}
+
+	object, err := client.eventBoxForReads().Get(id)
 	if object == nil || err != nil {
 		return models.Event{}, err
 	}
@@ -165,21 +159,9 @@ func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]models.Even
 
 func (client *ObjectBoxClient) EventsForDevice(deviceId string) ([]models.Event, error) {
 	client.queryEventByDeviceIdMutex.Lock()
+	defer client.queryEventByDeviceIdMutex.Unlock()
 	client.queryEventByDeviceId.InternalSetParamString(obx.Event_.Device.Id, deviceId)
-	slice, err := client.queryEventByDeviceId.Find()
-	client.queryEventByDeviceIdMutex.Unlock()
-
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO this needs to be done by the binding
-	var events = make([]models.Event, 0, len(slice))
-	for _, ptr := range slice {
-		events = append(events, *ptr)
-	}
-
-	return events, nil
+	return client.queryEventByDeviceId.Find()
 }
 
 func (ObjectBoxClient) EventsByCreationTime(startTime, endTime int64, limit int) ([]models.Event, error) {
@@ -207,22 +189,11 @@ func (client *ObjectBoxClient) ScrubAllEvents() (err error) {
 }
 
 func (client *ObjectBoxClient) Readings() ([]models.Reading, error) {
-	slice, err := client.readingBoxForReads().GetAll()
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO this needs to be done by the binding
-	var readings = make([]models.Reading, 0, len(slice))
-	for _, ptr := range slice {
-		readings = append(readings, *ptr)
-	}
-
-	return readings, nil
+	return client.readingBoxForReads().GetAll()
 }
 
 func (client *ObjectBoxClient) AddReading(r models.Reading) (objectId bson.ObjectId, err error) {
-	var id string
+	var id uint64
 	if client.asyncPut {
 		id, err = client.readingBox.PutAsync(&r)
 	} else {
@@ -231,7 +202,7 @@ func (client *ObjectBoxClient) AddReading(r models.Reading) (objectId bson.Objec
 	if err != nil {
 		return
 	}
-	r.Id = bson.ObjectId(id)
+	r.Id = idObxToBson(id)
 	return r.Id, nil
 }
 
@@ -240,7 +211,12 @@ func (ObjectBoxClient) UpdateReading(r models.Reading) error {
 }
 
 func (client *ObjectBoxClient) ReadingById(idString string) (models.Reading, error) {
-	object, err := client.readingBoxForReads().Get(idString)
+	id, err := idStringToObx(idString)
+	if err == nil {
+		return models.Reading{}, err
+	}
+
+	object, err := client.readingBoxForReads().Get(id)
 	if object == nil || err != nil {
 		return models.Reading{}, err
 	}
@@ -259,21 +235,9 @@ func (ObjectBoxClient) DeleteReadingById(id string) error {
 
 func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]models.Reading, error) {
 	client.queryReadingByDeviceIdMutex.Lock()
+	defer client.queryReadingByDeviceIdMutex.Unlock()
 	client.queryReadingByDeviceId.InternalSetParamString(obx.Reading_.Device.Id, deviceId)
-	slice, err := client.queryReadingByDeviceId.Find()
-	client.queryReadingByDeviceIdMutex.Unlock()
-
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO this needs to be done by the binding
-	var readings = make([]models.Reading, 0, len(slice))
-	for _, ptr := range slice {
-		readings = append(readings, *ptr)
-	}
-
-	return readings, nil
+	return client.queryReadingByDeviceId.Find()
 }
 
 func (ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int) ([]models.Reading, error) {

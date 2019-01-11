@@ -46,6 +46,7 @@ func Retry(useConsul bool, useProfile string, timeout int, wait *sync.WaitGroup,
 				// Setup Logging
 				logTarget := setLoggingTarget()
 				LoggingClient = logger.NewClient(internal.ExportDistroServiceKey, Configuration.Logging.EnableRemote, logTarget, Configuration.Logging.Level)
+
 				//Initialize service clients
 				initializeClient(useConsul)
 			}
@@ -94,7 +95,7 @@ func connectToConsul(conf *ConfigurationStruct) (*ConfigurationStruct, error) {
 	errCh := make(chan error)
 	dec := consulclient.NewConsulDecoder(conf.Registry)
 	dec.Target = &ConfigurationStruct{}
-	dec.Prefix = internal.ConfigV2Stem + internal.ExportDistroServiceKey
+	dec.Prefix = internal.ConfigRegistryStem + internal.ExportDistroServiceKey
 	dec.ErrCh = errCh
 	dec.UpdateCh = updateCh
 
@@ -114,6 +115,10 @@ func connectToConsul(conf *ConfigurationStruct) (*ConfigurationStruct, error) {
 			return conf, errors.New("type check failed")
 		}
 		conf = actual
+		//Check that information was successfully read from Consul
+		if conf.Service.Port == 0 {
+			return nil, errors.New("error reading from Consul")
+		}
 	}
 	return conf, err
 }
@@ -150,7 +155,7 @@ func listenForConfigChanges() {
 	errCh := make(chan error)
 	dec := consulclient.NewConsulDecoder(Configuration.Registry)
 	dec.Target = &ConfigurationStruct{}
-	dec.Prefix = internal.ConfigV2Stem + internal.ExportDistroServiceKey
+	dec.Prefix = internal.ConfigRegistryStem + internal.ExportDistroServiceKey
 	dec.ErrCh = errCh
 	dec.UpdateCh = chConfig
 
@@ -182,4 +187,3 @@ func setLoggingTarget() string {
 	}
 	return Configuration.Logging.File
 }
-

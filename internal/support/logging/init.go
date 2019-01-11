@@ -112,7 +112,7 @@ func connectToConsul(conf *ConfigurationStruct) (*ConfigurationStruct, error) {
 	errCh := make(chan error)
 	dec := consulclient.NewConsulDecoder(conf.Registry)
 	dec.Target = &ConfigurationStruct{}
-	dec.Prefix = internal.ConfigV2Stem + internal.SupportLoggingServiceKey
+	dec.Prefix = internal.ConfigRegistryStem + internal.SupportLoggingServiceKey
 	dec.ErrCh = errCh
 	dec.UpdateCh = updateCh
 
@@ -133,7 +133,7 @@ func connectToConsul(conf *ConfigurationStruct) (*ConfigurationStruct, error) {
 		}
 		conf = actual
 		//Check that information was successfully read from Consul
-		if len(conf.Persistence) == 0 {
+		if conf.Service.Port == 0 {
 			return nil, errors.New("error reading from Consul")
 		}
 	}
@@ -144,7 +144,7 @@ func listenForConfigChanges() {
 	errCh := make(chan error)
 	dec := consulclient.NewConsulDecoder(Configuration.Registry)
 	dec.Target = &ConfigurationStruct{}
-	dec.Prefix = internal.ConfigV2Stem + internal.SupportLoggingServiceKey
+	dec.Prefix = internal.ConfigRegistryStem + internal.SupportLoggingServiceKey
 	dec.ErrCh = errCh
 	dec.UpdateCh = chConfig
 

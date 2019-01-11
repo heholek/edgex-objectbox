@@ -16,15 +16,14 @@ import (
 
 	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
 	dbp "github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/pkg/models"
-	"gopkg.in/mgo.v2/bson"
+	contract "github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
-func populateDbReadings(db interfaces.DBClient, count int) (bson.ObjectId, error) {
-	var id bson.ObjectId
+func populateDbReadings(db interfaces.DBClient, count int) (string, error) {
+	var id string
 	for i := 0; i < count; i++ {
 		name := fmt.Sprintf("name%d", i)
-		r := models.Reading{}
+		r := contract.Reading{}
 		r.Name = name
 		r.Device = name
 		r.Value = name
@@ -37,11 +36,11 @@ func populateDbReadings(db interfaces.DBClient, count int) (bson.ObjectId, error
 	return id, nil
 }
 
-func populateDbValues(db interfaces.DBClient, count int) (bson.ObjectId, error) {
-	var id bson.ObjectId
+func populateDbValues(db interfaces.DBClient, count int) (string, error) {
+	var id string
 	for i := 0; i < count; i++ {
 		name := fmt.Sprintf("name%d", i)
-		v := models.ValueDescriptor{}
+		v := contract.ValueDescriptor{}
 		v.Name = name
 		v.Description = name
 		v.Type = name
@@ -56,16 +55,16 @@ func populateDbValues(db interfaces.DBClient, count int) (bson.ObjectId, error) 
 	return id, nil
 }
 
-func populateDbEvents(db interfaces.DBClient, count int, pushed int64) (bson.ObjectId, error) {
-	var id bson.ObjectId
+func populateDbEvents(db interfaces.DBClient, count int, pushed int64) (string, error) {
+	var id string
 	for i := 0; i < count; i++ {
 		name := fmt.Sprintf("name%d", i)
-		e := models.Event{}
+		e := contract.Event{}
 		e.Device = name
 		e.Event = name
 		e.Pushed = pushed
 		var err error
-		id, err = db.AddEvent(&e)
+		id, err = db.AddEvent(e)
 		if err != nil {
 			return id, err
 		}
@@ -118,11 +117,11 @@ func testDBReadings(t *testing.T, db interfaces.DBClient) {
 	if len(readings) != 110 {
 		t.Fatalf("There should be 110 readings instead of %d", len(readings))
 	}
-	r3, err := db.ReadingById(id.Hex())
+	r3, err := db.ReadingById(id)
 	if err != nil {
 		t.Fatalf("Error getting reading by id %v", err)
 	}
-	if r3.Id.Hex() != id.Hex() {
+	if r3.Id != id {
 		t.Fatalf("Id does not match %s - %s", r3.Id, id)
 	}
 	_, err = db.ReadingById("INVALID")
@@ -247,14 +246,14 @@ func testDBReadings(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 100 readings, not %d", len(readings))
 	}
 
-	r := models.Reading{}
+	r := contract.Reading{}
 	r.Id = id
 	r.Name = "name"
 	err = db.UpdateReading(r)
 	if err != nil {
 		t.Fatalf("Error updating reading %v", err)
 	}
-	r2, err := db.ReadingById(r.Id.Hex())
+	r2, err := db.ReadingById(r.Id)
 	if err != nil {
 		t.Fatalf("Error getting reading by id %v", err)
 	}
@@ -267,7 +266,7 @@ func testDBReadings(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("Reading should not be deleted")
 	}
 
-	err = db.DeleteReadingById(id.Hex())
+	err = db.DeleteReadingById(id)
 	if err != nil {
 		t.Fatalf("Reading should be deleted: %v", err)
 	}
@@ -288,9 +287,7 @@ func testDBEvents(t *testing.T, db interfaces.DBClient) {
 	if err != nil {
 		t.Fatalf("Error getting events %v", err)
 	}
-	if events == nil {
-		t.Fatalf("Should return an empty array")
-	}
+
 	if len(events) != 0 {
 		t.Fatalf("There should be 0 events instead of %d", len(events))
 	}
@@ -347,11 +344,11 @@ func testDBEvents(t *testing.T, db interfaces.DBClient) {
 	if len(events) != 110 {
 		t.Fatalf("There should be 110 events instead of %d", len(events))
 	}
-	e3, err := db.EventById(id.Hex())
+	e3, err := db.EventById(id)
 	if err != nil {
 		t.Fatalf("Error getting event by id %v", err)
 	}
-	if e3.ID.Hex() != id.Hex() {
+	if e3.ID != id {
 		t.Fatalf("Id does not match %s - %s", e3.ID, id)
 	}
 	_, err = db.EventById("INVALID")
@@ -448,14 +445,14 @@ func testDBEvents(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 10 events, not %d", len(events))
 	}
 
-	e := models.Event{}
+	e := contract.Event{}
 	e.ID = id
 	e.Device = "name"
 	err = db.UpdateEvent(e)
 	if err != nil {
 		t.Fatalf("Error updating event %v", err)
 	}
-	e2, err := db.EventById(e.ID.Hex())
+	e2, err := db.EventById(e.ID)
 	if err != nil {
 		t.Fatalf("Error getting event by id %v", err)
 	}
@@ -468,7 +465,7 @@ func testDBEvents(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("Event should not be deleted")
 	}
 
-	err = db.DeleteEventById(id.Hex())
+	err = db.DeleteEventById(id)
 	if err != nil {
 		t.Fatalf("Event should be deleted: %v", err)
 	}
@@ -502,9 +499,6 @@ func testDBValueDescriptors(t *testing.T, db interfaces.DBClient) {
 	if err != nil {
 		t.Fatalf("Error getting events %v", err)
 	}
-	if values == nil {
-		t.Fatalf("Should return an empty array")
-	}
 	if len(values) != 0 {
 		t.Fatalf("There should be 0 values instead of %d", len(values))
 	}
@@ -527,11 +521,11 @@ func testDBValueDescriptors(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 110 Values instead of %d", len(values))
 	}
 
-	v3, err := db.ValueDescriptorById(id.Hex())
+	v3, err := db.ValueDescriptorById(id)
 	if err != nil {
 		t.Fatalf("Error getting Value by id %v", err)
 	}
-	if v3.Id.Hex() != id.Hex() {
+	if v3.Id != id {
 		t.Fatalf("Id does not match %s - %s", v3.Id, id)
 	}
 	_, err = db.ValueDescriptorById("INVALID")
@@ -618,14 +612,14 @@ func testDBValueDescriptors(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 0 Values, not %d", len(values))
 	}
 
-	v := models.ValueDescriptor{}
+	v := contract.ValueDescriptor{}
 	v.Id = id
 	v.Name = "name"
 	err = db.UpdateValueDescriptor(v)
 	if err != nil {
 		t.Fatalf("Error updating Value %v", err)
 	}
-	v2, err := db.ValueDescriptorById(v.Id.Hex())
+	v2, err := db.ValueDescriptorById(v.Id)
 	if err != nil {
 		t.Fatalf("Error getting Value by id %v", err)
 	}
@@ -638,7 +632,7 @@ func testDBValueDescriptors(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("Value should not be deleted")
 	}
 
-	err = db.DeleteValueDescriptorById(id.Hex())
+	err = db.DeleteValueDescriptorById(id)
 	if err != nil {
 		t.Fatalf("Value should be deleted: %v", err)
 	}
@@ -655,11 +649,6 @@ func testDBValueDescriptors(t *testing.T, db interfaces.DBClient) {
 }
 
 func TestDataDB(t *testing.T, db interfaces.DBClient) {
-	err := db.Connect()
-	if err != nil {
-		t.Fatalf("Could not connect: %v", err)
-	}
-
 	testDBReadings(t, db)
 	testDBEvents(t, db)
 	testDBValueDescriptors(t, db)
@@ -678,14 +667,12 @@ func BenchmarkDB(b *testing.B, db interfaces.DBClient) {
 }
 
 func benchmarkReadings(b *testing.B, db interfaces.DBClient) {
-	// Plain IDs do not require .hex(); must use reflect to avoid import cycle to identify DB
-	plainIDs := strings.Contains(reflect.TypeOf(db).Name(), "ObjectBox")
 
 	// Remove previous events and readings
 	db.ScrubAllEvents()
 
 	b.Run("AddReading", func(b *testing.B) {
-		reading := models.Reading{}
+		reading := contract.Reading{}
 		for i := 0; i < b.N; i++ {
 			reading.Name = "test" + strconv.Itoa(i)
 			reading.Device = "device" + strconv.Itoa(i/100)
@@ -701,7 +688,7 @@ func benchmarkReadings(b *testing.B, db interfaces.DBClient) {
 	// prepare to benchmark n readings
 	n := 1000
 	readings := make([]string, n)
-	reading := models.Reading{}
+	reading := contract.Reading{}
 	for i := 0; i < n; i++ {
 		reading.Name = "test" + strconv.Itoa(i)
 		reading.Device = "device" + strconv.Itoa(i/100)
@@ -709,11 +696,7 @@ func benchmarkReadings(b *testing.B, db interfaces.DBClient) {
 		if err != nil {
 			b.Fatalf("Error add reading: %v", err)
 		}
-		if plainIDs {
-			readings[i] = string(id)
-		} else {
-			readings[i] = id.Hex()
-		}
+		readings[i] = id
 	}
 
 	b.Run("Readings", func(b *testing.B) {
@@ -762,17 +745,17 @@ func benchmarkEvents(b *testing.B, db interfaces.DBClient) {
 	b.Run("AddEvent", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			device := fmt.Sprintf("device" + strconv.Itoa(i/100))
-			e := models.Event{
+			e := contract.Event{
 				Device: device,
 			}
 			for j := 0; j < 5; j++ {
-				r := models.Reading{
+				r := contract.Reading{
 					Device: device,
 					Name:   fmt.Sprintf("name%d", j),
 				}
 				e.Readings = append(e.Readings, r)
 			}
-			_, err := db.AddEvent(&e)
+			_, err := db.AddEvent(e)
 			if err != nil {
 				b.Fatalf("Error add event: %v", err)
 			}
@@ -786,21 +769,21 @@ func benchmarkEvents(b *testing.B, db interfaces.DBClient) {
 	events := make([]string, n)
 	for i := 0; i < n; i++ {
 		device := fmt.Sprintf("device" + strconv.Itoa(i/100))
-		e := models.Event{
+		e := contract.Event{
 			Device: device,
 		}
 		for j := 0; j < 5; j++ {
-			r := models.Reading{
+			r := contract.Reading{
 				Device: device,
 				Name:   fmt.Sprintf("name%d", j),
 			}
 			e.Readings = append(e.Readings, r)
 		}
-		id, err := db.AddEvent(&e)
+		id, err := db.AddEvent(e)
 		if err != nil {
 			b.Fatalf("Error add event: %v", err)
 		}
-		events[i] = id.Hex()
+		events[i] = id
 	}
 
 	b.Run("Events", func(b *testing.B) {

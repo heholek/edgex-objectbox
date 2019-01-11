@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -835,7 +834,6 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 	dbType := reflect.TypeOf(db).String()
 	println("\nBenchmarking " + dbType)
 	println("---------------------------------------------")
-	plainIDs := strings.Contains(dbType, "ObjectBox")
 
 	// Remove any events and readings before and after test
 	_ = db.ScrubAllEvents()
@@ -845,7 +843,7 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 	countPostfix := "[" + strconv.Itoa(count) + "]"
 	readings := make([]string, count)
 	RunBenchmarkN(db, "AddReading", count, func(ctx *BenchmarkContext) error {
-		reading := models.Reading{}
+		reading := contract.Reading{}
 		reading.Name = "test" + strconv.Itoa(ctx.I)
 		reading.Device = "device" + strconv.Itoa(ctx.I/100)
 		ctx.StartClock()
@@ -860,11 +858,7 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 		} else {
 			ctx.StopClock()
 		}
-		if plainIDs {
-			readings[ctx.I] = string(id)
-		} else {
-			readings[ctx.I] = id.Hex()
-		}
+		readings[ctx.I] = id
 		return err
 	})
 
@@ -893,9 +887,9 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 		reading, err := db.ReadingById(id)
 		ctx.StopClock()
 
-		if verify && ((plainIDs && string(reading.Id) != id) || (!plainIDs && reading.Id.Hex() != id)) {
+		if verify && reading.Id != id {
 			println(reading.String())
-			panic("Expected ID " + id + " but got " + string(reading.Id))
+			panic("Expected ID " + id + " but got " + reading.Id)
 		}
 
 		return err

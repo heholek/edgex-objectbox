@@ -7,7 +7,6 @@ import (
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 )
 
@@ -32,38 +31,59 @@ var Event_ = struct {
 	Event    *objectbox.PropertyString
 }{
 	ID: &objectbox.PropertyUint64{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
 		},
 	},
 	Pushed: &objectbox.PropertyInt64{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
 		},
 	},
 	Device: &objectbox.PropertyString{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
 		},
 	},
 	Created: &objectbox.PropertyInt64{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
 		},
 	},
 	Event: &objectbox.PropertyString{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
 		},
 	},
 }
@@ -91,9 +111,9 @@ func (event_EntityInfo) AddToModel(model *objectbox.Model) {
 func (event_EntityInfo) GetId(object interface{}) (uint64, error) {
 	var strId string
 	if obj, ok := object.(*Event); ok {
-		strId = string(obj.ID)
+		strId = obj.ID
 	} else {
-		strId = string(object.(Event).ID)
+		strId = object.(Event).ID
 	}
 	if len(strId) == 0 {
 		return 0, nil
@@ -105,7 +125,7 @@ func (event_EntityInfo) GetId(object interface{}) (uint64, error) {
 // SetId is called by the ObjectBox during Put to update an ID on an object that has just been inserted
 func (event_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*Event); ok {
-		obj.ID = bson.ObjectId(strconv.FormatUint(id, 10))
+		obj.ID = strconv.FormatUint(id, 10)
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Event).ID
@@ -138,7 +158,7 @@ func (event_EntityInfo) ToObject(bytes []byte) interface{} {
 	}
 
 	return &Event{
-		ID:       bson.ObjectId(strconv.FormatUint(table.GetUint64Slot(4, 0), 10)),
+		ID:       strconv.FormatUint(table.GetUint64Slot(4, 0), 10),
 		Pushed:   table.GetInt64Slot(6, 0),
 		Device:   fbutils.GetStringSlot(table, 8),
 		Created:  table.GetInt64Slot(10, 0),
@@ -237,7 +257,7 @@ func (box *EventBox) GetAll() ([]Event, error) {
 
 // Remove deletes a single object
 func (box *EventBox) Remove(object *Event) (err error) {
-	idUint64, parseErr := strconv.ParseUint(string(object.ID), 10, 64)
+	idUint64, parseErr := strconv.ParseUint(object.ID, 10, 64)
 	if parseErr != nil {
 		return parseErr
 	}
@@ -280,4 +300,16 @@ func (query *EventQuery) Find() ([]Event, error) {
 		return nil, err
 	}
 	return objects.([]Event), nil
+}
+
+// Offset defines the index of the first object to process (how many objects to skip)
+func (query *EventQuery) Offset(offset uint64) *EventQuery {
+	query.Query.Offset(offset)
+	return query
+}
+
+// Limit sets the number of elements to process by the query
+func (query *EventQuery) Limit(limit uint64) *EventQuery {
+	query.Query.Limit(limit)
+	return query
 }

@@ -3,9 +3,8 @@ package objectbox
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
-	"github.com/edgexfoundry/edgex-go/pkg/models"
+	contract "github.com/edgexfoundry/edgex-go/pkg/models"
 	. "github.com/objectbox/objectbox-go/objectbox"
-	"gopkg.in/mgo.v2/bson"
 	"sync"
 )
 
@@ -97,42 +96,42 @@ func (client *ObjectBoxClient) Disconnect() {
 	}
 }
 
-func (client *ObjectBoxClient) Events() ([]models.Event, error) {
+func (client *ObjectBoxClient) Events() ([]contract.Event, error) {
 	return client.eventBoxForReads().GetAll()
 }
 
-func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]models.Event, error) {
+func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]contract.Event, error) {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) AddEvent(event *models.Event) (objectId bson.ObjectId, err error) {
+func (client *ObjectBoxClient) AddEvent(event contract.Event) (objectId string, err error) {
 	var id uint64
 	if client.asyncPut {
-		id, err = client.eventBox.PutAsync(event)
+		id, err = client.eventBox.PutAsync(&event)
 	} else {
-		id, err = client.eventBox.Put(event)
+		id, err = client.eventBox.Put(&event)
 	}
 	if err != nil {
 		return
 	}
 
-	event.ID = idObxToBson(id)
+	event.ID = idObxToString(id)
 	return event.ID, nil
 }
 
-func (client *ObjectBoxClient) UpdateEvent(e models.Event) error {
+func (client *ObjectBoxClient) UpdateEvent(e contract.Event) error {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) EventById(idString string) (models.Event, error) {
+func (client *ObjectBoxClient) EventById(idString string) (contract.Event, error) {
 	id, err := idStringToObx(idString)
 	if err != nil {
-		return models.Event{}, err
+		return contract.Event{}, err
 	}
 
 	object, err := client.eventBoxForReads().Get(id)
 	if object == nil || err != nil {
-		return models.Event{}, err
+		return contract.Event{}, err
 	}
 	return *object, nil
 }
@@ -153,30 +152,32 @@ func (ObjectBoxClient) DeleteEventById(id string) error {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]models.Event, error) {
+func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]contract.Event, error) {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) EventsForDevice(deviceId string) ([]models.Event, error) {
+func (client *ObjectBoxClient) EventsForDevice(deviceId string) ([]contract.Event, error) {
 	client.queryEventByDeviceIdMutex.Lock()
 	defer client.queryEventByDeviceIdMutex.Unlock()
-	client.queryEventByDeviceId.InternalSetParamString(obx.Event_.Device.Id, deviceId)
+	if err := client.queryEventByDeviceId.SetStringParams(obx.Event_.Device, deviceId); err != nil {
+		return nil, err
+	}
 	return client.queryEventByDeviceId.Find()
 }
 
-func (ObjectBoxClient) EventsByCreationTime(startTime, endTime int64, limit int) ([]models.Event, error) {
+func (ObjectBoxClient) EventsByCreationTime(startTime, endTime int64, limit int) ([]contract.Event, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ReadingsByDeviceAndValueDescriptor(deviceId, valueDescriptor string, limit int) ([]models.Reading, error) {
+func (ObjectBoxClient) ReadingsByDeviceAndValueDescriptor(deviceId, valueDescriptor string, limit int) ([]contract.Reading, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) EventsOlderThanAge(age int64) ([]models.Event, error) {
+func (ObjectBoxClient) EventsOlderThanAge(age int64) ([]contract.Event, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) EventsPushed() ([]models.Event, error) {
+func (ObjectBoxClient) EventsPushed() ([]contract.Event, error) {
 	panic("implement me")
 }
 
@@ -188,11 +189,11 @@ func (client *ObjectBoxClient) ScrubAllEvents() (err error) {
 	return client.readingBoxForReads().RemoveAll()
 }
 
-func (client *ObjectBoxClient) Readings() ([]models.Reading, error) {
+func (client *ObjectBoxClient) Readings() ([]contract.Reading, error) {
 	return client.readingBoxForReads().GetAll()
 }
 
-func (client *ObjectBoxClient) AddReading(r models.Reading) (objectId bson.ObjectId, err error) {
+func (client *ObjectBoxClient) AddReading(r contract.Reading) (objectId string, err error) {
 	var id uint64
 	if client.asyncPut {
 		id, err = client.readingBox.PutAsync(&r)
@@ -202,23 +203,23 @@ func (client *ObjectBoxClient) AddReading(r models.Reading) (objectId bson.Objec
 	if err != nil {
 		return
 	}
-	r.Id = idObxToBson(id)
+	r.Id = idObxToString(id)
 	return r.Id, nil
 }
 
-func (ObjectBoxClient) UpdateReading(r models.Reading) error {
+func (ObjectBoxClient) UpdateReading(r contract.Reading) error {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) ReadingById(idString string) (models.Reading, error) {
+func (client *ObjectBoxClient) ReadingById(idString string) (contract.Reading, error) {
 	id, err := idStringToObx(idString)
 	if err != nil {
-		return models.Reading{}, err
+		return contract.Reading{}, err
 	}
 
 	object, err := client.readingBoxForReads().Get(id)
 	if object == nil || err != nil {
-		return models.Reading{}, err
+		return contract.Reading{}, err
 	}
 	return *object, nil
 }
@@ -233,34 +234,36 @@ func (ObjectBoxClient) DeleteReadingById(id string) error {
 	panic("implement me")
 }
 
-func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]models.Reading, error) {
+func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]contract.Reading, error) {
 	client.queryReadingByDeviceIdMutex.Lock()
 	defer client.queryReadingByDeviceIdMutex.Unlock()
-	client.queryReadingByDeviceId.InternalSetParamString(obx.Reading_.Device.Id, deviceId)
-	return client.queryReadingByDeviceId.Find()
+	if err := client.queryReadingByDeviceId.SetStringParams(obx.Reading_.Device, deviceId); err != nil {
+		return nil, err
+	}
+	return client.queryReadingByDeviceId.Limit(uint64(limit)).Find()
 }
 
-func (ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int) ([]models.Reading, error) {
+func (ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int) ([]contract.Reading, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ReadingsByValueDescriptorNames(names []string, limit int) ([]models.Reading, error) {
+func (ObjectBoxClient) ReadingsByValueDescriptorNames(names []string, limit int) ([]contract.Reading, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ReadingsByCreationTime(start, end int64, limit int) ([]models.Reading, error) {
+func (ObjectBoxClient) ReadingsByCreationTime(start, end int64, limit int) ([]contract.Reading, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) AddValueDescriptor(v models.ValueDescriptor) (bson.ObjectId, error) {
+func (ObjectBoxClient) AddValueDescriptor(v contract.ValueDescriptor) (string, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptors() ([]models.ValueDescriptor, error) {
+func (ObjectBoxClient) ValueDescriptors() ([]contract.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) UpdateValueDescriptor(v models.ValueDescriptor) error {
+func (ObjectBoxClient) UpdateValueDescriptor(v contract.ValueDescriptor) error {
 	panic("implement me")
 }
 
@@ -268,27 +271,27 @@ func (ObjectBoxClient) DeleteValueDescriptorById(id string) error {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptorByName(name string) (models.ValueDescriptor, error) {
+func (ObjectBoxClient) ValueDescriptorByName(name string) (contract.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptorsByName(names []string) ([]models.ValueDescriptor, error) {
+func (ObjectBoxClient) ValueDescriptorsByName(names []string) ([]contract.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptorById(id string) (models.ValueDescriptor, error) {
+func (ObjectBoxClient) ValueDescriptorById(id string) (contract.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptorsByUomLabel(uomLabel string) ([]models.ValueDescriptor, error) {
+func (ObjectBoxClient) ValueDescriptorsByUomLabel(uomLabel string) ([]contract.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptorsByLabel(label string) ([]models.ValueDescriptor, error) {
+func (ObjectBoxClient) ValueDescriptorsByLabel(label string) ([]contract.ValueDescriptor, error) {
 	panic("implement me")
 }
 
-func (ObjectBoxClient) ValueDescriptorsByType(t string) ([]models.ValueDescriptor, error) {
+func (ObjectBoxClient) ValueDescriptorsByType(t string) ([]contract.ValueDescriptor, error) {
 	panic("implement me")
 }
 

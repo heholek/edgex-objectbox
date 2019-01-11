@@ -7,7 +7,6 @@ import (
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 )
 
@@ -33,43 +32,67 @@ var Reading_ = struct {
 	Value    *objectbox.PropertyString
 }{
 	Id: &objectbox.PropertyUint64{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
+			Entity: &objectbox.Entity{
+				Id: 1,
+			},
 		},
 	},
 	Pushed: &objectbox.PropertyInt64{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
+			Entity: &objectbox.Entity{
+				Id: 1,
+			},
 		},
 	},
 	Created: &objectbox.PropertyInt64{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
+			Entity: &objectbox.Entity{
+				Id: 1,
+			},
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
+			Entity: &objectbox.Entity{
+				Id: 1,
+			},
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
+			Entity: &objectbox.Entity{
+				Id: 1,
+			},
 		},
 	},
 	Device: &objectbox.PropertyString{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
+			Entity: &objectbox.Entity{
+				Id: 1,
+			},
 		},
 	},
 	Name: &objectbox.PropertyString{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
+			Entity: &objectbox.Entity{
+				Id: 1,
+			},
 		},
 	},
 	Value: &objectbox.PropertyString{
-		Property: &objectbox.Property{
+		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
+			Entity: &objectbox.Entity{
+				Id: 1,
+			},
 		},
 	},
 }
@@ -98,9 +121,9 @@ func (reading_EntityInfo) AddToModel(model *objectbox.Model) {
 func (reading_EntityInfo) GetId(object interface{}) (uint64, error) {
 	var strId string
 	if obj, ok := object.(*Reading); ok {
-		strId = string(obj.Id)
+		strId = obj.Id
 	} else {
-		strId = string(object.(Reading).Id)
+		strId = object.(Reading).Id
 	}
 	if len(strId) == 0 {
 		return 0, nil
@@ -112,7 +135,7 @@ func (reading_EntityInfo) GetId(object interface{}) (uint64, error) {
 // SetId is called by the ObjectBox during Put to update an ID on an object that has just been inserted
 func (reading_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*Reading); ok {
-		obj.Id = bson.ObjectId(strconv.FormatUint(id, 10))
+		obj.Id = strconv.FormatUint(id, 10)
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Reading).Id
@@ -147,7 +170,7 @@ func (reading_EntityInfo) ToObject(bytes []byte) interface{} {
 	}
 
 	return &Reading{
-		Id:       bson.ObjectId(strconv.FormatUint(table.GetUint64Slot(4, 0), 10)),
+		Id:       strconv.FormatUint(table.GetUint64Slot(4, 0), 10),
 		Pushed:   table.GetInt64Slot(6, 0),
 		Created:  table.GetInt64Slot(8, 0),
 		Origin:   table.GetInt64Slot(10, 0),
@@ -247,7 +270,7 @@ func (box *ReadingBox) GetAll() ([]Reading, error) {
 
 // Remove deletes a single object
 func (box *ReadingBox) Remove(object *Reading) (err error) {
-	idUint64, parseErr := strconv.ParseUint(string(object.Id), 10, 64)
+	idUint64, parseErr := strconv.ParseUint(object.Id, 10, 64)
 	if parseErr != nil {
 		return parseErr
 	}
@@ -290,4 +313,16 @@ func (query *ReadingQuery) Find() ([]Reading, error) {
 		return nil, err
 	}
 	return objects.([]Reading), nil
+}
+
+// Offset defines the index of the first object to process (how many objects to skip)
+func (query *ReadingQuery) Offset(offset uint64) *ReadingQuery {
+	query.Query.Offset(offset)
+	return query
+}
+
+// Limit sets the number of elements to process by the query
+func (query *ReadingQuery) Limit(limit uint64) *ReadingQuery {
+	query.Query.Limit(limit)
+	return query
 }

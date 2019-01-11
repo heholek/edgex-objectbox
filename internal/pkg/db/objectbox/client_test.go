@@ -27,14 +27,14 @@ func TestObjectBoxEvents(t *testing.T) {
 	event := models.Event{
 		Device: "my device",
 	}
-	objectId, err := client.AddEvent(&event)
+	objectId, err := client.AddEvent(event)
 	if err != nil {
 		t.Fatalf("Could not add event: %v", err)
 	}
 	t.Logf("Added object ID %v", objectId)
 
 	event.Device = "2nd device"
-	objectId, err = client.AddEvent(&event)
+	objectId, err = client.AddEvent(event)
 	if err != nil {
 		t.Fatalf("Could not add 2nd event: %v", err)
 	}
@@ -44,7 +44,7 @@ func TestObjectBoxEvents(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not get 2nd event by ID: %v", err)
 	}
-	if event.ID != eventRead.ID || event.Device != eventRead.Device {
+	if objectId != eventRead.ID || event.Device != eventRead.Device {
 		t.Fatalf("Event data error: %v vs. %v", event, eventRead)
 	}
 }

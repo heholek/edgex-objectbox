@@ -33,7 +33,7 @@ func TestMongoDB(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not connect: %v", err)
 	}
-	test.TestDataDB(t, mongo)
+	test.TestDataDB(t, &mongo)
 
 	config.DatabaseName = "metadata"
 	mongo, err = NewClient(config)
@@ -69,7 +69,7 @@ func BenchmarkMongoDB(b *testing.B) {
 	s := mongo.getSessionCopy()
 	defer s.Close()
 
-	test.BenchmarkDB(b, mongo)
+	test.BenchmarkDB(b, &mongo)
 }
 
 func TestBenchmarkFixedNMongo(t *testing.T) {
@@ -79,14 +79,13 @@ func TestBenchmarkFixedNMongo(t *testing.T) {
 		DatabaseName: "coredata",
 		Timeout:      1000,
 	}
-	mongo := NewClient(config)
+	mongo, err := NewClient(config)
 
-	err := mongo.Connect()
 	if err != nil {
 		t.Fatalf("Could not connect with mongodb: %v", err)
 	}
 
 	s := mongo.getSessionCopy()
 	defer s.Close()
-	test.BenchmarkDBFixedN(mongo, true)
+	test.BenchmarkDBFixedN(&mongo, true)
 }

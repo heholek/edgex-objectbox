@@ -8,7 +8,7 @@ function die() { printf "%4d: ERROR: %s\n" $SECONDS "$*" ; exit 1 ; }
 
 TESTDIR=$PWD
 WIPE_DATADIR=false
-OBJECTBOX_DB_DIR=db-benchmark-fixed-test
+OBJECTBOX_DB_DIR=benchmark-test
 
 
 export GIT_TERMINAL_PROMPT=1
@@ -285,7 +285,7 @@ fi
 if ! ${NO_BUILD:-false} ; then
     ! ${NO_BUILD:-false} || ! [ -f ${OBJECTBOX_TESTBIN} ] && ${ENABLE_OBX} && {
         log "Building obx test..."
-        go build -i github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox
+        go build github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox
         go test -c -tags obxRunning   -o $OBJECTBOX_TESTBIN  github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox
         
     }
@@ -325,12 +325,12 @@ function addVar() {
 addConfigCmd  dataPartition bash -c "df $TMPDIR | awk 'NR==2 {print \$1}' "
 addVar EDGEX_TEST_COUNT 
 addConfigCmd "go version" go version
-addConfigCmd "cpufreq-info -p"  cpufreq-info  -p
+#addConfigCmd "cpufreq-info -p"  cpufreq-info  -p
 addConfigCmd prio bash -c 'chrt -v -p $$ | sed "s/$$/PID/g"'
 addConfigCmd mongod-version mongod --version
 addConfigCmd redis-server-version redis-server --version
-addConfigCmd hdType cat /sys/class/block/${PART}/device/model || ## If it doesn't work for the tmp dir, we register it for the rootfs, just in case it's the same
-   addConfigCmd rootHdType bash -c 'cat /sys/class/block/$(findmnt -n -o SOURCE --target / | cut -f3 -d/ |sed "s/p[0-9]$//")/device/model'
+#addConfigCmd hdType cat /sys/class/block/${PART}/device/model || ## If it doesn't work for the tmp dir, we register it for the rootfs, just in case it's the same
+#   addConfigCmd rootHdType bash -c 'cat /sys/class/block/$(findmnt -n -o SOURCE --target / | cut -f3 -d/ |sed "s/p[0-9]$//")/device/model'
    
 addConfigCmd uname-a uname -a
 

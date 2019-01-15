@@ -13,14 +13,14 @@ import (
 
 //region Queries
 type coreDataQueries struct {
-	events struct {
+	event struct {
 		all       eventQuery
 		createdB  eventQuery
 		createdLT eventQuery
 		device    eventQuery
 		pushedGT  eventQuery
 	}
-	readings struct {
+	reading struct {
 		createdB      readingQuery
 		device        readingQuery
 		deviceAndName readingQuery
@@ -46,53 +46,53 @@ func (client *ObjectBoxClient) initCoreData() error {
 
 	//region Events
 	if err == nil {
-		client.queries.events.all.EventQuery, err = client.eventBox.QueryOrError()
+		client.queries.event.all.EventQuery, err = client.eventBox.QueryOrError()
 	}
 
 	if err == nil {
-		client.queries.events.device.EventQuery, err =
+		client.queries.event.device.EventQuery, err =
 			client.eventBox.QueryOrError(obx.Event_.Device.Equals("", true))
 	}
 
 	if err == nil {
-		client.queries.events.createdB.EventQuery, err =
+		client.queries.event.createdB.EventQuery, err =
 			client.eventBox.QueryOrError(obx.Event_.Created.Between(0, 0))
 	}
 
 	if err == nil {
-		client.queries.events.createdLT.EventQuery, err =
+		client.queries.event.createdLT.EventQuery, err =
 			client.eventBox.QueryOrError(obx.Event_.Created.LessThan(0))
 	}
 
 	if err == nil {
-		client.queries.events.pushedGT.EventQuery, err =
+		client.queries.event.pushedGT.EventQuery, err =
 			client.eventBox.QueryOrError(obx.Event_.Pushed.GreaterThan(0))
 	}
 	//endregion
 
 	//region Readings
 	if err == nil {
-		client.queries.readings.device.ReadingQuery, err =
+		client.queries.reading.device.ReadingQuery, err =
 			client.readingBox.QueryOrError(obx.Reading_.Device.Equals("", true))
 	}
 
 	if err == nil {
-		client.queries.readings.deviceAndName.ReadingQuery, err =
+		client.queries.reading.deviceAndName.ReadingQuery, err =
 			client.readingBox.QueryOrError(obx.Reading_.Device.Equals("", true), obx.Reading_.Name.Equals("", true))
 	}
 
 	if err == nil {
-		client.queries.readings.name.ReadingQuery, err =
+		client.queries.reading.name.ReadingQuery, err =
 			client.readingBox.QueryOrError(obx.Reading_.Name.Equals("", true))
 	}
 
 	if err == nil {
-		client.queries.readings.names.ReadingQuery, err =
+		client.queries.reading.names.ReadingQuery, err =
 			client.readingBox.QueryOrError(obx.Reading_.Name.In(true))
 	}
 
 	if err == nil {
-		client.queries.readings.createdB.ReadingQuery, err =
+		client.queries.reading.createdB.ReadingQuery, err =
 			client.readingBox.QueryOrError(obx.Reading_.Created.Between(0, 0))
 	}
 	//endregion
@@ -106,7 +106,7 @@ func (client *ObjectBoxClient) Events() ([]contract.Event, error) {
 
 func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]contract.Event, error) {
 	// TODO there is no test for this method in the test/db_data.go
-	var query = &client.queries.events.all
+	var query = &client.queries.event.all
 
 	query.Lock()
 	defer query.Unlock()
@@ -181,7 +181,7 @@ func (client *ObjectBoxClient) EventCount() (count int, err error) {
 }
 
 func (client *ObjectBoxClient) EventCountByDeviceId(id string) (int, error) {
-	var query = &client.queries.events.device
+	var query = &client.queries.event.device
 
 	query.Lock()
 	defer query.Unlock()
@@ -207,7 +207,7 @@ func (client *ObjectBoxClient) DeleteEventById(idString string) error {
 }
 
 func (client *ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]contract.Event, error) {
-	var query = &client.queries.events.device
+	var query = &client.queries.event.device
 
 	query.Lock()
 	defer query.Unlock()
@@ -224,7 +224,7 @@ func (client *ObjectBoxClient) EventsForDevice(id string) ([]contract.Event, err
 }
 
 func (client *ObjectBoxClient) EventsByCreationTime(start, end int64, limit int) ([]contract.Event, error) {
-	var query = &client.queries.events.createdB
+	var query = &client.queries.event.createdB
 
 	query.Lock()
 	defer query.Unlock()
@@ -239,7 +239,7 @@ func (client *ObjectBoxClient) EventsByCreationTime(start, end int64, limit int)
 func (client *ObjectBoxClient) EventsOlderThanAge(age int64) ([]contract.Event, error) {
 	var time = (db.MakeTimestamp()) - age
 
-	var query = &client.queries.events.createdLT
+	var query = &client.queries.event.createdLT
 
 	query.Lock()
 	defer query.Unlock()
@@ -252,7 +252,7 @@ func (client *ObjectBoxClient) EventsOlderThanAge(age int64) ([]contract.Event, 
 }
 
 func (client *ObjectBoxClient) EventsPushed() ([]contract.Event, error) {
-	var query = &client.queries.events.pushedGT
+	var query = &client.queries.event.pushedGT
 
 	query.Lock()
 	defer query.Unlock()
@@ -346,7 +346,7 @@ func (client *ObjectBoxClient) DeleteReadingById(idString string) error {
 }
 
 func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]contract.Reading, error) {
-	var query = &client.queries.readings.device
+	var query = &client.queries.reading.device
 
 	query.Lock()
 	defer query.Unlock()
@@ -359,7 +359,7 @@ func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]c
 }
 
 func (client *ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int) ([]contract.Reading, error) {
-	var query = &client.queries.readings.name
+	var query = &client.queries.reading.name
 
 	query.Lock()
 	defer query.Unlock()
@@ -372,7 +372,7 @@ func (client *ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int)
 }
 
 func (client *ObjectBoxClient) ReadingsByValueDescriptorNames(names []string, limit int) ([]contract.Reading, error) {
-	var query = &client.queries.readings.names
+	var query = &client.queries.reading.names
 
 	query.Lock()
 	defer query.Unlock()
@@ -385,7 +385,7 @@ func (client *ObjectBoxClient) ReadingsByValueDescriptorNames(names []string, li
 }
 
 func (client *ObjectBoxClient) ReadingsByCreationTime(start, end int64, limit int) ([]contract.Reading, error) {
-	var query = &client.queries.readings.createdB
+	var query = &client.queries.reading.createdB
 
 	query.Lock()
 	defer query.Unlock()
@@ -398,7 +398,7 @@ func (client *ObjectBoxClient) ReadingsByCreationTime(start, end int64, limit in
 }
 
 func (client *ObjectBoxClient) ReadingsByDeviceAndValueDescriptor(deviceId, valueDescriptor string, limit int) ([]contract.Reading, error) {
-	var query = &client.queries.readings.deviceAndName
+	var query = &client.queries.reading.deviceAndName
 
 	query.Lock()
 	defer query.Unlock()

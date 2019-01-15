@@ -13,17 +13,18 @@ import (
 //region Queries
 type coreDataQueries struct {
 	events struct {
-		device    eventQuery
+		all       eventQuery
 		createdB  eventQuery
 		createdLT eventQuery
+		device    eventQuery
 		pushedGT  eventQuery
 	}
 	readings struct {
+		createdB      readingQuery
 		device        readingQuery
 		deviceAndName readingQuery
 		name          readingQuery
 		names         readingQuery
-		createdB      readingQuery
 	}
 }
 
@@ -43,6 +44,10 @@ func (client *ObjectBoxClient) initCoreData() error {
 	var err error
 
 	//region Events
+	if err == nil {
+		client.queries.events.all.EventQuery, err = client.eventBox.QueryOrError()
+	}
+
 	if err == nil {
 		client.queries.events.device.EventQuery, err =
 			client.eventBox.QueryOrError(obx.Event_.Device.Equals("", true))
@@ -99,7 +104,13 @@ func (client *ObjectBoxClient) Events() ([]contract.Event, error) {
 }
 
 func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]contract.Event, error) {
-	panic(notImplemented())
+	// TODO there is no test for this method in the test/db_data.go
+	var query = &client.queries.events.all
+
+	query.Lock()
+	defer query.Unlock()
+
+	return query.Limit(uint64(limit)).Find()
 }
 
 func (client *ObjectBoxClient) AddEvent(event contract.Event) (objectId string, err error) {

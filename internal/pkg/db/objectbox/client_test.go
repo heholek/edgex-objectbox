@@ -1,6 +1,7 @@
 package objectbox
 
 import (
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db/test"
 	"testing"
 
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
@@ -8,12 +9,36 @@ import (
 	"github.com/influxdata/influxdb/pkg/testing/assert"
 )
 
+func TestObjectBox(t *testing.T) {
+	config := db.Configuration{
+		DatabaseName: "coredata",
+	}
+	client, err := NewClient(config)
+	if err != nil {
+		t.Fatalf("Could not connect: %v", err)
+	}
+	test.TestDataDB(t, client)
+
+	//config.DatabaseName = "metadata"
+	//client, err = NewClient(config)
+	//if err != nil {
+	//	t.Fatalf("Could not connect: %v", err)
+	//}
+	//test.TestMetadataDB(t, client)
+	//
+	//config.DatabaseName = "export"
+	//client, err = NewClient(config)
+	//if err != nil {
+	//	t.Fatalf("Could not connect: %v", err)
+	//}
+	//test.TestExportDB(t, client)
+}
+
 func createClient() *ObjectBoxClient {
 	config := db.Configuration{
 		DatabaseName: "unit-test",
 	}
-	client := NewClient(config)
-	err := client.Connect()
+	client, err := NewClient(config)
 	if err != nil {
 		panic("Could not connect DB client: " + err.Error())
 	}

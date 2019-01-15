@@ -12,8 +12,7 @@ func BenchmarkObjectBox(b *testing.B) {
 	config := db.Configuration{
 		DatabaseName: "benchmark-test",
 	}
-	client := NewClient(config)
-	err := client.Connect()
+	client, err := NewClient(config)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -25,8 +24,7 @@ func TestBenchmarkFixedNObjectBox(t *testing.T) {
 	config := db.Configuration{
 		DatabaseName: "benchmark-test",
 	}
-	client := NewClient(config)
-	err := client.Connect()
+	client, err := NewClient(config)
 	if err != nil {
 		fmt.Println(err)
 		return

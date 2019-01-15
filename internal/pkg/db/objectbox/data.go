@@ -16,7 +16,7 @@ func (client *ObjectBoxClient) Events() ([]contract.Event, error) {
 }
 
 func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]contract.Event, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (client *ObjectBoxClient) AddEvent(event contract.Event) (objectId string, err error) {
@@ -35,7 +35,7 @@ func (client *ObjectBoxClient) AddEvent(event contract.Event) (objectId string, 
 }
 
 func (client *ObjectBoxClient) UpdateEvent(e contract.Event) error {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (client *ObjectBoxClient) EventById(idString string) (contract.Event, error) {
@@ -60,15 +60,15 @@ func (client *ObjectBoxClient) EventCount() (count int, err error) {
 }
 
 func (ObjectBoxClient) EventCountByDeviceId(id string) (int, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) DeleteEventById(id string) error {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]contract.Event, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (client *ObjectBoxClient) EventsForDevice(deviceId string) ([]contract.Event, error) {
@@ -81,19 +81,19 @@ func (client *ObjectBoxClient) EventsForDevice(deviceId string) ([]contract.Even
 }
 
 func (ObjectBoxClient) EventsByCreationTime(startTime, endTime int64, limit int) ([]contract.Event, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) ReadingsByDeviceAndValueDescriptor(deviceId, valueDescriptor string, limit int) ([]contract.Reading, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) EventsOlderThanAge(age int64) ([]contract.Event, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) EventsPushed() ([]contract.Event, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (client *ObjectBoxClient) ScrubAllEvents() (err error) {
@@ -123,7 +123,7 @@ func (client *ObjectBoxClient) AddReading(r contract.Reading) (objectId string, 
 }
 
 func (ObjectBoxClient) UpdateReading(r contract.Reading) error {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (client *ObjectBoxClient) ReadingById(idString string) (contract.Reading, error) {
@@ -146,7 +146,7 @@ func (client *ObjectBoxClient) ReadingCount() (count int, err error) {
 }
 
 func (ObjectBoxClient) DeleteReadingById(id string) error {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]contract.Reading, error) {
@@ -159,59 +159,59 @@ func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]c
 }
 
 func (ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int) ([]contract.Reading, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) ReadingsByValueDescriptorNames(names []string, limit int) ([]contract.Reading, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) ReadingsByCreationTime(start, end int64, limit int) ([]contract.Reading, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) AddValueDescriptor(v contract.ValueDescriptor) (string, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) ValueDescriptors() ([]contract.ValueDescriptor, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) UpdateValueDescriptor(v contract.ValueDescriptor) error {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) DeleteValueDescriptorById(id string) error {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) ValueDescriptorByName(name string) (contract.ValueDescriptor, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) ValueDescriptorsByName(names []string) ([]contract.ValueDescriptor, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) ValueDescriptorById(id string) (contract.ValueDescriptor, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) ValueDescriptorsByUomLabel(uomLabel string) ([]contract.ValueDescriptor, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) ValueDescriptorsByLabel(label string) ([]contract.ValueDescriptor, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) ValueDescriptorsByType(t string) ([]contract.ValueDescriptor, error) {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (ObjectBoxClient) ScrubAllValueDescriptors() error {
-	panic("implement me")
+	panic(notImplemented())
 }
 
 func (client *ObjectBoxClient) EnsureAllDurable(async bool) error {

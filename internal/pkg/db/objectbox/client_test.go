@@ -85,7 +85,7 @@ func TestObjectBoxReadings(t *testing.T) {
 	countPre, err = client.readingBox.Count()
 	ok = ok && assert.Equal(t, countPre, uint64(0))
 	if !ok {
-		panic("Non-zero counts")
+		t.Fatal("Non-zero counts")
 	}
 
 	reading := models.Reading{

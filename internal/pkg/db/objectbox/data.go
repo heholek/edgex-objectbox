@@ -192,21 +192,45 @@ func (client *ObjectBoxClient) AddReading(r contract.Reading) (objectId string, 
 	return r.Id, nil
 }
 
-func (ObjectBoxClient) UpdateReading(r contract.Reading) error {
-	panic(notImplemented())
+func (client *ObjectBoxClient) UpdateReading(r contract.Reading) error {
+	r.Modified = db.MakeTimestamp()
+
+	// check whether it exists, otherwise this function must fail
+	if object, err := client.readingById(r.Id); err != nil {
+		return err
+	} else if object == nil {
+		return db.ErrNotFound
+	}
+
+	var err error
+	if client.asyncPut {
+		_, err = client.readingBox.PutAsync(&r)
+	} else {
+		_, err = client.readingBox.Put(&r)
+	}
+
+	return err
 }
 
 func (client *ObjectBoxClient) ReadingById(idString string) (contract.Reading, error) {
-	id, err := idStringToObx(idString)
-	if err != nil {
-		return contract.Reading{}, err
-	}
-
-	object, err := client.readingBoxForReads().Get(id)
+	object, err := client.readingById(idString)
 	if object == nil || err != nil {
 		return contract.Reading{}, err
 	}
 	return *object, nil
+}
+
+func (client *ObjectBoxClient) readingById(idString string) (*contract.Reading, error) {
+	id, err := idStringToObx(idString)
+	if err != nil {
+		return nil, err
+	}
+
+	object, err := client.readingBoxForReads().Get(id)
+	if object == nil || err != nil {
+		return nil, err
+	}
+	return object, nil
 }
 
 func (client *ObjectBoxClient) ReadingCount() (count int, err error) {
@@ -215,8 +239,14 @@ func (client *ObjectBoxClient) ReadingCount() (count int, err error) {
 	return
 }
 
-func (ObjectBoxClient) DeleteReadingById(id string) error {
-	panic(notImplemented())
+func (client ObjectBoxClient) DeleteReadingById(idString string) error {
+	id, err := idStringToObx(idString)
+	if err != nil {
+		return err
+	}
+
+	client.objectBox.AwaitAsyncCompletion()
+	return client.readingBox.Box.Remove(id)
 }
 
 func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]contract.Reading, error) {

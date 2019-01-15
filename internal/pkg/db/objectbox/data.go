@@ -27,6 +27,12 @@ type coreDataQueries struct {
 		name          readingQuery
 		names         readingQuery
 	}
+	valueDescriptor struct {
+		name     valueDescriptorQuery
+		names    valueDescriptorQuery
+		typ      valueDescriptorQuery
+		uomlabel valueDescriptorQuery
+	}
 }
 
 type eventQuery struct {
@@ -39,12 +45,17 @@ type readingQuery struct {
 	sync.Mutex
 }
 
+type valueDescriptorQuery struct {
+	*obx.ValueDescriptorQuery
+	sync.Mutex
+}
+
 //endregion
 
 func (client *ObjectBoxClient) initCoreData() error {
 	var err error
 
-	//region Events
+	//region Event
 	if err == nil {
 		client.queries.event.all.EventQuery, err = client.eventBox.QueryOrError()
 	}
@@ -70,7 +81,7 @@ func (client *ObjectBoxClient) initCoreData() error {
 	}
 	//endregion
 
-	//region Readings
+	//region Reading
 	if err == nil {
 		client.queries.reading.device.ReadingQuery, err =
 			client.readingBox.QueryOrError(obx.Reading_.Device.Equals("", true))
@@ -97,6 +108,28 @@ func (client *ObjectBoxClient) initCoreData() error {
 	}
 	//endregion
 
+	//region ValueDescriptor
+	if err == nil {
+		client.queries.valueDescriptor.name.ValueDescriptorQuery, err =
+			client.valueDescriptorBox.QueryOrError(obx.ValueDescriptor_.Name.Equals("", true))
+	}
+
+	if err == nil {
+		client.queries.valueDescriptor.names.ValueDescriptorQuery, err =
+			client.valueDescriptorBox.QueryOrError(obx.ValueDescriptor_.Name.In(true))
+	}
+
+	if err == nil {
+		client.queries.valueDescriptor.typ.ValueDescriptorQuery, err =
+			client.valueDescriptorBox.QueryOrError(obx.ValueDescriptor_.Type.Equals("", true))
+	}
+
+	if err == nil {
+		client.queries.valueDescriptor.uomlabel.ValueDescriptorQuery, err =
+			client.valueDescriptorBox.QueryOrError(obx.ValueDescriptor_.UomLabel.Equals("", true))
+	}
+	//endregion
+
 	return err
 }
 
@@ -114,7 +147,7 @@ func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]contract.Event, err
 	return query.Limit(uint64(limit)).Find()
 }
 
-func (client *ObjectBoxClient) AddEvent(event contract.Event) (objectId string, err error) {
+func (client *ObjectBoxClient) AddEvent(event contract.Event) (string, error) {
 	if event.Created == 0 {
 		event.Created = db.MakeTimestamp()
 	}
@@ -122,17 +155,15 @@ func (client *ObjectBoxClient) AddEvent(event contract.Event) (objectId string, 
 	// TODO readings
 
 	var id uint64
+	var err error
+
 	if client.asyncPut {
 		id, err = client.eventBox.PutAsync(&event)
 	} else {
 		id, err = client.eventBox.Put(&event)
 	}
-	if err != nil {
-		return
-	}
 
-	event.ID = obx.IdToString(id)
-	return event.ID, nil
+	return obx.IdToString(id), err
 }
 
 func (client *ObjectBoxClient) UpdateEvent(e contract.Event) error {
@@ -155,8 +186,8 @@ func (client *ObjectBoxClient) UpdateEvent(e contract.Event) error {
 	return err
 }
 
-func (client *ObjectBoxClient) EventById(idString string) (contract.Event, error) {
-	object, err := client.eventById(idString)
+func (client *ObjectBoxClient) EventById(id string) (contract.Event, error) {
+	object, err := client.eventById(id)
 	if object == nil || err != nil {
 		return contract.Event{}, err
 	}
@@ -202,8 +233,7 @@ func (client *ObjectBoxClient) DeleteEventById(idString string) error {
 		return err
 	}
 
-	client.objectBox.AwaitAsyncCompletion()
-	return client.eventBox.Box.Remove(id)
+	return client.eventBoxForReads().Box.Remove(id)
 }
 
 func (client *ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]contract.Event, error) {
@@ -260,10 +290,9 @@ func (client *ObjectBoxClient) EventsPushed() ([]contract.Event, error) {
 	return query.Find()
 }
 
-func (client *ObjectBoxClient) ScrubAllEvents() (err error) {
-	err = client.eventBox.RemoveAll()
-	if err != nil {
-		return
+func (client *ObjectBoxClient) ScrubAllEvents() error {
+	if err := client.eventBox.RemoveAll(); err != nil {
+		return err
 	}
 	return client.readingBoxForReads().RemoveAll()
 }
@@ -272,22 +301,21 @@ func (client *ObjectBoxClient) Readings() ([]contract.Reading, error) {
 	return client.readingBoxForReads().GetAll()
 }
 
-func (client *ObjectBoxClient) AddReading(r contract.Reading) (objectId string, err error) {
+func (client *ObjectBoxClient) AddReading(r contract.Reading) (string, error) {
 	if r.Created == 0 {
 		r.Created = db.MakeTimestamp()
 	}
 
 	var id uint64
+	var err error
+
 	if client.asyncPut {
 		id, err = client.readingBox.PutAsync(&r)
 	} else {
 		id, err = client.readingBox.Put(&r)
 	}
-	if err != nil {
-		return
-	}
-	r.Id = obx.IdToString(id)
-	return r.Id, nil
+
+	return obx.IdToString(id), err
 }
 
 func (client *ObjectBoxClient) UpdateReading(r contract.Reading) error {
@@ -310,8 +338,8 @@ func (client *ObjectBoxClient) UpdateReading(r contract.Reading) error {
 	return err
 }
 
-func (client *ObjectBoxClient) ReadingById(idString string) (contract.Reading, error) {
-	object, err := client.readingById(idString)
+func (client *ObjectBoxClient) ReadingById(id string) (contract.Reading, error) {
+	object, err := client.readingById(id)
 	if object == nil || err != nil {
 		return contract.Reading{}, err
 	}
@@ -327,10 +355,9 @@ func (client *ObjectBoxClient) readingById(idString string) (*contract.Reading, 
 	return client.readingBoxForReads().Get(id)
 }
 
-func (client *ObjectBoxClient) ReadingCount() (count int, err error) {
-	countLong, err := client.readingBoxForReads().Count()
-	count = int(countLong)
-	return
+func (client *ObjectBoxClient) ReadingCount() (int, error) {
+	count, err := client.readingBoxForReads().Count()
+	return int(count), err
 }
 
 func (client *ObjectBoxClient) DeleteReadingById(idString string) error {
@@ -341,8 +368,7 @@ func (client *ObjectBoxClient) DeleteReadingById(idString string) error {
 		return err
 	}
 
-	client.objectBox.AwaitAsyncCompletion()
-	return client.readingBox.Box.Remove(id)
+	return client.readingBoxForReads().Box.Remove(id)
 }
 
 func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]contract.Reading, error) {
@@ -413,48 +439,154 @@ func (client *ObjectBoxClient) ReadingsByDeviceAndValueDescriptor(deviceId, valu
 	return query.Limit(uint64(limit)).Find()
 }
 
-func (ObjectBoxClient) AddValueDescriptor(v contract.ValueDescriptor) (string, error) {
-	panic(notImplemented())
+func (client *ObjectBoxClient) AddValueDescriptor(v contract.ValueDescriptor) (string, error) {
+	if v.Created == 0 {
+		v.Created = db.MakeTimestamp()
+	}
+
+	var id uint64
+	var err error
+
+	if client.asyncPut {
+		id, err = client.valueDescriptorBox.PutAsync(&v)
+	} else {
+		id, err = client.valueDescriptorBox.Put(&v)
+	}
+
+	return obx.IdToString(id), err
 }
 
-func (ObjectBoxClient) ValueDescriptors() ([]contract.ValueDescriptor, error) {
-	panic(notImplemented())
+func (client *ObjectBoxClient) ValueDescriptors() ([]contract.ValueDescriptor, error) {
+	return client.valueDescriptorBoxForReads().GetAll()
 }
 
-func (ObjectBoxClient) UpdateValueDescriptor(v contract.ValueDescriptor) error {
-	panic(notImplemented())
+func (client *ObjectBoxClient) UpdateValueDescriptor(v contract.ValueDescriptor) error {
+	v.Modified = db.MakeTimestamp()
+
+	// check whether it exists, otherwise this function must fail
+	if object, err := client.valueDescriptorById(v.Id); err != nil {
+		return err
+	} else if object == nil {
+		return db.ErrNotFound
+	}
+
+	var err error
+	if client.asyncPut {
+		_, err = client.valueDescriptorBox.PutAsync(&v)
+	} else {
+		_, err = client.valueDescriptorBox.Put(&v)
+	}
+
+	return err
 }
 
-func (ObjectBoxClient) DeleteValueDescriptorById(id string) error {
-	panic(notImplemented())
+func (client *ObjectBoxClient) DeleteValueDescriptorById(idString string) error {
+	// TODO maybe this requires a check whether the item exists
+
+	id, err := obx.IdFromString(idString)
+	if err != nil {
+		return err
+	}
+
+	return client.valueDescriptorBoxForReads().Box.Remove(id)
 }
 
-func (ObjectBoxClient) ValueDescriptorByName(name string) (contract.ValueDescriptor, error) {
-	panic(notImplemented())
+func (client *ObjectBoxClient) ValueDescriptorByName(name string) (contract.ValueDescriptor, error) {
+	var query = &client.queries.valueDescriptor.name
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.ValueDescriptor_.Name, name); err != nil {
+		return contract.ValueDescriptor{}, err
+	}
+
+	if list, err := query.Limit(1).Find(); err != nil {
+		return contract.ValueDescriptor{}, err
+	} else if len(list) == 0 {
+		return contract.ValueDescriptor{}, db.ErrNotFound
+	} else {
+		return list[0], nil
+	}
 }
 
-func (ObjectBoxClient) ValueDescriptorsByName(names []string) ([]contract.ValueDescriptor, error) {
-	panic(notImplemented())
+func (client *ObjectBoxClient) ValueDescriptorsByName(names []string) ([]contract.ValueDescriptor, error) {
+	var query = &client.queries.valueDescriptor.names
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParamsIn(obx.ValueDescriptor_.Name, names...); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
-func (ObjectBoxClient) ValueDescriptorById(id string) (contract.ValueDescriptor, error) {
-	panic(notImplemented())
+func (client *ObjectBoxClient) ValueDescriptorById(id string) (contract.ValueDescriptor, error) {
+	object, err := client.valueDescriptorById(id)
+	if object == nil || err != nil {
+		return contract.ValueDescriptor{}, err
+	}
+	return *object, nil
 }
 
-func (ObjectBoxClient) ValueDescriptorsByUomLabel(uomLabel string) ([]contract.ValueDescriptor, error) {
-	panic(notImplemented())
+func (client *ObjectBoxClient) valueDescriptorById(idString string) (*contract.ValueDescriptor, error) {
+	id, err := obx.IdFromString(idString)
+	if err != nil {
+		return nil, err
+	}
+
+	return client.valueDescriptorBoxForReads().Get(id)
 }
 
-func (ObjectBoxClient) ValueDescriptorsByLabel(label string) ([]contract.ValueDescriptor, error) {
-	panic(notImplemented())
+func (client *ObjectBoxClient) ValueDescriptorsByUomLabel(uomLabel string) ([]contract.ValueDescriptor, error) {
+	var query = &client.queries.valueDescriptor.uomlabel
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.ValueDescriptor_.UomLabel, uomLabel); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
-func (ObjectBoxClient) ValueDescriptorsByType(t string) ([]contract.ValueDescriptor, error) {
-	panic(notImplemented())
+func (client *ObjectBoxClient) ValueDescriptorsByLabel(label string) ([]contract.ValueDescriptor, error) {
+	// TODO implement queries on `[]string` in the core
+	if objects, err := client.ValueDescriptors(); err != nil {
+		return nil, err
+	} else {
+		// manually search all value descriptors for the given label
+		var result = make([]contract.ValueDescriptor, 0)
+		for _, object := range objects {
+			for _, str := range object.Labels {
+				if label == str {
+					result = append(result, object)
+					break
+				}
+			}
+		}
+		return result, nil
+	}
 }
 
-func (ObjectBoxClient) ScrubAllValueDescriptors() error {
-	panic(notImplemented())
+func (client *ObjectBoxClient) ValueDescriptorsByType(t string) ([]contract.ValueDescriptor, error) {
+	var query = &client.queries.valueDescriptor.typ
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.ValueDescriptor_.Type, t); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
+}
+
+func (client *ObjectBoxClient) ScrubAllValueDescriptors() error {
+	return client.valueDescriptorBox.RemoveAll()
 }
 
 func (client *ObjectBoxClient) EnsureAllDurable(async bool) error {

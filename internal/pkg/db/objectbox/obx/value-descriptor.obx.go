@@ -157,6 +157,8 @@ func (valueDescriptor_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Modified", objectbox.PropertyType_Long, 4, 3237054308618305119)
 	model.Property("Origin", objectbox.PropertyType_Long, 5, 5995394235402569398)
 	model.Property("Name", objectbox.PropertyType_String, 6, 6449390279028180361)
+	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
+	model.PropertyIndex(1, 617318711400213400)
 	model.Property("Min", objectbox.PropertyType_ByteVector, 7, 2351786936517785177)
 	model.Property("Max", objectbox.PropertyType_ByteVector, 8, 3916993193193971922)
 	model.Property("DefaultValue", objectbox.PropertyType_ByteVector, 9, 5260424374338416983)

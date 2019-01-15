@@ -13,9 +13,11 @@ type ObjectBoxClient struct {
 	strictReads bool
 	asyncPut    bool
 
-	eventBox   *obx.EventBox
-	readingBox *obx.ReadingBox
-	queries    coreDataQueries
+	eventBox           *obx.EventBox
+	readingBox         *obx.ReadingBox
+	valueDescriptorBox *obx.ValueDescriptorBox
+
+	queries coreDataQueries
 }
 
 func NewClient(config db.Configuration) (*ObjectBoxClient, error) {
@@ -34,6 +36,7 @@ func (client *ObjectBoxClient) storeForReads() *ObjectBox {
 }
 
 // Considers client.strictReads
+// TODO this should be moved to the core/objectbox-go - it's also necessary for remove, update, queries
 func (client *ObjectBoxClient) eventBoxForReads() *obx.EventBox {
 	if client.strictReads {
 		client.objectBox.AwaitAsyncCompletion()
@@ -49,6 +52,14 @@ func (client *ObjectBoxClient) readingBoxForReads() *obx.ReadingBox {
 	return client.readingBox
 }
 
+// Considers client.strictReads
+func (client *ObjectBoxClient) valueDescriptorBoxForReads() *obx.ValueDescriptorBox {
+	if client.strictReads {
+		client.objectBox.AwaitAsyncCompletion()
+	}
+	return client.valueDescriptorBox
+}
+
 func (client *ObjectBoxClient) Connect() error {
 	objectBox, err := NewBuilder().Directory(client.config.DatabaseName).Model(obx.ObjectBoxModel()).Build()
 	if err != nil {
@@ -59,8 +70,12 @@ func (client *ObjectBoxClient) Connect() error {
 	client.objectBox = objectBox
 	client.eventBox = obx.BoxForEvent(objectBox)
 	client.readingBox = obx.BoxForReading(objectBox)
-	client.asyncPut = true
-	client.strictReads = true
+	client.valueDescriptorBox = obx.BoxForValueDescriptor(objectBox)
+
+	// don't use asyncPut by default, unique constraint violation fails silently
+	// TODO consider removing altogether or moving to the core
+	//client.asyncPut = true
+	//client.strictReads = true
 
 	return client.initCoreData()
 }
@@ -68,6 +83,8 @@ func (client *ObjectBoxClient) Connect() error {
 func (client *ObjectBoxClient) Disconnect() {
 	client.eventBox = nil
 	client.readingBox = nil
+	client.valueDescriptorBox = nil
+
 	objectBoxToDestroy := client.objectBox
 	client.objectBox = nil
 	if objectBoxToDestroy != nil {

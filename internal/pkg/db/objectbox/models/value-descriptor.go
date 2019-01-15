@@ -20,7 +20,7 @@ type ValueDescriptor struct {
 	Description  string
 	Modified     int64
 	Origin       int64
-	Name         string
+	Name         string      `unique`
 	Min          interface{} `type:"[]byte" converter:"interfaceGob"`
 	Max          interface{} `type:"[]byte" converter:"interfaceGob"`
 	DefaultValue interface{} `type:"[]byte" converter:"interfaceGob"`

@@ -106,7 +106,8 @@
         },
         {
           "id": "6:6449390279028180361",
-          "name": "Name"
+          "name": "Name",
+          "indexId": "1:617318711400213400"
         },
         {
           "id": "7:2351786936517785177",
@@ -140,7 +141,7 @@
     }
   ],
   "lastEntityId": "3:1751690156413893548",
-  "lastIndexId": "",
+  "lastIndexId": "1:617318711400213400",
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": []

@@ -13,13 +13,17 @@ func IdFromString(id string) (uint64, error) {
 	return strconv.ParseUint(id, 10, 64)
 }
 
-// decodes the given byte slice as a complex number
+// TODO benchmark whether it's faster to construct encoder or use a global one with a mutex
+
 func interfaceGobToEntityProperty(dbValue []byte) interface{} {
-	// NOTE that constructing the decoder each time is inefficient and only serves as an example for the property converters
+	if dbValue == nil {
+		return nil
+	}
+
 	var b = bytes.NewBuffer(dbValue)
 	var decoder = gob.NewDecoder(b)
 
-	var value complex128
+	var value interface{}
 	if err := decoder.Decode(&value); err != nil {
 		panic(err)
 	}
@@ -27,9 +31,11 @@ func interfaceGobToEntityProperty(dbValue []byte) interface{} {
 	return value
 }
 
-// encodes the given complex number as a byte slice
 func interfaceGobToDatabaseValue(goValue interface{}) []byte {
-	// NOTE that constructing the encoder each time is inefficient and only serves as an example for the property converters
+	if goValue == nil {
+		return nil
+	}
+
 	var b bytes.Buffer
 	var encoder = gob.NewEncoder(&b)
 

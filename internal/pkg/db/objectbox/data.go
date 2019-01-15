@@ -5,10 +5,43 @@ package objectbox
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
 	contract "github.com/edgexfoundry/edgex-go/pkg/models"
+	"sync"
 )
 
-func (client *ObjectBoxClient) CloseSession() {
-	client.Disconnect()
+//region Queries
+type coreDataQueries struct {
+	events struct {
+		byDeviceId eventQuery
+	}
+	readings struct {
+		byDeviceId readingQuery
+	}
+}
+
+type eventQuery struct {
+	*obx.EventQuery
+	sync.Mutex
+}
+
+type readingQuery struct {
+	*obx.ReadingQuery
+	sync.Mutex
+}
+
+//endregion
+
+func (client *ObjectBoxClient) initCoreData() error {
+	var err error
+
+	if err == nil {
+		client.queries.events.byDeviceId.EventQuery, err = client.eventBox.QueryOrError(obx.Event_.Device.Equals("", true))
+	}
+
+	if err == nil {
+		client.queries.readings.byDeviceId.ReadingQuery, err = client.readingBox.QueryOrError(obx.Reading_.Device.Equals("", true))
+	}
+
+	return err
 }
 
 func (client *ObjectBoxClient) Events() ([]contract.Event, error) {
@@ -72,12 +105,12 @@ func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]contract.Ev
 }
 
 func (client *ObjectBoxClient) EventsForDevice(deviceId string) ([]contract.Event, error) {
-	client.queryEventByDeviceIdMutex.Lock()
-	defer client.queryEventByDeviceIdMutex.Unlock()
-	if err := client.queryEventByDeviceId.SetStringParams(obx.Event_.Device, deviceId); err != nil {
+	client.queries.events.byDeviceId.Lock()
+	defer client.queries.events.byDeviceId.Unlock()
+	if err := client.queries.events.byDeviceId.SetStringParams(obx.Event_.Device, deviceId); err != nil {
 		return nil, err
 	}
-	return client.queryEventByDeviceId.Find()
+	return client.queries.events.byDeviceId.Find()
 }
 
 func (ObjectBoxClient) EventsByCreationTime(startTime, endTime int64, limit int) ([]contract.Event, error) {
@@ -150,12 +183,12 @@ func (ObjectBoxClient) DeleteReadingById(id string) error {
 }
 
 func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]contract.Reading, error) {
-	client.queryReadingByDeviceIdMutex.Lock()
-	defer client.queryReadingByDeviceIdMutex.Unlock()
-	if err := client.queryReadingByDeviceId.SetStringParams(obx.Reading_.Device, deviceId); err != nil {
+	client.queries.readings.byDeviceId.Lock()
+	defer client.queries.readings.byDeviceId.Unlock()
+	if err := client.queries.readings.byDeviceId.SetStringParams(obx.Reading_.Device, deviceId); err != nil {
 		return nil, err
 	}
-	return client.queryReadingByDeviceId.Limit(uint64(limit)).Find()
+	return client.queries.readings.byDeviceId.Limit(uint64(limit)).Find()
 }
 
 func (ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int) ([]contract.Reading, error) {

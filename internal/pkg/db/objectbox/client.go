@@ -4,24 +4,18 @@ import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
 	. "github.com/objectbox/objectbox-go/objectbox"
-	"sync"
 )
 
 type ObjectBoxClient struct {
 	config    db.Configuration
 	objectBox *ObjectBox
 
-	eventBox   *obx.EventBox
-	readingBox *obx.ReadingBox
-
-	queryEventByDeviceId      *obx.EventQuery
-	queryEventByDeviceIdMutex sync.Mutex
-
-	queryReadingByDeviceId      *obx.ReadingQuery
-	queryReadingByDeviceIdMutex sync.Mutex
-
 	strictReads bool
 	asyncPut    bool
+
+	eventBox   *obx.EventBox
+	readingBox *obx.ReadingBox
+	queries    coreDataQueries
 }
 
 func NewClient(config db.Configuration) (*ObjectBoxClient, error) {
@@ -68,17 +62,7 @@ func (client *ObjectBoxClient) Connect() error {
 	client.asyncPut = true
 	client.strictReads = true
 
-	client.queryEventByDeviceId, err = client.eventBox.QueryOrError(obx.Event_.Device.Equals("", true))
-	if err != nil {
-		return err
-	}
-
-	client.queryReadingByDeviceId, err = client.readingBox.QueryOrError(obx.Reading_.Device.Equals("", true))
-	if err != nil {
-		return err
-	}
-
-	return err
+	return client.initCoreData()
 }
 
 func (client *ObjectBoxClient) Disconnect() {
@@ -89,4 +73,8 @@ func (client *ObjectBoxClient) Disconnect() {
 	if objectBoxToDestroy != nil {
 		objectBoxToDestroy.Close()
 	}
+}
+
+func (client *ObjectBoxClient) CloseSession() {
+	client.Disconnect()
 }

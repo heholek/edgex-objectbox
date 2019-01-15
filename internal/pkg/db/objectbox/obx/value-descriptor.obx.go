@@ -17,7 +17,7 @@ type valueDescriptor_EntityInfo struct {
 
 var ValueDescriptorBinding = valueDescriptor_EntityInfo{
 	Id:  3,
-	Uid: 1751690156413893548,
+	Uid: 9113527293744116033,
 }
 
 // ValueDescriptor_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -149,24 +149,24 @@ func (valueDescriptor_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by the ObjectBox during model build
 func (valueDescriptor_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("ValueDescriptor", 3, 1751690156413893548)
-	model.Property("Id", objectbox.PropertyType_Long, 1, 3796088645062315876)
+	model.Entity("ValueDescriptor", 3, 9113527293744116033)
+	model.Property("Id", objectbox.PropertyType_Long, 1, 5668011640220758416)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 3173370656425927704)
-	model.Property("Description", objectbox.PropertyType_String, 3, 3177007975155659281)
-	model.Property("Modified", objectbox.PropertyType_Long, 4, 3237054308618305119)
-	model.Property("Origin", objectbox.PropertyType_Long, 5, 5995394235402569398)
-	model.Property("Name", objectbox.PropertyType_String, 6, 6449390279028180361)
+	model.Property("Created", objectbox.PropertyType_Long, 2, 2202767148008151358)
+	model.Property("Description", objectbox.PropertyType_String, 3, 1404509794464203527)
+	model.Property("Modified", objectbox.PropertyType_Long, 4, 1907691314119504675)
+	model.Property("Origin", objectbox.PropertyType_Long, 5, 7390144206106221504)
+	model.Property("Name", objectbox.PropertyType_String, 6, 5292328619605677423)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(1, 617318711400213400)
-	model.Property("Min", objectbox.PropertyType_ByteVector, 7, 2351786936517785177)
-	model.Property("Max", objectbox.PropertyType_ByteVector, 8, 3916993193193971922)
-	model.Property("DefaultValue", objectbox.PropertyType_ByteVector, 9, 5260424374338416983)
-	model.Property("Type", objectbox.PropertyType_String, 10, 7378960548472059417)
-	model.Property("UomLabel", objectbox.PropertyType_String, 11, 3549784188722028947)
-	model.Property("Formatting", objectbox.PropertyType_String, 12, 5864986347465942473)
-	model.Property("Labels", objectbox.PropertyType_StringVector, 13, 6341514991245011577)
-	model.EntityLastPropertyId(13, 6341514991245011577)
+	model.PropertyIndex(1, 86655610028796114)
+	model.Property("Min", objectbox.PropertyType_ByteVector, 7, 7192582859110410174)
+	model.Property("Max", objectbox.PropertyType_ByteVector, 8, 841470987745119610)
+	model.Property("DefaultValue", objectbox.PropertyType_ByteVector, 9, 943595381172771965)
+	model.Property("Type", objectbox.PropertyType_String, 10, 3016896467934448303)
+	model.Property("UomLabel", objectbox.PropertyType_String, 11, 2080618197948834777)
+	model.Property("Formatting", objectbox.PropertyType_String, 12, 1585659454876602817)
+	model.Property("Labels", objectbox.PropertyType_StringVector, 13, 2069188564448626443)
+	model.EntityLastPropertyId(13, 2069188564448626443)
 }
 
 // GetId is called by the ObjectBox during Put operations to check for existing ID on an object

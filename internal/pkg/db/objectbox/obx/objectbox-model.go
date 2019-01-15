@@ -12,11 +12,11 @@ func ObjectBoxModel() *objectbox.Model {
 	model := objectbox.NewModel()
 	model.GeneratorVersion(1)
 
-	model.RegisterBinding(ReadingBinding)
 	model.RegisterBinding(EventBinding)
+	model.RegisterBinding(ReadingBinding)
 	model.RegisterBinding(ValueDescriptorBinding)
-	model.LastEntityId(3, 1751690156413893548)
-	model.LastIndexId(1, 617318711400213400)
+	model.LastEntityId(3, 9113527293744116033)
+	model.LastIndexId(1, 86655610028796114)
 
 	return model
 }

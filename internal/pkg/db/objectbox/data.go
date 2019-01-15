@@ -3,6 +3,7 @@ package objectbox
 // implements core-data service contract
 
 import (
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
 	contract "github.com/edgexfoundry/edgex-go/pkg/models"
 	"sync"
@@ -11,10 +12,14 @@ import (
 //region Queries
 type coreDataQueries struct {
 	events struct {
-		byDeviceId eventQuery
+		device eventQuery
 	}
 	readings struct {
-		byDeviceId readingQuery
+		device        readingQuery
+		deviceAndName readingQuery
+		name          readingQuery
+		names         readingQuery
+		created       readingQuery
 	}
 }
 
@@ -34,12 +39,36 @@ func (client *ObjectBoxClient) initCoreData() error {
 	var err error
 
 	if err == nil {
-		client.queries.events.byDeviceId.EventQuery, err = client.eventBox.QueryOrError(obx.Event_.Device.Equals("", true))
+		client.queries.events.device.EventQuery, err =
+			client.eventBox.QueryOrError(obx.Event_.Device.Equals("", true))
 	}
 
 	if err == nil {
-		client.queries.readings.byDeviceId.ReadingQuery, err = client.readingBox.QueryOrError(obx.Reading_.Device.Equals("", true))
+		client.queries.readings.device.ReadingQuery, err =
+			client.readingBox.QueryOrError(obx.Reading_.Device.Equals("", true))
 	}
+
+	if err == nil {
+		client.queries.readings.deviceAndName.ReadingQuery, err =
+			client.readingBox.QueryOrError(obx.Reading_.Device.Equals("", true), obx.Reading_.Name.Equals("", true))
+	}
+
+	//region Readings
+	if err == nil {
+		client.queries.readings.name.ReadingQuery, err =
+			client.readingBox.QueryOrError(obx.Reading_.Name.Equals("", true))
+	}
+
+	if err == nil {
+		client.queries.readings.names.ReadingQuery, err =
+			client.readingBox.QueryOrError(obx.Reading_.Name.In(true))
+	}
+
+	if err == nil {
+		client.queries.readings.created.ReadingQuery, err =
+			client.readingBox.QueryOrError(obx.Reading_.Created.Between(0, 0))
+	}
+	//endregion
 
 	return err
 }
@@ -53,6 +82,10 @@ func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]contract.Event, err
 }
 
 func (client *ObjectBoxClient) AddEvent(event contract.Event) (objectId string, err error) {
+	if event.Created == 0 {
+		event.Created = db.MakeTimestamp()
+	}
+
 	var id uint64
 	if client.asyncPut {
 		id, err = client.eventBox.PutAsync(&event)
@@ -105,19 +138,19 @@ func (ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]contract.Ev
 }
 
 func (client *ObjectBoxClient) EventsForDevice(deviceId string) ([]contract.Event, error) {
-	client.queries.events.byDeviceId.Lock()
-	defer client.queries.events.byDeviceId.Unlock()
-	if err := client.queries.events.byDeviceId.SetStringParams(obx.Event_.Device, deviceId); err != nil {
+	var query = &client.queries.events.device
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.Event_.Device, deviceId); err != nil {
 		return nil, err
 	}
-	return client.queries.events.byDeviceId.Find()
+
+	return query.Find()
 }
 
 func (ObjectBoxClient) EventsByCreationTime(startTime, endTime int64, limit int) ([]contract.Event, error) {
-	panic(notImplemented())
-}
-
-func (ObjectBoxClient) ReadingsByDeviceAndValueDescriptor(deviceId, valueDescriptor string, limit int) ([]contract.Reading, error) {
 	panic(notImplemented())
 }
 
@@ -142,6 +175,10 @@ func (client *ObjectBoxClient) Readings() ([]contract.Reading, error) {
 }
 
 func (client *ObjectBoxClient) AddReading(r contract.Reading) (objectId string, err error) {
+	if r.Created == 0 {
+		r.Created = db.MakeTimestamp()
+	}
+
 	var id uint64
 	if client.asyncPut {
 		id, err = client.readingBox.PutAsync(&r)
@@ -183,24 +220,71 @@ func (ObjectBoxClient) DeleteReadingById(id string) error {
 }
 
 func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]contract.Reading, error) {
-	client.queries.readings.byDeviceId.Lock()
-	defer client.queries.readings.byDeviceId.Unlock()
-	if err := client.queries.readings.byDeviceId.SetStringParams(obx.Reading_.Device, deviceId); err != nil {
+	var query = &client.queries.readings.device
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.Reading_.Device, deviceId); err != nil {
 		return nil, err
 	}
-	return client.queries.readings.byDeviceId.Limit(uint64(limit)).Find()
+
+	return query.Limit(uint64(limit)).Find()
 }
 
-func (ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int) ([]contract.Reading, error) {
-	panic(notImplemented())
+func (client *ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int) ([]contract.Reading, error) {
+	var query = &client.queries.readings.name
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.Reading_.Name, name); err != nil {
+		return nil, err
+	}
+
+	return query.Limit(uint64(limit)).Find()
 }
 
-func (ObjectBoxClient) ReadingsByValueDescriptorNames(names []string, limit int) ([]contract.Reading, error) {
-	panic(notImplemented())
+func (client *ObjectBoxClient) ReadingsByValueDescriptorNames(names []string, limit int) ([]contract.Reading, error) {
+	var query = &client.queries.readings.names
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParamsIn(obx.Reading_.Name, names...); err != nil {
+		return nil, err
+	}
+
+	return query.Limit(uint64(limit)).Find()
 }
 
-func (ObjectBoxClient) ReadingsByCreationTime(start, end int64, limit int) ([]contract.Reading, error) {
-	panic(notImplemented())
+func (client *ObjectBoxClient) ReadingsByCreationTime(start, end int64, limit int) ([]contract.Reading, error) {
+	var query = &client.queries.readings.created
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetInt64Params(obx.Reading_.Created, start, end); err != nil {
+		return nil, err
+	}
+
+	return query.Limit(uint64(limit)).Find()
+}
+
+func (client *ObjectBoxClient) ReadingsByDeviceAndValueDescriptor(deviceId, valueDescriptor string, limit int) ([]contract.Reading, error) {
+	var query = &client.queries.readings.deviceAndName
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.Reading_.Device, deviceId); err != nil {
+		return nil, err
+	}
+	if err := query.SetStringParams(obx.Reading_.Name, valueDescriptor); err != nil {
+		return nil, err
+	}
+
+	return query.Limit(uint64(limit)).Find()
 }
 
 func (ObjectBoxClient) AddValueDescriptor(v contract.ValueDescriptor) (string, error) {

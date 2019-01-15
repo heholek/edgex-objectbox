@@ -2,6 +2,7 @@ package objectbox
 
 // implements core-data service contract
 // TODO queries are not "async-put safe", i. e. there might be changes that have not been written
+// TODO indexes
 
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
@@ -130,7 +131,7 @@ func (client *ObjectBoxClient) AddEvent(event contract.Event) (objectId string, 
 		return
 	}
 
-	event.ID = idObxToString(id)
+	event.ID = obx.IdToString(id)
 	return event.ID, nil
 }
 
@@ -163,7 +164,7 @@ func (client *ObjectBoxClient) EventById(idString string) (contract.Event, error
 }
 
 func (client *ObjectBoxClient) eventById(idString string) (*contract.Event, error) {
-	id, err := idStringToObx(idString)
+	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +197,7 @@ func (client *ObjectBoxClient) EventCountByDeviceId(id string) (int, error) {
 func (client *ObjectBoxClient) DeleteEventById(idString string) error {
 	// TODO maybe this requires a check whether the item exists
 
-	id, err := idStringToObx(idString)
+	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return err
 	}
@@ -285,7 +286,7 @@ func (client *ObjectBoxClient) AddReading(r contract.Reading) (objectId string, 
 	if err != nil {
 		return
 	}
-	r.Id = idObxToString(id)
+	r.Id = obx.IdToString(id)
 	return r.Id, nil
 }
 
@@ -318,7 +319,7 @@ func (client *ObjectBoxClient) ReadingById(idString string) (contract.Reading, e
 }
 
 func (client *ObjectBoxClient) readingById(idString string) (*contract.Reading, error) {
-	id, err := idStringToObx(idString)
+	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return nil, err
 	}
@@ -335,7 +336,7 @@ func (client *ObjectBoxClient) ReadingCount() (count int, err error) {
 func (client *ObjectBoxClient) DeleteReadingById(idString string) error {
 	// TODO maybe this requires a check whether the item exists
 
-	id, err := idStringToObx(idString)
+	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return err
 	}

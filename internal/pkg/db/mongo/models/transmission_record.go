@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2018 Dell Inc.
+ * Copyright 2019 Dell Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -10,20 +10,30 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  *******************************************************************************/
-package logging
 
-import "github.com/edgexfoundry/edgex-go/internal/pkg/config"
+package models
 
-type ConfigurationStruct struct {
-	Writable    WritableInfo
-	Databases   map[string]config.DatabaseInfo
-	Logging     config.LoggingInfo
-	Registry    config.RegistryInfo
-	Service     config.ServiceInfo
+import (
+	contract "github.com/edgexfoundry/edgex-go/pkg/models"
+)
+
+type TransmissionRecord struct {
+	Status   contract.TransmissionStatus `bson:"status"`
+	Response string                      `bson:"response"`
+	Sent     int64                       `bson:"sent"`
 }
 
-type WritableInfo struct {
-	Persistence string
-	LogLevel    string
+func (tr *TransmissionRecord) ToContract() (c contract.TransmissionRecord) {
+	c.Status = tr.Status
+	c.Response = tr.Response
+	c.Sent = tr.Sent
+	return
+}
+
+func (tr *TransmissionRecord) FromContract(from contract.TransmissionRecord) {
+	tr.Status = from.Status
+	tr.Response = from.Response
+	tr.Sent = from.Sent
 }

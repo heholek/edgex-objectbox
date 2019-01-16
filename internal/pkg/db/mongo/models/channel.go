@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2018 Dell Inc.
+ * Copyright 2019 Dell Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -10,20 +10,27 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  *******************************************************************************/
-package logging
+package models
 
-import "github.com/edgexfoundry/edgex-go/internal/pkg/config"
+import contract "github.com/edgexfoundry/edgex-go/pkg/models"
 
-type ConfigurationStruct struct {
-	Writable    WritableInfo
-	Databases   map[string]config.DatabaseInfo
-	Logging     config.LoggingInfo
-	Registry    config.RegistryInfo
-	Service     config.ServiceInfo
+type Channel struct {
+	Type          contract.ChannelType `bson:"type,omitempty"`
+	MailAddresses []string             `bson:"mailAddresses,omitempty"`
+	Url           string               `bson:"url,omitempty"`
 }
 
-type WritableInfo struct {
-	Persistence string
-	LogLevel    string
+func (channel *Channel) ToContract() (c contract.Channel) {
+	c.Type = channel.Type
+	c.MailAddresses = channel.MailAddresses
+	c.Url = channel.Url
+	return
+}
+
+func (channel *Channel) FromContract(from contract.Channel) {
+	channel.Type = from.Type
+	channel.MailAddresses = from.MailAddresses
+	channel.Url = from.Url
 }

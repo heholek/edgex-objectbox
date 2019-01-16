@@ -100,7 +100,7 @@ func (mc MongoClient) deleteById(col string, id string) error {
 	return errorMap(err)
 }
 
-func (mc *MongoClient) EnsureAllDurable(async bool) error {
+func (mc MongoClient) EnsureAllDurable(async bool) error {
 	s := mc.getSessionCopy()
 	defer s.Close()
 	return mc.database.Session.Fsync(async)

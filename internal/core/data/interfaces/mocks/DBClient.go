@@ -764,3 +764,7 @@ func (_m *DBClient) ValueDescriptorsByUomLabel(uomLabel string) ([]models.ValueD
 
 	return r0, r1
 }
+
+func (_M *DBClient) EnsureAllDurable(async bool) error {
+	return nil
+}

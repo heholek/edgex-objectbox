@@ -7,7 +7,6 @@ import (
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
-	"strconv"
 )
 
 type valueDescriptor_EntityInfo struct {
@@ -171,23 +170,17 @@ func (valueDescriptor_EntityInfo) AddToModel(model *objectbox.Model) {
 
 // GetId is called by the ObjectBox during Put operations to check for existing ID on an object
 func (valueDescriptor_EntityInfo) GetId(object interface{}) (uint64, error) {
-	var strId string
 	if obj, ok := object.(*ValueDescriptor); ok {
-		strId = obj.Id
+		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
 	} else {
-		strId = object.(ValueDescriptor).Id
-	}
-	if len(strId) == 0 {
-		return 0, nil
-	} else {
-		return strconv.ParseUint(strId, 10, 64)
+		return objectbox.StringIdConvertToDatabaseValue(object.(ValueDescriptor).Id), nil
 	}
 }
 
 // SetId is called by the ObjectBox during Put to update an ID on an object that has just been inserted
 func (valueDescriptor_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*ValueDescriptor); ok {
-		obj.Id = strconv.FormatUint(id, 10)
+		obj.Id = objectbox.StringIdConvertToEntityProperty(id)
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(ValueDescriptor).Id
@@ -233,7 +226,7 @@ func (valueDescriptor_EntityInfo) ToObject(bytes []byte) interface{} {
 	}
 
 	return &ValueDescriptor{
-		Id:           strconv.FormatUint(table.GetUint64Slot(4, 0), 10),
+		Id:           objectbox.StringIdConvertToEntityProperty(table.GetUint64Slot(4, 0)),
 		Created:      table.GetInt64Slot(6, 0),
 		Description:  fbutils.GetStringSlot(table, 8),
 		Modified:     table.GetInt64Slot(10, 0),
@@ -338,12 +331,7 @@ func (box *ValueDescriptorBox) GetAll() ([]ValueDescriptor, error) {
 
 // Remove deletes a single object
 func (box *ValueDescriptorBox) Remove(object *ValueDescriptor) (err error) {
-	idUint64, parseErr := strconv.ParseUint(object.Id, 10, 64)
-	if parseErr != nil {
-		return parseErr
-	}
-
-	return box.Box.Remove(idUint64)
+	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.Id))
 }
 
 // Creates a query with the given conditions. Use the fields of the ValueDescriptor_ struct to create conditions.

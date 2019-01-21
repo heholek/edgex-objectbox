@@ -3,6 +3,8 @@ package obx
 import (
 	"bytes"
 	"encoding/gob"
+	"github.com/globalsign/mgo/bson"
+	"github.com/objectbox/objectbox-go/objectbox"
 	"strconv"
 )
 
@@ -11,6 +13,14 @@ func IdToString(id uint64) string {
 }
 func IdFromString(id string) (uint64, error) {
 	return strconv.ParseUint(id, 10, 64)
+}
+
+func bsonIdToEntityProperty(dbValue uint64) bson.ObjectId {
+	return bson.ObjectId(objectbox.StringIdConvertToEntityProperty(dbValue))
+}
+
+func bsonIdToDatabaseValue(goValue bson.ObjectId) uint64 {
+	return objectbox.StringIdConvertToDatabaseValue(string(goValue))
 }
 
 // TODO benchmark whether it's faster to construct encoder or use a global one with a mutex

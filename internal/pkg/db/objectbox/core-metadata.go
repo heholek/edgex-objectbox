@@ -1,7 +1,6 @@
 package objectbox
 
-// implements core-data service contract
-// TODO queries are not "async-put safe", i. e. there might be changes that have not been written
+// implements core-metadata service contract
 // TODO indexes
 
 import (
@@ -32,7 +31,6 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	}
 }
 
-// Schedule event
 func (client *coreMetaDataClient) GetAllScheduleEvents(se *[]contract.ScheduleEvent) error {
 	panic(notImplemented())
 }
@@ -93,27 +91,29 @@ func (client *coreMetaDataClient) GetDeviceReportsByScheduleEventName(n string) 
 }
 func (client *coreMetaDataClient) DeleteDeviceReportById(id string) error { panic(notImplemented()) }
 func (client *coreMetaDataClient) UpdateDevice(d contract.Device) error   { panic(notImplemented()) }
-func (client *coreMetaDataClient) GetDeviceById(d *contract.Device, id string) error {
+func (client *coreMetaDataClient) GetDeviceById(id string) (contract.Device, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) GetDeviceByName(d *contract.Device, n string) error {
+func (client *coreMetaDataClient) GetDeviceByName(n string) (contract.Device, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) GetAllDevices(d *[]contract.Device) error { panic(notImplemented()) }
-func (client *coreMetaDataClient) GetDevicesByProfileId(d *[]contract.Device, pid string) error {
+func (client *coreMetaDataClient) GetAllDevices() ([]contract.Device, error) { panic(notImplemented()) }
+func (client *coreMetaDataClient) GetDevicesByProfileId(pid string) ([]contract.Device, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) GetDevicesByServiceId(d *[]contract.Device, sid string) error {
+func (client *coreMetaDataClient) GetDevicesByServiceId(sid string) ([]contract.Device, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) GetDevicesByAddressableId(d *[]contract.Device, aid string) error {
+func (client *coreMetaDataClient) GetDevicesByAddressableId(aid string) ([]contract.Device, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) GetDevicesWithLabel(d *[]contract.Device, l string) error {
+func (client *coreMetaDataClient) GetDevicesWithLabel(l string) ([]contract.Device, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) AddDevice(d *contract.Device) error { panic(notImplemented()) }
-func (client *coreMetaDataClient) DeleteDeviceById(id string) error   { panic(notImplemented()) }
+func (client *coreMetaDataClient) AddDevice(d contract.Device) (string, error) {
+	panic(notImplemented())
+}
+func (client *coreMetaDataClient) DeleteDeviceById(id string) error { panic(notImplemented()) }
 func (client *coreMetaDataClient) UpdateDeviceProfile(dp contract.DeviceProfile) error {
 	panic(notImplemented())
 }
@@ -195,25 +195,25 @@ func (client *coreMetaDataClient) AddDeviceService(ds contract.DeviceService) (s
 	panic(notImplemented())
 }
 func (client *coreMetaDataClient) DeleteDeviceServiceById(id string) error { panic(notImplemented()) }
-func (client *coreMetaDataClient) GetProvisionWatcherById(pw *contract.ProvisionWatcher, id string) error {
+func (client *coreMetaDataClient) GetProvisionWatcherById(id string) (contract.ProvisionWatcher, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) GetAllProvisionWatchers(pw *[]contract.ProvisionWatcher) error {
+func (client *coreMetaDataClient) GetAllProvisionWatchers() ([]contract.ProvisionWatcher, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) GetProvisionWatcherByName(pw *contract.ProvisionWatcher, n string) error {
+func (client *coreMetaDataClient) GetProvisionWatcherByName(n string) (contract.ProvisionWatcher, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) GetProvisionWatchersByProfileId(pw *[]contract.ProvisionWatcher, id string) error {
+func (client *coreMetaDataClient) GetProvisionWatchersByProfileId(id string) ([]contract.ProvisionWatcher, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) GetProvisionWatchersByServiceId(pw *[]contract.ProvisionWatcher, id string) error {
+func (client *coreMetaDataClient) GetProvisionWatchersByServiceId(id string) ([]contract.ProvisionWatcher, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) GetProvisionWatchersByIdentifier(pw *[]contract.ProvisionWatcher, k string, v string) error {
+func (client *coreMetaDataClient) GetProvisionWatchersByIdentifier(k string, v string) ([]contract.ProvisionWatcher, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) AddProvisionWatcher(pw *contract.ProvisionWatcher) error {
+func (client *coreMetaDataClient) AddProvisionWatcher(pw contract.ProvisionWatcher) (string, error) {
 	panic(notImplemented())
 }
 func (client *coreMetaDataClient) UpdateProvisionWatcher(pw contract.ProvisionWatcher) error {
@@ -232,6 +232,6 @@ func (client *coreMetaDataClient) AddCommand(c contract.Command) (string, error)
 func (client *coreMetaDataClient) GetAllCommands() ([]contract.Command, error) {
 	panic(notImplemented())
 }
-func (client *coreMetaDataClient) UpdateCommand(c *contract.Command) error { panic(notImplemented()) }
-func (client *coreMetaDataClient) DeleteCommandById(id string) error       { panic(notImplemented()) }
-func (client *coreMetaDataClient) ScrubMetadata() error                    { panic(notImplemented()) }
+func (client *coreMetaDataClient) UpdateCommand(c contract.Command) error { panic(notImplemented()) }
+func (client *coreMetaDataClient) DeleteCommandById(id string) error      { panic(notImplemented()) }
+func (client *coreMetaDataClient) ScrubMetadata() error                   { panic(notImplemented()) }

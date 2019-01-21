@@ -138,9 +138,48 @@
           "name": "Labels"
         }
       ]
+    },
+    {
+      "id": "4:1455973466242300916",
+      "name": "ScheduleEvent",
+      "lastPropertyId": "8:5154075561060469833",
+      "properties": [
+        {
+          "id": "1:4620414909166906839",
+          "name": "Created"
+        },
+        {
+          "id": "2:2096031283179340959",
+          "name": "Modified"
+        },
+        {
+          "id": "3:4845046395160494107",
+          "name": "Origin"
+        },
+        {
+          "id": "4:2839544983505662993",
+          "name": "Id"
+        },
+        {
+          "id": "5:5814526896493854414",
+          "name": "Name"
+        },
+        {
+          "id": "6:4627498716027134366",
+          "name": "Schedule"
+        },
+        {
+          "id": "7:8508259254043869480",
+          "name": "Parameters"
+        },
+        {
+          "id": "8:5154075561060469833",
+          "name": "Service"
+        }
+      ]
     }
   ],
-  "lastEntityId": "3:9113527293744116033",
+  "lastEntityId": "4:1455973466242300916",
   "lastIndexId": "1:86655610028796114",
   "retiredEntityUids": [],
   "retiredIndexUids": [],

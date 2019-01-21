@@ -1,7 +1,6 @@
 package objectbox
 
 // implements core-data service contract
-// TODO queries are not "async-put safe", i. e. there might be changes that have not been written
 // TODO indexes
 
 import (

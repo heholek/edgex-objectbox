@@ -7,7 +7,6 @@ import (
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
-	"strconv"
 )
 
 type event_EntityInfo struct {
@@ -109,23 +108,17 @@ func (event_EntityInfo) AddToModel(model *objectbox.Model) {
 
 // GetId is called by the ObjectBox during Put operations to check for existing ID on an object
 func (event_EntityInfo) GetId(object interface{}) (uint64, error) {
-	var strId string
 	if obj, ok := object.(*Event); ok {
-		strId = obj.ID
+		return objectbox.StringIdConvertToDatabaseValue(obj.ID), nil
 	} else {
-		strId = object.(Event).ID
-	}
-	if len(strId) == 0 {
-		return 0, nil
-	} else {
-		return strconv.ParseUint(strId, 10, 64)
+		return objectbox.StringIdConvertToDatabaseValue(object.(Event).ID), nil
 	}
 }
 
 // SetId is called by the ObjectBox during Put to update an ID on an object that has just been inserted
 func (event_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*Event); ok {
-		obj.ID = strconv.FormatUint(id, 10)
+		obj.ID = objectbox.StringIdConvertToEntityProperty(id)
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Event).ID
@@ -158,7 +151,7 @@ func (event_EntityInfo) ToObject(bytes []byte) interface{} {
 	}
 
 	return &Event{
-		ID:       strconv.FormatUint(table.GetUint64Slot(4, 0), 10),
+		ID:       objectbox.StringIdConvertToEntityProperty(table.GetUint64Slot(4, 0)),
 		Pushed:   table.GetInt64Slot(6, 0),
 		Device:   fbutils.GetStringSlot(table, 8),
 		Created:  table.GetInt64Slot(10, 0),
@@ -257,12 +250,7 @@ func (box *EventBox) GetAll() ([]Event, error) {
 
 // Remove deletes a single object
 func (box *EventBox) Remove(object *Event) (err error) {
-	idUint64, parseErr := strconv.ParseUint(object.ID, 10, 64)
-	if parseErr != nil {
-		return parseErr
-	}
-
-	return box.Box.Remove(idUint64)
+	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.ID))
 }
 
 // Creates a query with the given conditions. Use the fields of the Event_ struct to create conditions.

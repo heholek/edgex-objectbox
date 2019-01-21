@@ -64,9 +64,9 @@ type valueDescriptorQuery struct {
 //endregion
 
 func newCoreDataClient(objectBox *objectbox.ObjectBox) (*coreDataClient, error) {
+	var client = &coreDataClient{objectBox: objectBox}
 	var err error
 
-	var client = &coreDataClient{objectBox: objectBox}
 	client.eventBox = obx.BoxForEvent(client.objectBox)
 	client.readingBox = obx.BoxForReading(client.objectBox)
 	client.valueDescriptorBox = obx.BoxForValueDescriptor(client.objectBox)
@@ -609,5 +609,3 @@ func (client *coreDataClient) ValueDescriptorsByType(t string) ([]contract.Value
 func (client *coreDataClient) ScrubAllValueDescriptors() error {
 	return client.valueDescriptorBox.RemoveAll()
 }
-
-//endregion

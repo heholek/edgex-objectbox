@@ -10,22 +10,24 @@ import (
 )
 
 func TestObjectBox(t *testing.T) {
-	config := db.Configuration{
-		DatabaseName: "coredata",
-	}
-	client, err := NewClient(config)
-	if err != nil {
-		t.Fatalf("Could not connect: %v", err)
-	}
-	test.TestDataDB(t, client)
+	var client *ObjectBoxClient
+	var err error
+	var config db.Configuration
 
-	//config.DatabaseName = "metadata"
+	//config.DatabaseName = "coredata"
 	//client, err = NewClient(config)
 	//if err != nil {
 	//	t.Fatalf("Could not connect: %v", err)
 	//}
-	//test.TestMetadataDB(t, client)
-	//
+	//test.TestDataDB(t, client)
+
+	config.DatabaseName = "metadata"
+	client, err = NewClient(config)
+	if err != nil {
+		t.Fatalf("Could not connect: %v", err)
+	}
+	test.TestMetadataDB(t, client)
+
 	//config.DatabaseName = "export"
 	//client, err = NewClient(config)
 	//if err != nil {

@@ -12,6 +12,7 @@ type ObjectBoxClient struct {
 
 	// embedded services
 	*coreDataClient
+	*coreMetaDataClient
 }
 
 const asyncPut = true
@@ -33,6 +34,10 @@ func (client *ObjectBoxClient) Connect() error {
 	// TODO if we would know which service this "NewClient" call needs, we could start only that one
 	if err == nil {
 		client.coreDataClient, err = newCoreDataClient(objectBox)
+	}
+
+	if err == nil {
+		client.coreMetaDataClient, err = newCoreMetaDataClient(objectBox)
 	}
 
 	if err != nil {

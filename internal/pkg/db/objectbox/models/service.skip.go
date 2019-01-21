@@ -23,7 +23,7 @@ import (
 type Service struct {
 	models.DescribedObject
 	Id             string
-	Name           string
+	Name           string `unique`
 	LastConnected  int64
 	LastReported   int64
 	OperatingState models.OperatingState

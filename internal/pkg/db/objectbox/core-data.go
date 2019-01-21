@@ -8,8 +8,19 @@ import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
 	contract "github.com/edgexfoundry/edgex-go/pkg/models"
+	"github.com/objectbox/objectbox-go/objectbox"
 	"sync"
 )
+
+type coreDataClient struct {
+	objectBox *objectbox.ObjectBox
+
+	eventBox           *obx.EventBox
+	readingBox         *obx.ReadingBox
+	valueDescriptorBox *obx.ValueDescriptorBox
+
+	queries coreDataQueries
+}
 
 //region Queries
 type coreDataQueries struct {
@@ -52,8 +63,13 @@ type valueDescriptorQuery struct {
 
 //endregion
 
-func (client *ObjectBoxClient) initCoreData() error {
+func newCoreDataClient(objectBox *objectbox.ObjectBox) (*coreDataClient, error) {
 	var err error
+
+	var client = &coreDataClient{objectBox: objectBox}
+	client.eventBox = obx.BoxForEvent(client.objectBox)
+	client.readingBox = obx.BoxForReading(client.objectBox)
+	client.valueDescriptorBox = obx.BoxForValueDescriptor(client.objectBox)
 
 	//region Event
 	if err == nil {
@@ -130,14 +146,18 @@ func (client *ObjectBoxClient) initCoreData() error {
 	}
 	//endregion
 
-	return err
+	if err == nil {
+		return client, nil
+	} else {
+		return nil, err
+	}
 }
 
-func (client *ObjectBoxClient) Events() ([]contract.Event, error) {
-	return client.eventBoxForReads().GetAll()
+func (client *coreDataClient) Events() ([]contract.Event, error) {
+	return client.eventBox.GetAll()
 }
 
-func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]contract.Event, error) {
+func (client *coreDataClient) EventsWithLimit(limit int) ([]contract.Event, error) {
 	// TODO there is no test for this method in the test/db_data.go
 	var query = &client.queries.event.all
 
@@ -147,7 +167,7 @@ func (client *ObjectBoxClient) EventsWithLimit(limit int) ([]contract.Event, err
 	return query.Limit(uint64(limit)).Find()
 }
 
-func (client *ObjectBoxClient) AddEvent(event contract.Event) (string, error) {
+func (client *coreDataClient) AddEvent(event contract.Event) (string, error) {
 	if event.Created == 0 {
 		event.Created = db.MakeTimestamp()
 	}
@@ -157,7 +177,7 @@ func (client *ObjectBoxClient) AddEvent(event contract.Event) (string, error) {
 	var id uint64
 	var err error
 
-	if client.asyncPut {
+	if asyncPut {
 		id, err = client.eventBox.PutAsync(&event)
 	} else {
 		id, err = client.eventBox.Put(&event)
@@ -166,7 +186,7 @@ func (client *ObjectBoxClient) AddEvent(event contract.Event) (string, error) {
 	return obx.IdToString(id), err
 }
 
-func (client *ObjectBoxClient) UpdateEvent(e contract.Event) error {
+func (client *coreDataClient) UpdateEvent(e contract.Event) error {
 	e.Modified = db.MakeTimestamp()
 
 	// check whether it exists, otherwise this function must fail
@@ -177,7 +197,7 @@ func (client *ObjectBoxClient) UpdateEvent(e contract.Event) error {
 	}
 
 	var err error
-	if client.asyncPut {
+	if asyncPut {
 		_, err = client.eventBox.PutAsync(&e)
 	} else {
 		_, err = client.eventBox.Put(&e)
@@ -186,7 +206,7 @@ func (client *ObjectBoxClient) UpdateEvent(e contract.Event) error {
 	return err
 }
 
-func (client *ObjectBoxClient) EventById(id string) (contract.Event, error) {
+func (client *coreDataClient) EventById(id string) (contract.Event, error) {
 	object, err := client.eventById(id)
 	if object == nil || err != nil {
 		return contract.Event{}, err
@@ -194,24 +214,24 @@ func (client *ObjectBoxClient) EventById(id string) (contract.Event, error) {
 	return *object, nil
 }
 
-func (client *ObjectBoxClient) eventById(idString string) (*contract.Event, error) {
+func (client *coreDataClient) eventById(idString string) (*contract.Event, error) {
 	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return nil, err
 	}
 
-	return client.eventBoxForReads().Get(id)
+	return client.eventBox.Get(id)
 }
 
-func (client *ObjectBoxClient) EventCount() (count int, err error) {
-	countLong, err := client.eventBoxForReads().Count()
+func (client *coreDataClient) EventCount() (count int, err error) {
+	countLong, err := client.eventBox.Count()
 	if err == nil {
 		count = int(countLong)
 	}
 	return
 }
 
-func (client *ObjectBoxClient) EventCountByDeviceId(id string) (int, error) {
+func (client *coreDataClient) EventCountByDeviceId(id string) (int, error) {
 	var query = &client.queries.event.device
 
 	query.Lock()
@@ -225,7 +245,7 @@ func (client *ObjectBoxClient) EventCountByDeviceId(id string) (int, error) {
 	return int(count), err
 }
 
-func (client *ObjectBoxClient) DeleteEventById(idString string) error {
+func (client *coreDataClient) DeleteEventById(idString string) error {
 	// TODO maybe this requires a check whether the item exists
 
 	id, err := obx.IdFromString(idString)
@@ -233,10 +253,10 @@ func (client *ObjectBoxClient) DeleteEventById(idString string) error {
 		return err
 	}
 
-	return client.eventBoxForReads().Box.Remove(id)
+	return client.eventBox.Box.Remove(id)
 }
 
-func (client *ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]contract.Event, error) {
+func (client *coreDataClient) EventsForDeviceLimit(id string, limit int) ([]contract.Event, error) {
 	var query = &client.queries.event.device
 
 	query.Lock()
@@ -249,11 +269,11 @@ func (client *ObjectBoxClient) EventsForDeviceLimit(id string, limit int) ([]con
 	return query.Limit(uint64(limit)).Find()
 }
 
-func (client *ObjectBoxClient) EventsForDevice(id string) ([]contract.Event, error) {
+func (client *coreDataClient) EventsForDevice(id string) ([]contract.Event, error) {
 	return client.EventsForDeviceLimit(id, 0)
 }
 
-func (client *ObjectBoxClient) EventsByCreationTime(start, end int64, limit int) ([]contract.Event, error) {
+func (client *coreDataClient) EventsByCreationTime(start, end int64, limit int) ([]contract.Event, error) {
 	var query = &client.queries.event.createdB
 
 	query.Lock()
@@ -266,7 +286,7 @@ func (client *ObjectBoxClient) EventsByCreationTime(start, end int64, limit int)
 	return query.Limit(uint64(limit)).Find()
 }
 
-func (client *ObjectBoxClient) EventsOlderThanAge(age int64) ([]contract.Event, error) {
+func (client *coreDataClient) EventsOlderThanAge(age int64) ([]contract.Event, error) {
 	var time = (db.MakeTimestamp()) - age
 
 	var query = &client.queries.event.createdLT
@@ -281,7 +301,7 @@ func (client *ObjectBoxClient) EventsOlderThanAge(age int64) ([]contract.Event, 
 	return query.Find()
 }
 
-func (client *ObjectBoxClient) EventsPushed() ([]contract.Event, error) {
+func (client *coreDataClient) EventsPushed() ([]contract.Event, error) {
 	var query = &client.queries.event.pushedGT
 
 	query.Lock()
@@ -290,18 +310,18 @@ func (client *ObjectBoxClient) EventsPushed() ([]contract.Event, error) {
 	return query.Find()
 }
 
-func (client *ObjectBoxClient) ScrubAllEvents() error {
+func (client *coreDataClient) ScrubAllEvents() error {
 	if err := client.eventBox.RemoveAll(); err != nil {
 		return err
 	}
-	return client.readingBoxForReads().RemoveAll()
+	return client.readingBox.RemoveAll()
 }
 
-func (client *ObjectBoxClient) Readings() ([]contract.Reading, error) {
-	return client.readingBoxForReads().GetAll()
+func (client *coreDataClient) Readings() ([]contract.Reading, error) {
+	return client.readingBox.GetAll()
 }
 
-func (client *ObjectBoxClient) AddReading(r contract.Reading) (string, error) {
+func (client *coreDataClient) AddReading(r contract.Reading) (string, error) {
 	if r.Created == 0 {
 		r.Created = db.MakeTimestamp()
 	}
@@ -309,7 +329,7 @@ func (client *ObjectBoxClient) AddReading(r contract.Reading) (string, error) {
 	var id uint64
 	var err error
 
-	if client.asyncPut {
+	if asyncPut {
 		id, err = client.readingBox.PutAsync(&r)
 	} else {
 		id, err = client.readingBox.Put(&r)
@@ -318,7 +338,7 @@ func (client *ObjectBoxClient) AddReading(r contract.Reading) (string, error) {
 	return obx.IdToString(id), err
 }
 
-func (client *ObjectBoxClient) UpdateReading(r contract.Reading) error {
+func (client *coreDataClient) UpdateReading(r contract.Reading) error {
 	r.Modified = db.MakeTimestamp()
 
 	// check whether it exists, otherwise this function must fail
@@ -329,7 +349,7 @@ func (client *ObjectBoxClient) UpdateReading(r contract.Reading) error {
 	}
 
 	var err error
-	if client.asyncPut {
+	if asyncPut {
 		_, err = client.readingBox.PutAsync(&r)
 	} else {
 		_, err = client.readingBox.Put(&r)
@@ -338,7 +358,7 @@ func (client *ObjectBoxClient) UpdateReading(r contract.Reading) error {
 	return err
 }
 
-func (client *ObjectBoxClient) ReadingById(id string) (contract.Reading, error) {
+func (client *coreDataClient) ReadingById(id string) (contract.Reading, error) {
 	object, err := client.readingById(id)
 	if object == nil || err != nil {
 		return contract.Reading{}, err
@@ -346,21 +366,21 @@ func (client *ObjectBoxClient) ReadingById(id string) (contract.Reading, error) 
 	return *object, nil
 }
 
-func (client *ObjectBoxClient) readingById(idString string) (*contract.Reading, error) {
+func (client *coreDataClient) readingById(idString string) (*contract.Reading, error) {
 	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return nil, err
 	}
 
-	return client.readingBoxForReads().Get(id)
+	return client.readingBox.Get(id)
 }
 
-func (client *ObjectBoxClient) ReadingCount() (int, error) {
-	count, err := client.readingBoxForReads().Count()
+func (client *coreDataClient) ReadingCount() (int, error) {
+	count, err := client.readingBox.Count()
 	return int(count), err
 }
 
-func (client *ObjectBoxClient) DeleteReadingById(idString string) error {
+func (client *coreDataClient) DeleteReadingById(idString string) error {
 	// TODO maybe this requires a check whether the item exists
 
 	id, err := obx.IdFromString(idString)
@@ -368,10 +388,10 @@ func (client *ObjectBoxClient) DeleteReadingById(idString string) error {
 		return err
 	}
 
-	return client.readingBoxForReads().Box.Remove(id)
+	return client.readingBox.Box.Remove(id)
 }
 
-func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]contract.Reading, error) {
+func (client *coreDataClient) ReadingsByDevice(deviceId string, limit int) ([]contract.Reading, error) {
 	var query = &client.queries.reading.device
 
 	query.Lock()
@@ -384,7 +404,7 @@ func (client *ObjectBoxClient) ReadingsByDevice(deviceId string, limit int) ([]c
 	return query.Limit(uint64(limit)).Find()
 }
 
-func (client *ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int) ([]contract.Reading, error) {
+func (client *coreDataClient) ReadingsByValueDescriptor(name string, limit int) ([]contract.Reading, error) {
 	var query = &client.queries.reading.name
 
 	query.Lock()
@@ -397,7 +417,7 @@ func (client *ObjectBoxClient) ReadingsByValueDescriptor(name string, limit int)
 	return query.Limit(uint64(limit)).Find()
 }
 
-func (client *ObjectBoxClient) ReadingsByValueDescriptorNames(names []string, limit int) ([]contract.Reading, error) {
+func (client *coreDataClient) ReadingsByValueDescriptorNames(names []string, limit int) ([]contract.Reading, error) {
 	var query = &client.queries.reading.names
 
 	query.Lock()
@@ -410,7 +430,7 @@ func (client *ObjectBoxClient) ReadingsByValueDescriptorNames(names []string, li
 	return query.Limit(uint64(limit)).Find()
 }
 
-func (client *ObjectBoxClient) ReadingsByCreationTime(start, end int64, limit int) ([]contract.Reading, error) {
+func (client *coreDataClient) ReadingsByCreationTime(start, end int64, limit int) ([]contract.Reading, error) {
 	var query = &client.queries.reading.createdB
 
 	query.Lock()
@@ -423,7 +443,7 @@ func (client *ObjectBoxClient) ReadingsByCreationTime(start, end int64, limit in
 	return query.Limit(uint64(limit)).Find()
 }
 
-func (client *ObjectBoxClient) ReadingsByDeviceAndValueDescriptor(deviceId, valueDescriptor string, limit int) ([]contract.Reading, error) {
+func (client *coreDataClient) ReadingsByDeviceAndValueDescriptor(deviceId, valueDescriptor string, limit int) ([]contract.Reading, error) {
 	var query = &client.queries.reading.deviceAndName
 
 	query.Lock()
@@ -439,7 +459,7 @@ func (client *ObjectBoxClient) ReadingsByDeviceAndValueDescriptor(deviceId, valu
 	return query.Limit(uint64(limit)).Find()
 }
 
-func (client *ObjectBoxClient) AddValueDescriptor(v contract.ValueDescriptor) (string, error) {
+func (client *coreDataClient) AddValueDescriptor(v contract.ValueDescriptor) (string, error) {
 	if v.Created == 0 {
 		v.Created = db.MakeTimestamp()
 	}
@@ -447,20 +467,21 @@ func (client *ObjectBoxClient) AddValueDescriptor(v contract.ValueDescriptor) (s
 	var id uint64
 	var err error
 
-	if client.asyncPut {
-		id, err = client.valueDescriptorBox.PutAsync(&v)
-	} else {
-		id, err = client.valueDescriptorBox.Put(&v)
-	}
+	// there is a unique key in the value descriptor, so we can't put async or the unique constraint might fail
+	//if asyncPut {
+	//	id, err = client.valueDescriptorBox.PutAsync(&v)
+	//} else {
+	id, err = client.valueDescriptorBox.Put(&v)
+	//}
 
 	return obx.IdToString(id), err
 }
 
-func (client *ObjectBoxClient) ValueDescriptors() ([]contract.ValueDescriptor, error) {
-	return client.valueDescriptorBoxForReads().GetAll()
+func (client *coreDataClient) ValueDescriptors() ([]contract.ValueDescriptor, error) {
+	return client.valueDescriptorBox.GetAll()
 }
 
-func (client *ObjectBoxClient) UpdateValueDescriptor(v contract.ValueDescriptor) error {
+func (client *coreDataClient) UpdateValueDescriptor(v contract.ValueDescriptor) error {
 	v.Modified = db.MakeTimestamp()
 
 	// check whether it exists, otherwise this function must fail
@@ -471,7 +492,7 @@ func (client *ObjectBoxClient) UpdateValueDescriptor(v contract.ValueDescriptor)
 	}
 
 	var err error
-	if client.asyncPut {
+	if asyncPut {
 		_, err = client.valueDescriptorBox.PutAsync(&v)
 	} else {
 		_, err = client.valueDescriptorBox.Put(&v)
@@ -480,7 +501,7 @@ func (client *ObjectBoxClient) UpdateValueDescriptor(v contract.ValueDescriptor)
 	return err
 }
 
-func (client *ObjectBoxClient) DeleteValueDescriptorById(idString string) error {
+func (client *coreDataClient) DeleteValueDescriptorById(idString string) error {
 	// TODO maybe this requires a check whether the item exists
 
 	id, err := obx.IdFromString(idString)
@@ -488,10 +509,10 @@ func (client *ObjectBoxClient) DeleteValueDescriptorById(idString string) error 
 		return err
 	}
 
-	return client.valueDescriptorBoxForReads().Box.Remove(id)
+	return client.valueDescriptorBox.Box.Remove(id)
 }
 
-func (client *ObjectBoxClient) ValueDescriptorByName(name string) (contract.ValueDescriptor, error) {
+func (client *coreDataClient) ValueDescriptorByName(name string) (contract.ValueDescriptor, error) {
 	var query = &client.queries.valueDescriptor.name
 
 	query.Lock()
@@ -510,7 +531,7 @@ func (client *ObjectBoxClient) ValueDescriptorByName(name string) (contract.Valu
 	}
 }
 
-func (client *ObjectBoxClient) ValueDescriptorsByName(names []string) ([]contract.ValueDescriptor, error) {
+func (client *coreDataClient) ValueDescriptorsByName(names []string) ([]contract.ValueDescriptor, error) {
 	var query = &client.queries.valueDescriptor.names
 
 	query.Lock()
@@ -523,7 +544,7 @@ func (client *ObjectBoxClient) ValueDescriptorsByName(names []string) ([]contrac
 	return query.Find()
 }
 
-func (client *ObjectBoxClient) ValueDescriptorById(id string) (contract.ValueDescriptor, error) {
+func (client *coreDataClient) ValueDescriptorById(id string) (contract.ValueDescriptor, error) {
 	object, err := client.valueDescriptorById(id)
 	if object == nil || err != nil {
 		return contract.ValueDescriptor{}, err
@@ -531,16 +552,16 @@ func (client *ObjectBoxClient) ValueDescriptorById(id string) (contract.ValueDes
 	return *object, nil
 }
 
-func (client *ObjectBoxClient) valueDescriptorById(idString string) (*contract.ValueDescriptor, error) {
+func (client *coreDataClient) valueDescriptorById(idString string) (*contract.ValueDescriptor, error) {
 	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return nil, err
 	}
 
-	return client.valueDescriptorBoxForReads().Get(id)
+	return client.valueDescriptorBox.Get(id)
 }
 
-func (client *ObjectBoxClient) ValueDescriptorsByUomLabel(uomLabel string) ([]contract.ValueDescriptor, error) {
+func (client *coreDataClient) ValueDescriptorsByUomLabel(uomLabel string) ([]contract.ValueDescriptor, error) {
 	var query = &client.queries.valueDescriptor.uomlabel
 
 	query.Lock()
@@ -553,7 +574,7 @@ func (client *ObjectBoxClient) ValueDescriptorsByUomLabel(uomLabel string) ([]co
 	return query.Find()
 }
 
-func (client *ObjectBoxClient) ValueDescriptorsByLabel(label string) ([]contract.ValueDescriptor, error) {
+func (client *coreDataClient) ValueDescriptorsByLabel(label string) ([]contract.ValueDescriptor, error) {
 	// TODO implement queries on `[]string` in the core
 	if objects, err := client.ValueDescriptors(); err != nil {
 		return nil, err
@@ -572,7 +593,7 @@ func (client *ObjectBoxClient) ValueDescriptorsByLabel(label string) ([]contract
 	}
 }
 
-func (client *ObjectBoxClient) ValueDescriptorsByType(t string) ([]contract.ValueDescriptor, error) {
+func (client *coreDataClient) ValueDescriptorsByType(t string) ([]contract.ValueDescriptor, error) {
 	var query = &client.queries.valueDescriptor.typ
 
 	query.Lock()
@@ -585,13 +606,8 @@ func (client *ObjectBoxClient) ValueDescriptorsByType(t string) ([]contract.Valu
 	return query.Find()
 }
 
-func (client *ObjectBoxClient) ScrubAllValueDescriptors() error {
+func (client *coreDataClient) ScrubAllValueDescriptors() error {
 	return client.valueDescriptorBox.RemoveAll()
-}
-
-func (client *ObjectBoxClient) EnsureAllDurable(async bool) error {
-	client.objectBox.AwaitAsyncCompletion()
-	return nil
 }
 
 //endregion

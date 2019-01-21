@@ -16,16 +16,19 @@ package models
 
 import (
 	"github.com/edgexfoundry/edgex-go/pkg/models"
-	"github.com/globalsign/mgo/bson"
 )
 
-type ScheduleEvent struct {
+type Addressable struct {
 	models.BaseObject
-	Id       bson.ObjectId `id type:"uint64" converter:"bsonId"`
-	Name     string
-	Schedule string
-	// TODO this is an n..1 relation
-	//Addressable models.Addressable
-	Parameters string
-	Service    string
+	Id         string
+	Name       string `unique`
+	Protocol   string
+	HTTPMethod string
+	Address    string
+	Port       int
+	Path       string
+	Publisher  string
+	User       string
+	Password   string
+	Topic      string
 }

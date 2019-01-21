@@ -463,16 +463,7 @@ func (client *coreDataClient) AddValueDescriptor(v contract.ValueDescriptor) (st
 		v.Created = db.MakeTimestamp()
 	}
 
-	var id uint64
-	var err error
-
-	// there is a unique key in the value descriptor, so we can't put async or the unique constraint might fail
-	//if asyncPut {
-	//	id, err = client.valueDescriptorBox.PutAsync(&v)
-	//} else {
-	id, err = client.valueDescriptorBox.Put(&v)
-	//}
-
+	id, err := client.valueDescriptorBox.Put(&v)
 	return obx.IdToString(id), err
 }
 
@@ -490,13 +481,7 @@ func (client *coreDataClient) UpdateValueDescriptor(v contract.ValueDescriptor) 
 		return db.ErrNotFound
 	}
 
-	var err error
-	if asyncPut {
-		_, err = client.valueDescriptorBox.PutAsync(&v)
-	} else {
-		_, err = client.valueDescriptorBox.Put(&v)
-	}
-
+	_, err := client.valueDescriptorBox.Put(&v)
 	return err
 }
 

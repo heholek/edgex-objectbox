@@ -14,6 +14,7 @@ import (
 type coreMetaDataClient struct {
 	objectBox *objectbox.ObjectBox
 
+	commandBox     *obx.CommandBox
 	addressableBox *obx.AddressableBox
 
 	queries coreMetaDataQueries
@@ -28,10 +29,18 @@ type coreMetaDataQueries struct {
 		publisher addressableQuery
 		topic     addressableQuery
 	}
+	command struct {
+		name commandQuery
+	}
 }
 
 type addressableQuery struct {
 	*obx.AddressableQuery
+	sync.Mutex
+}
+
+type commandQuery struct {
+	*obx.CommandQuery
 	sync.Mutex
 }
 
@@ -41,7 +50,15 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	var client = &coreMetaDataClient{objectBox: objectBox}
 	var err error
 
+	client.commandBox = obx.BoxForCommand(objectBox)
 	client.addressableBox = obx.BoxForAddressable(objectBox)
+
+	//region Command
+	if err == nil {
+		client.queries.command.name.CommandQuery, err =
+			client.commandBox.QueryOrError(obx.Command_.Name.Equals("", true))
+	}
+	//endregion
 
 	//region Addressable
 	if err == nil {
@@ -424,24 +441,85 @@ func (client *coreMetaDataClient) UpdateProvisionWatcher(pw contract.ProvisionWa
 func (client *coreMetaDataClient) DeleteProvisionWatcherById(id string) error { panic(notImplemented()) }
 
 func (client *coreMetaDataClient) GetCommandById(id string) (contract.Command, error) {
-	panic(notImplemented())
+	object, err := client.commandById(id)
+	if object == nil || err != nil {
+		return contract.Command{}, err
+	}
+	return *object, nil
 }
 
-func (client *coreMetaDataClient) GetCommandByName(id string) ([]contract.Command, error) {
-	panic(notImplemented())
+func (client *coreMetaDataClient) commandById(idString string) (*contract.Command, error) {
+	id, err := obx.IdFromString(idString)
+	if err != nil {
+		return nil, err
+	}
+
+	return client.commandBox.Get(id)
+}
+
+func (client *coreMetaDataClient) GetCommandByName(name string) ([]contract.Command, error) {
+	var query = &client.queries.command.name
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.Command_.Name, name); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
 func (client *coreMetaDataClient) AddCommand(c contract.Command) (string, error) {
-	panic(notImplemented())
+	onCreate(&c.BaseObject)
+
+	var id uint64
+	var err error
+
+	if asyncPut {
+		id, err = client.commandBox.PutAsync(&c)
+	} else {
+		id, err = client.commandBox.Put(&c)
+	}
+
+	return obx.IdToString(id), err
 }
 
 func (client *coreMetaDataClient) GetAllCommands() ([]contract.Command, error) {
-	panic(notImplemented())
+	return client.commandBox.GetAll()
 }
 
-func (client *coreMetaDataClient) UpdateCommand(c contract.Command) error { panic(notImplemented()) }
+func (client *coreMetaDataClient) UpdateCommand(c contract.Command) error {
+	onUpdate(&c.BaseObject)
 
-func (client *coreMetaDataClient) DeleteCommandById(id string) error { panic(notImplemented()) }
+	// check whether it exists, otherwise this function must fail
+	if object, err := client.commandById(c.Id); err != nil {
+		return err
+	} else if object == nil {
+		return db.ErrNotFound
+	}
+
+	var err error
+	if asyncPut {
+		_, err = client.commandBox.PutAsync(&c)
+	} else {
+		_, err = client.commandBox.Put(&c)
+	}
+
+	return err
+
+}
+
+func (client *coreMetaDataClient) DeleteCommandById(idString string) error {
+	// TODO maybe this requires a check whether the item exists
+
+	id, err := obx.IdFromString(idString)
+	if err != nil {
+		return err
+	}
+
+	return client.commandBox.Box.Remove(id)
+}
 
 func (client *coreMetaDataClient) ScrubMetadata() error {
 	// TODO implement for all boxes

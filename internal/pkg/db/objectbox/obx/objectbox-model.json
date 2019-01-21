@@ -241,9 +241,36 @@
           "name": "Topic"
         }
       ]
+    },
+    {
+      "id": "6:5443177076819021561",
+      "name": "Command",
+      "lastPropertyId": "5:7631040882383117492",
+      "properties": [
+        {
+          "id": "1:500750376325338957",
+          "name": "Created"
+        },
+        {
+          "id": "2:6036932659720436825",
+          "name": "Modified"
+        },
+        {
+          "id": "3:8644769264898024000",
+          "name": "Origin"
+        },
+        {
+          "id": "4:811277850746327904",
+          "name": "Id"
+        },
+        {
+          "id": "5:7631040882383117492",
+          "name": "Name"
+        }
+      ]
     }
   ],
-  "lastEntityId": "5:7308027247192236454",
+  "lastEntityId": "6:5443177076819021561",
   "lastIndexId": "2:4162162888587883459",
   "retiredEntityUids": [],
   "retiredIndexUids": [],

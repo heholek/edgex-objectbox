@@ -15,8 +15,8 @@ type reading_EntityInfo struct {
 }
 
 var ReadingBinding = reading_EntityInfo{
-	Id:  2,
-	Uid: 787725301611983484,
+	Id:  5,
+	Uid: 5720922007709447864,
 }
 
 // Reading_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -34,7 +34,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 2,
+				Id: 5,
 			},
 		},
 	},
@@ -42,7 +42,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 2,
+				Id: 5,
 			},
 		},
 	},
@@ -50,7 +50,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 2,
+				Id: 5,
 			},
 		},
 	},
@@ -58,7 +58,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 2,
+				Id: 5,
 			},
 		},
 	},
@@ -66,7 +66,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 2,
+				Id: 5,
 			},
 		},
 	},
@@ -74,7 +74,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 2,
+				Id: 5,
 			},
 		},
 	},
@@ -82,7 +82,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 2,
+				Id: 5,
 			},
 		},
 	},
@@ -90,7 +90,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 2,
+				Id: 5,
 			},
 		},
 	},
@@ -103,17 +103,17 @@ func (reading_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by the ObjectBox during model build
 func (reading_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Reading", 2, 787725301611983484)
-	model.Property("Id", objectbox.PropertyType_Long, 1, 4582996758488994382)
+	model.Entity("Reading", 5, 5720922007709447864)
+	model.Property("Id", objectbox.PropertyType_Long, 1, 506318890259717221)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Pushed", objectbox.PropertyType_Long, 2, 7077372995596805119)
-	model.Property("Created", objectbox.PropertyType_Long, 3, 720325304438935037)
-	model.Property("Origin", objectbox.PropertyType_Long, 4, 8800685427660384322)
-	model.Property("Modified", objectbox.PropertyType_Long, 5, 1739711586444218604)
-	model.Property("Device", objectbox.PropertyType_String, 6, 5259767740405818980)
-	model.Property("Name", objectbox.PropertyType_String, 7, 607198100002322026)
-	model.Property("Value", objectbox.PropertyType_String, 8, 3518785427329809134)
-	model.EntityLastPropertyId(8, 3518785427329809134)
+	model.Property("Pushed", objectbox.PropertyType_Long, 2, 857645422171573341)
+	model.Property("Created", objectbox.PropertyType_Long, 3, 2293804091244003818)
+	model.Property("Origin", objectbox.PropertyType_Long, 4, 6649600333394362209)
+	model.Property("Modified", objectbox.PropertyType_Long, 5, 3466270577664053413)
+	model.Property("Device", objectbox.PropertyType_String, 6, 3447591269737415871)
+	model.Property("Name", objectbox.PropertyType_String, 7, 6909240474200120732)
+	model.Property("Value", objectbox.PropertyType_String, 8, 7605577018169475074)
+	model.EntityLastPropertyId(8, 7605577018169475074)
 }
 
 // GetId is called by the ObjectBox during Put operations to check for existing ID on an object
@@ -192,7 +192,7 @@ type ReadingBox struct {
 // BoxForReading opens a box of Reading objects
 func BoxForReading(ob *objectbox.ObjectBox) *ReadingBox {
 	return &ReadingBox{
-		Box: ob.InternalBox(2),
+		Box: ob.InternalBox(5),
 	}
 }
 

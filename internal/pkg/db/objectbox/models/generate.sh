@@ -11,7 +11,7 @@ generator="go run github.com/objectbox/objectbox-go/cmd/objectbox-gogen/ -byValu
 rm ${obxmodels}/*.obx.go -f
 
 # generate
-for f in ${obxmodels}/*.go; do ${generator} -source ${f}; done
+for f in ${obxmodels}/*.go; do if [[ ${f: -8} != ".skip.go" ]]; then ${generator} -source ${f}; fi; done
 
 # fix import path
 for f in ${obxmodels}/*.obx.go; do sed -i 's/import (/import (\n\t. "github.com\/edgexfoundry\/edgex-go\/pkg\/models"/g' "$f"; done

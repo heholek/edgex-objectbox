@@ -16,8 +16,8 @@ type scheduleEvent_EntityInfo struct {
 }
 
 var ScheduleEventBinding = scheduleEvent_EntityInfo{
-	Id:  4,
-	Uid: 1455973466242300916,
+	Id:  6,
+	Uid: 6239202972921638608,
 }
 
 // ScheduleEvent_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -35,7 +35,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 6,
 			},
 		},
 	},
@@ -43,7 +43,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 6,
 			},
 		},
 	},
@@ -51,7 +51,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 6,
 			},
 		},
 	},
@@ -59,7 +59,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 6,
 			},
 		},
 	},
@@ -67,7 +67,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 6,
 			},
 		},
 	},
@@ -75,7 +75,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 6,
 			},
 		},
 	},
@@ -83,7 +83,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 6,
 			},
 		},
 	},
@@ -91,7 +91,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 6,
 			},
 		},
 	},
@@ -104,17 +104,17 @@ func (scheduleEvent_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by the ObjectBox during model build
 func (scheduleEvent_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("ScheduleEvent", 4, 1455973466242300916)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 4620414909166906839)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 2096031283179340959)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 4845046395160494107)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 2839544983505662993)
+	model.Entity("ScheduleEvent", 6, 6239202972921638608)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 8889399643704751207)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 2715634671260664229)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 2309830902551992394)
+	model.Property("Id", objectbox.PropertyType_Long, 4, 1449553450431761107)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Name", objectbox.PropertyType_String, 5, 5814526896493854414)
-	model.Property("Schedule", objectbox.PropertyType_String, 6, 4627498716027134366)
-	model.Property("Parameters", objectbox.PropertyType_String, 7, 8508259254043869480)
-	model.Property("Service", objectbox.PropertyType_String, 8, 5154075561060469833)
-	model.EntityLastPropertyId(8, 5154075561060469833)
+	model.Property("Name", objectbox.PropertyType_String, 5, 2643597168165916624)
+	model.Property("Schedule", objectbox.PropertyType_String, 6, 5692020356904915195)
+	model.Property("Parameters", objectbox.PropertyType_String, 7, 7056282312459005473)
+	model.Property("Service", objectbox.PropertyType_String, 8, 1885883891643404243)
+	model.EntityLastPropertyId(8, 1885883891643404243)
 }
 
 // GetId is called by the ObjectBox during Put operations to check for existing ID on an object
@@ -196,7 +196,7 @@ type ScheduleEventBox struct {
 // BoxForScheduleEvent opens a box of ScheduleEvent objects
 func BoxForScheduleEvent(ob *objectbox.ObjectBox) *ScheduleEventBox {
 	return &ScheduleEventBox{
-		Box: ob.InternalBox(4),
+		Box: ob.InternalBox(6),
 	}
 }
 

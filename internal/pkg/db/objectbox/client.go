@@ -15,7 +15,7 @@ type ObjectBoxClient struct {
 	*coreMetaDataClient
 }
 
-const asyncPut = true
+const asyncPut = false // TODO true
 
 func NewClient(config db.Configuration) (*ObjectBoxClient, error) {
 	println(VersionInfo())

@@ -16,8 +16,8 @@ type addressable_EntityInfo struct {
 }
 
 var AddressableBinding = addressable_EntityInfo{
-	Id:  5,
-	Uid: 7308027247192236454,
+	Id:  1,
+	Uid: 7935862170457263125,
 }
 
 // Addressable_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -41,7 +41,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -49,7 +49,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -57,7 +57,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -65,7 +65,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -73,7 +73,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -81,7 +81,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -89,7 +89,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -97,7 +97,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -105,7 +105,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 9,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -113,7 +113,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 10,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -121,7 +121,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 11,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -129,7 +129,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 12,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -137,7 +137,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 13,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -145,7 +145,7 @@ var Addressable_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 14,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 1,
 			},
 		},
 	},
@@ -158,25 +158,25 @@ func (addressable_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by the ObjectBox during model build
 func (addressable_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Addressable", 5, 7308027247192236454)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 1971843034580343389)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 6702041207743798777)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 8712943301870037513)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 6292279360726975732)
+	model.Entity("Addressable", 1, 7935862170457263125)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 3615718190778736815)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 104117847403558709)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 8881371260545183950)
+	model.Property("Id", objectbox.PropertyType_Long, 4, 2263870484846289030)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Name", objectbox.PropertyType_String, 5, 8952879866288904875)
+	model.Property("Name", objectbox.PropertyType_String, 5, 546509660169544040)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(2, 4162162888587883459)
-	model.Property("Protocol", objectbox.PropertyType_String, 6, 1375945178606780009)
-	model.Property("HTTPMethod", objectbox.PropertyType_String, 7, 5898041140857682488)
-	model.Property("Address", objectbox.PropertyType_String, 8, 1737722303602736572)
-	model.Property("Port", objectbox.PropertyType_Long, 9, 897146072469644619)
-	model.Property("Path", objectbox.PropertyType_String, 10, 4058694051230665690)
-	model.Property("Publisher", objectbox.PropertyType_String, 11, 7977098752090354454)
-	model.Property("User", objectbox.PropertyType_String, 12, 201747627705610065)
-	model.Property("Password", objectbox.PropertyType_String, 13, 8744152091431011369)
-	model.Property("Topic", objectbox.PropertyType_String, 14, 8096637051028763862)
-	model.EntityLastPropertyId(14, 8096637051028763862)
+	model.PropertyIndex(1, 1889048398976443726)
+	model.Property("Protocol", objectbox.PropertyType_String, 6, 4418971345113201188)
+	model.Property("HTTPMethod", objectbox.PropertyType_String, 7, 1730568939047700080)
+	model.Property("Address", objectbox.PropertyType_String, 8, 6145463009686191040)
+	model.Property("Port", objectbox.PropertyType_Long, 9, 8050842196399642139)
+	model.Property("Path", objectbox.PropertyType_String, 10, 5827872065469493661)
+	model.Property("Publisher", objectbox.PropertyType_String, 11, 6793733555422607151)
+	model.Property("User", objectbox.PropertyType_String, 12, 6657318061718892543)
+	model.Property("Password", objectbox.PropertyType_String, 13, 6306747915668652178)
+	model.Property("Topic", objectbox.PropertyType_String, 14, 8483935008079255088)
+	model.EntityLastPropertyId(14, 8483935008079255088)
 }
 
 // GetId is called by the ObjectBox during Put operations to check for existing ID on an object
@@ -275,7 +275,7 @@ type AddressableBox struct {
 // BoxForAddressable opens a box of Addressable objects
 func BoxForAddressable(ob *objectbox.ObjectBox) *AddressableBox {
 	return &AddressableBox{
-		Box: ob.InternalBox(5),
+		Box: ob.InternalBox(1),
 	}
 }
 

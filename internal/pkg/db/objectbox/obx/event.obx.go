@@ -15,8 +15,8 @@ type event_EntityInfo struct {
 }
 
 var EventBinding = event_EntityInfo{
-	Id:  1,
-	Uid: 5457856102999200901,
+	Id:  4,
+	Uid: 3857710211787315610,
 }
 
 // Event_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -33,7 +33,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 1,
+				Id: 4,
 			},
 		},
 	},
@@ -41,7 +41,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 1,
+				Id: 4,
 			},
 		},
 	},
@@ -49,7 +49,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 1,
+				Id: 4,
 			},
 		},
 	},
@@ -57,7 +57,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 1,
+				Id: 4,
 			},
 		},
 	},
@@ -65,7 +65,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 1,
+				Id: 4,
 			},
 		},
 	},
@@ -73,7 +73,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 1,
+				Id: 4,
 			},
 		},
 	},
@@ -81,7 +81,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 1,
+				Id: 4,
 			},
 		},
 	},
@@ -94,16 +94,16 @@ func (event_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by the ObjectBox during model build
 func (event_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Event", 1, 5457856102999200901)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 1465551856942707997)
+	model.Entity("Event", 4, 3857710211787315610)
+	model.Property("ID", objectbox.PropertyType_Long, 1, 1622928315047830037)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Pushed", objectbox.PropertyType_Long, 2, 4108292960117833574)
-	model.Property("Device", objectbox.PropertyType_String, 3, 7725407621908809188)
-	model.Property("Created", objectbox.PropertyType_Long, 4, 7338608539215643731)
-	model.Property("Modified", objectbox.PropertyType_Long, 5, 7495874375262315104)
-	model.Property("Origin", objectbox.PropertyType_Long, 6, 1777439767494346487)
-	model.Property("Event", objectbox.PropertyType_String, 7, 5458076622579187525)
-	model.EntityLastPropertyId(7, 5458076622579187525)
+	model.Property("Pushed", objectbox.PropertyType_Long, 2, 5203650226136542723)
+	model.Property("Device", objectbox.PropertyType_String, 3, 6582644851873838598)
+	model.Property("Created", objectbox.PropertyType_Long, 4, 4262060353923574849)
+	model.Property("Modified", objectbox.PropertyType_Long, 5, 4982956061079572949)
+	model.Property("Origin", objectbox.PropertyType_Long, 6, 7049528420366903229)
+	model.Property("Event", objectbox.PropertyType_String, 7, 2745907413165741853)
+	model.EntityLastPropertyId(7, 2745907413165741853)
 }
 
 // GetId is called by the ObjectBox during Put operations to check for existing ID on an object
@@ -179,7 +179,7 @@ type EventBox struct {
 // BoxForEvent opens a box of Event objects
 func BoxForEvent(ob *objectbox.ObjectBox) *EventBox {
 	return &EventBox{
-		Box: ob.InternalBox(1),
+		Box: ob.InternalBox(4),
 	}
 }
 

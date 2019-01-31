@@ -22,5 +22,5 @@ type Event struct {
 	Modified int64
 	Origin   int64
 	Event    string
-	// TODO Readings []Reading
+	Readings []Reading
 }

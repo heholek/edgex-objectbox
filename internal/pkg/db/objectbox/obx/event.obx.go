@@ -87,12 +87,12 @@ var Event_ = struct {
 	},
 }
 
-// GeneratorVersion is called by the ObjectBox to verify the compatibility of the generator used to generate this code
+// GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (event_EntityInfo) GeneratorVersion() int {
 	return 1
 }
 
-// AddToModel is called by the ObjectBox during model build
+// AddToModel is called by ObjectBox during model build
 func (event_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Event", 4, 3857710211787315610)
 	model.Property("ID", objectbox.PropertyType_Long, 1, 1622928315047830037)
@@ -104,9 +104,10 @@ func (event_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Origin", objectbox.PropertyType_Long, 6, 7049528420366903229)
 	model.Property("Event", objectbox.PropertyType_String, 7, 2745907413165741853)
 	model.EntityLastPropertyId(7, 2745907413165741853)
+	model.Relation(1, 7766060310030207431, 5, 5720922007709447864)
 }
 
-// GetId is called by the ObjectBox during Put operations to check for existing ID on an object
+// GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (event_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*Event); ok {
 		return objectbox.StringIdConvertToDatabaseValue(obj.ID), nil
@@ -115,18 +116,79 @@ func (event_EntityInfo) GetId(object interface{}) (uint64, error) {
 	}
 }
 
-// SetId is called by the ObjectBox during Put to update an ID on an object that has just been inserted
-func (event_EntityInfo) SetId(object interface{}, id uint64) error {
+// SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
+func (event_EntityInfo) SetId(object interface{}, id uint64) {
 	if obj, ok := object.(*Event); ok {
 		obj.ID = objectbox.StringIdConvertToEntityProperty(id)
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Event).ID
 	}
+}
+
+// PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
+func (event_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+
+	if cursor, err := txn.CursorForName("Event"); err != nil {
+		panic(err)
+	} else if rSlice := object.(*Event).Readings; rSlice != nil {
+		// get id from the object, if inserting, it would be 0 even if the argument id is already non-zero
+		// this saves us an unnecessary request to RelationIds for new objects (there can't be any relations yet)
+		objId, err := EventBinding.GetId(object)
+		if err != nil {
+			return err
+		}
+
+		// make a map of related target entity IDs, marking those that were originally related but should be removed
+		var idsToRemove = make(map[uint64]bool)
+
+		if objId != 0 {
+			if oldRelIds, err := cursor.RelationIds(1, id); err != nil {
+				return err
+			} else {
+				for _, rId := range oldRelIds {
+					idsToRemove[rId] = true
+				}
+			}
+		}
+
+		// walk over the current related objects, mark those that still exist, add the new ones
+		for k := range rSlice {
+			var rel = &rSlice[k] // take a pointer to the slice element so that it is updated during Put()
+			rId, err := ReadingBinding.GetId(rel)
+			if err != nil {
+				return err
+			} else if rId == 0 {
+				if rCursor, err := txn.CursorForName("Reading"); err != nil {
+					return err
+				} else if rId, err = rCursor.Put(rel); err != nil {
+					return err
+				}
+			}
+
+			if idsToRemove[rId] {
+				// old relation that still exists, keep it
+				delete(idsToRemove, rId)
+			} else {
+				// new relation, add it
+				if err := cursor.RelationPut(1, id, rId); err != nil {
+					return err
+				}
+			}
+		}
+
+		// remove those that were not found in the rSlice but were originally related to this entity
+		for rId := range idsToRemove {
+			if err := cursor.RelationRemove(1, id, rId); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
-// Flatten is called by the ObjectBox to transform an object to a FlatBuffer
+// Flatten is called by ObjectBox to transform an object to a FlatBuffer
 func (event_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
 	obj := object.(*Event)
 	var offsetDevice = fbutils.CreateStringOffset(fbb, obj.Device)
@@ -143,30 +205,41 @@ func (event_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetEvent)
 }
 
-// ToObject is called by the ObjectBox to load an object from a FlatBuffer
-func (event_EntityInfo) ToObject(bytes []byte) interface{} {
-	table := &flatbuffers.Table{
+// Load is called by ObjectBox to load an object from a FlatBuffer
+func (event_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
+	var id = table.GetUint64Slot(4, 0)
+
+	var relReadings []Reading
+	if cursor, err := txn.CursorForName("Event"); err != nil {
+		panic(err)
+	} else if rSlice, err := cursor.RelationGetAll(1, 5, id); err != nil {
+		panic(err)
+	} else {
+		relReadings = rSlice.([]Reading)
+	}
 
 	return &Event{
-		ID:       objectbox.StringIdConvertToEntityProperty(table.GetUint64Slot(4, 0)),
+		ID:       objectbox.StringIdConvertToEntityProperty(id),
 		Pushed:   table.GetInt64Slot(6, 0),
 		Device:   fbutils.GetStringSlot(table, 8),
 		Created:  table.GetInt64Slot(10, 0),
 		Modified: table.GetInt64Slot(12, 0),
 		Origin:   table.GetInt64Slot(14, 0),
 		Event:    fbutils.GetStringSlot(table, 16),
+		Readings: relReadings,
 	}
 }
 
-// MakeSlice is called by the ObjectBox to construct a new slice to hold the read objects
+// MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
 func (event_EntityInfo) MakeSlice(capacity int) interface{} {
 	return make([]Event, 0, capacity)
 }
 
-// AppendToSlice is called by the ObjectBox to fill the slice of the read objects
+// AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (event_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
 	return append(slice.([]Event), *object.(*Event))
 }

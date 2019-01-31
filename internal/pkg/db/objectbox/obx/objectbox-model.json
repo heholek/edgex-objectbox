@@ -99,7 +99,7 @@
     {
       "id": "3:8836165828586304646",
       "name": "DeviceService",
-      "lastPropertyId": "11:7551584300772599559",
+      "lastPropertyId": "12:8342298068130374813",
       "properties": [
         {
           "id": "1:4922577188059865444",
@@ -123,7 +123,8 @@
         },
         {
           "id": "6:2903365976986741946",
-          "name": "Name"
+          "name": "Name",
+          "indexId": "3:303875225975174883"
         },
         {
           "id": "7:6226123337255414811",
@@ -144,6 +145,11 @@
         {
           "id": "11:7551584300772599559",
           "name": "AdminState"
+        },
+        {
+          "id": "12:8342298068130374813",
+          "name": "Addressable",
+          "indexId": "4:2951639334126412359"
         }
       ]
     },
@@ -179,6 +185,12 @@
         {
           "id": "7:2745907413165741853",
           "name": "Event"
+        }
+      ],
+      "relations": [
+        {
+          "id": "1:7766060310030207431",
+          "name": "Readings"
         }
       ]
     },
@@ -224,7 +236,7 @@
     {
       "id": "6:6239202972921638608",
       "name": "ScheduleEvent",
-      "lastPropertyId": "8:1885883891643404243",
+      "lastPropertyId": "9:2699934787885094203",
       "properties": [
         {
           "id": "1:8889399643704751207",
@@ -257,6 +269,11 @@
         {
           "id": "8:1885883891643404243",
           "name": "Service"
+        },
+        {
+          "id": "9:2699934787885094203",
+          "name": "Addressable",
+          "indexId": "5:118391878970996196"
         }
       ]
     },
@@ -322,8 +339,10 @@
     }
   ],
   "lastEntityId": "7:1150785711675845959",
-  "lastIndexId": "2:8760848507422523802",
+  "lastIndexId": "5:118391878970996196",
+  "lastRelationId": "1:7766060310030207431",
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": []
+  "retiredPropertyUids": [],
+  "retiredRelationUids": null
 }

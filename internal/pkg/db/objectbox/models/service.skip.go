@@ -28,5 +28,5 @@ type Service struct {
 	LastReported   int64
 	OperatingState models.OperatingState
 	Labels         []string
-	// TODO Addressable    Addressable
+	Addressable    Addressable `link`
 }

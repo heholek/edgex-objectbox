@@ -21,11 +21,10 @@ import (
 
 type ScheduleEvent struct {
 	models.BaseObject
-	Id       bson.ObjectId `id type:"uint64" converter:"bsonId"`
-	Name     string
-	Schedule string
-	// TODO this is an n..1 relation
-	//Addressable models.Addressable
-	Parameters string
-	Service    string
+	Id          bson.ObjectId `id type:"uint64" converter:"bsonId"`
+	Name        string
+	Schedule    string
+	Addressable Addressable `link`
+	Parameters  string
+	Service     string
 }

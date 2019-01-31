@@ -3,6 +3,7 @@
 package obx
 
 import (
+	"github.com/edgexfoundry/edgex-go/pkg/models"
 	. "github.com/edgexfoundry/edgex-go/pkg/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
@@ -31,6 +32,7 @@ var DeviceService_ = struct {
 	LastReported   *objectbox.PropertyInt64
 	OperatingState *objectbox.PropertyString
 	Labels         *objectbox.PropertyStringVector
+	Addressable    *objectbox.PropertyUint64
 	AdminState     *objectbox.PropertyString
 }{
 	Created: &objectbox.PropertyInt64{
@@ -113,6 +115,14 @@ var DeviceService_ = struct {
 			},
 		},
 	},
+	Addressable: &objectbox.PropertyUint64{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 12,
+			Entity: &objectbox.Entity{
+				Id: 3,
+			},
+		},
+	},
 	AdminState: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 11,
@@ -123,12 +133,12 @@ var DeviceService_ = struct {
 	},
 }
 
-// GeneratorVersion is called by the ObjectBox to verify the compatibility of the generator used to generate this code
+// GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (deviceService_EntityInfo) GeneratorVersion() int {
 	return 1
 }
 
-// AddToModel is called by the ObjectBox during model build
+// AddToModel is called by ObjectBox during model build
 func (deviceService_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("DeviceService", 3, 8836165828586304646)
 	model.Property("Created", objectbox.PropertyType_Long, 1, 4922577188059865444)
@@ -138,15 +148,19 @@ func (deviceService_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Id", objectbox.PropertyType_Long, 5, 3867462513657162392)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
 	model.Property("Name", objectbox.PropertyType_String, 6, 2903365976986741946)
+	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
+	model.PropertyIndex(3, 303875225975174883)
 	model.Property("LastConnected", objectbox.PropertyType_Long, 7, 6226123337255414811)
 	model.Property("LastReported", objectbox.PropertyType_Long, 8, 4011799185789819768)
 	model.Property("OperatingState", objectbox.PropertyType_String, 9, 4667081344725635916)
 	model.Property("Labels", objectbox.PropertyType_StringVector, 10, 7882493407307574917)
+	model.Property("Addressable", objectbox.PropertyType_Relation, 12, 8342298068130374813)
+	model.PropertyRelation("Addressable", 4, 2951639334126412359)
 	model.Property("AdminState", objectbox.PropertyType_String, 11, 7551584300772599559)
-	model.EntityLastPropertyId(11, 7551584300772599559)
+	model.EntityLastPropertyId(12, 8342298068130374813)
 }
 
-// GetId is called by the ObjectBox during Put operations to check for existing ID on an object
+// GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (deviceService_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*DeviceService); ok {
 		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
@@ -155,18 +169,37 @@ func (deviceService_EntityInfo) GetId(object interface{}) (uint64, error) {
 	}
 }
 
-// SetId is called by the ObjectBox during Put to update an ID on an object that has just been inserted
-func (deviceService_EntityInfo) SetId(object interface{}, id uint64) error {
+// SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
+func (deviceService_EntityInfo) SetId(object interface{}, id uint64) {
 	if obj, ok := object.(*DeviceService); ok {
 		obj.Service.Id = objectbox.StringIdConvertToEntityProperty(id)
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(DeviceService).Service.Id
 	}
+}
+
+// PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
+func (deviceService_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+
+	if rel := &object.(*DeviceService).Addressable; rel != nil {
+		rId, err := AddressableBinding.GetId(rel)
+		if err != nil {
+			return err
+		} else if rId == 0 {
+			if rCursor, err := txn.CursorForName("Addressable"); err != nil {
+				return err
+			} else if rId, err = rCursor.Put(rel); err != nil {
+				return err
+			}
+		}
+		// NOTE Put/PutAsync() has a side-effect of setting the rel.ID, so at this point, it is already set
+	}
+
 	return nil
 }
 
-// Flatten is called by the ObjectBox to transform an object to a FlatBuffer
+// Flatten is called by ObjectBox to transform an object to a FlatBuffer
 func (deviceService_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
 	obj := object.(*DeviceService)
 	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.Description)
@@ -175,8 +208,17 @@ func (deviceService_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 	var offsetLabels = fbutils.CreateStringVectorOffset(fbb, obj.Labels)
 	var offsetAdminState = fbutils.CreateStringOffset(fbb, string(obj.AdminState))
 
+	var rIdAddressable uint64
+	if rel := &obj.Addressable; rel != nil {
+		if rId, err := AddressableBinding.GetId(rel); err != nil {
+			panic(err) // this must never happen but let's keep the check just to be sure
+		} else {
+			rIdAddressable = rId
+		}
+	}
+
 	// build the FlatBuffers object
-	fbb.StartObject(11)
+	fbb.StartObject(12)
 	fbutils.SetInt64Slot(fbb, 0, obj.Created)
 	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
 	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
@@ -187,14 +229,32 @@ func (deviceService_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 	fbutils.SetInt64Slot(fbb, 7, obj.LastReported)
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetOperatingState)
 	fbutils.SetUOffsetTSlot(fbb, 9, offsetLabels)
+	fbutils.SetUint64Slot(fbb, 11, rIdAddressable)
 	fbutils.SetUOffsetTSlot(fbb, 10, offsetAdminState)
 }
 
-// ToObject is called by the ObjectBox to load an object from a FlatBuffer
-func (deviceService_EntityInfo) ToObject(bytes []byte) interface{} {
-	table := &flatbuffers.Table{
+// Load is called by ObjectBox to load an object from a FlatBuffer
+func (deviceService_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
+	}
+	var id = table.GetUint64Slot(12, 0)
+
+	var relAddressable *Addressable
+	if rId := table.GetUint64Slot(26, 0); rId > 0 {
+		if cursor, err := txn.CursorForName("Addressable"); err != nil {
+			panic(err)
+		} else if relObject, err := cursor.Get(rId); err != nil {
+			panic(err)
+		} else if relObj, ok := relObject.(*Addressable); ok {
+			relAddressable = relObj
+		} else {
+			var relObj = relObject.(Addressable)
+			relAddressable = &relObj
+		}
+	} else {
+		relAddressable = &Addressable{}
 	}
 
 	return &DeviceService{
@@ -207,23 +267,24 @@ func (deviceService_EntityInfo) ToObject(bytes []byte) interface{} {
 				},
 				Description: fbutils.GetStringSlot(table, 10),
 			},
-			Id:             objectbox.StringIdConvertToEntityProperty(table.GetUint64Slot(12, 0)),
+			Id:             objectbox.StringIdConvertToEntityProperty(id),
 			Name:           fbutils.GetStringSlot(table, 14),
 			LastConnected:  table.GetInt64Slot(16, 0),
 			LastReported:   table.GetInt64Slot(18, 0),
-			OperatingState: OperatingState(fbutils.GetStringSlot(table, 20)),
+			OperatingState: models.OperatingState(fbutils.GetStringSlot(table, 20)),
 			Labels:         fbutils.GetStringVectorSlot(table, 22),
+			Addressable:    *relAddressable,
 		},
-		AdminState: AdminState(fbutils.GetStringSlot(table, 24)),
+		AdminState: models.AdminState(fbutils.GetStringSlot(table, 24)),
 	}
 }
 
-// MakeSlice is called by the ObjectBox to construct a new slice to hold the read objects
+// MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
 func (deviceService_EntityInfo) MakeSlice(capacity int) interface{} {
 	return make([]DeviceService, 0, capacity)
 }
 
-// AppendToSlice is called by the ObjectBox to fill the slice of the read objects
+// AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (deviceService_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
 	return append(slice.([]DeviceService), *object.(*DeviceService))
 }

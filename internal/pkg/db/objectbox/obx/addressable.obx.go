@@ -151,12 +151,12 @@ var Addressable_ = struct {
 	},
 }
 
-// GeneratorVersion is called by the ObjectBox to verify the compatibility of the generator used to generate this code
+// GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (addressable_EntityInfo) GeneratorVersion() int {
 	return 1
 }
 
-// AddToModel is called by the ObjectBox during model build
+// AddToModel is called by ObjectBox during model build
 func (addressable_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Addressable", 1, 7935862170457263125)
 	model.Property("Created", objectbox.PropertyType_Long, 1, 3615718190778736815)
@@ -179,7 +179,7 @@ func (addressable_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.EntityLastPropertyId(14, 8483935008079255088)
 }
 
-// GetId is called by the ObjectBox during Put operations to check for existing ID on an object
+// GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (addressable_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*Addressable); ok {
 		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
@@ -188,18 +188,23 @@ func (addressable_EntityInfo) GetId(object interface{}) (uint64, error) {
 	}
 }
 
-// SetId is called by the ObjectBox during Put to update an ID on an object that has just been inserted
-func (addressable_EntityInfo) SetId(object interface{}, id uint64) error {
+// SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
+func (addressable_EntityInfo) SetId(object interface{}, id uint64) {
 	if obj, ok := object.(*Addressable); ok {
 		obj.Id = objectbox.StringIdConvertToEntityProperty(id)
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Addressable).Id
 	}
+}
+
+// PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
+func (addressable_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+
 	return nil
 }
 
-// Flatten is called by the ObjectBox to transform an object to a FlatBuffer
+// Flatten is called by ObjectBox to transform an object to a FlatBuffer
 func (addressable_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
 	obj := object.(*Addressable)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
@@ -230,12 +235,13 @@ func (addressable_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Build
 	fbutils.SetUOffsetTSlot(fbb, 13, offsetTopic)
 }
 
-// ToObject is called by the ObjectBox to load an object from a FlatBuffer
-func (addressable_EntityInfo) ToObject(bytes []byte) interface{} {
-	table := &flatbuffers.Table{
+// Load is called by ObjectBox to load an object from a FlatBuffer
+func (addressable_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
+	var id = table.GetUint64Slot(10, 0)
 
 	return &Addressable{
 		BaseObject: models.BaseObject{
@@ -243,7 +249,7 @@ func (addressable_EntityInfo) ToObject(bytes []byte) interface{} {
 			Modified: table.GetInt64Slot(6, 0),
 			Origin:   table.GetInt64Slot(8, 0),
 		},
-		Id:         objectbox.StringIdConvertToEntityProperty(table.GetUint64Slot(10, 0)),
+		Id:         objectbox.StringIdConvertToEntityProperty(id),
 		Name:       fbutils.GetStringSlot(table, 12),
 		Protocol:   fbutils.GetStringSlot(table, 14),
 		HTTPMethod: fbutils.GetStringSlot(table, 16),
@@ -257,12 +263,12 @@ func (addressable_EntityInfo) ToObject(bytes []byte) interface{} {
 	}
 }
 
-// MakeSlice is called by the ObjectBox to construct a new slice to hold the read objects
+// MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
 func (addressable_EntityInfo) MakeSlice(capacity int) interface{} {
 	return make([]Addressable, 0, capacity)
 }
 
-// AppendToSlice is called by the ObjectBox to fill the slice of the read objects
+// AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (addressable_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
 	return append(slice.([]Addressable), *object.(*Addressable))
 }

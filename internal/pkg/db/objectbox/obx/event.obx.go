@@ -128,7 +128,6 @@ func (event_EntityInfo) SetId(object interface{}, id uint64) {
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
 func (event_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
-
 	if cursor, err := txn.CursorForName("Event"); err != nil {
 		panic(err)
 	} else if rSlice := object.(*Event).Readings; rSlice != nil {
@@ -184,7 +183,6 @@ func (event_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{
 			}
 		}
 	}
-
 	return nil
 }
 

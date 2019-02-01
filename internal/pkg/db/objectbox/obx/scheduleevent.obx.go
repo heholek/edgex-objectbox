@@ -149,7 +149,6 @@ func (scheduleEvent_EntityInfo) SetId(object interface{}, id uint64) {
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
 func (scheduleEvent_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
-
 	if rel := &object.(*ScheduleEvent).Addressable; rel != nil {
 		rId, err := AddressableBinding.GetId(rel)
 		if err != nil {
@@ -163,7 +162,6 @@ func (scheduleEvent_EntityInfo) PutRelated(txn *objectbox.Transaction, object in
 		}
 		// NOTE Put/PutAsync() has a side-effect of setting the rel.ID, so at this point, it is already set
 	}
-
 	return nil
 }
 

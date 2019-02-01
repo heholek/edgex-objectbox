@@ -189,7 +189,6 @@ func (valueDescriptor_EntityInfo) SetId(object interface{}, id uint64) {
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
 func (valueDescriptor_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
-
 	return nil
 }
 
@@ -198,9 +197,9 @@ func (valueDescriptor_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.B
 	obj := object.(*ValueDescriptor)
 	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.Description)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
-	var offsetMin = fbutils.CreateByteVectorOffset(fbb, interfaceGobToDatabaseValue(obj.Min))
-	var offsetMax = fbutils.CreateByteVectorOffset(fbb, interfaceGobToDatabaseValue(obj.Max))
-	var offsetDefaultValue = fbutils.CreateByteVectorOffset(fbb, interfaceGobToDatabaseValue(obj.DefaultValue))
+	var offsetMin = fbutils.CreateByteVectorOffset(fbb, interfaceJsonToDatabaseValue(obj.Min))
+	var offsetMax = fbutils.CreateByteVectorOffset(fbb, interfaceJsonToDatabaseValue(obj.Max))
+	var offsetDefaultValue = fbutils.CreateByteVectorOffset(fbb, interfaceJsonToDatabaseValue(obj.DefaultValue))
 	var offsetType = fbutils.CreateStringOffset(fbb, obj.Type)
 	var offsetUomLabel = fbutils.CreateStringOffset(fbb, obj.UomLabel)
 	var offsetFormatting = fbutils.CreateStringOffset(fbb, obj.Formatting)
@@ -238,9 +237,9 @@ func (valueDescriptor_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte)
 		Modified:     table.GetInt64Slot(10, 0),
 		Origin:       table.GetInt64Slot(12, 0),
 		Name:         fbutils.GetStringSlot(table, 14),
-		Min:          interfaceGobToEntityProperty(fbutils.GetByteVectorSlot(table, 16)),
-		Max:          interfaceGobToEntityProperty(fbutils.GetByteVectorSlot(table, 18)),
-		DefaultValue: interfaceGobToEntityProperty(fbutils.GetByteVectorSlot(table, 20)),
+		Min:          interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 16)),
+		Max:          interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 18)),
+		DefaultValue: interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 20)),
 		Type:         fbutils.GetStringSlot(table, 22),
 		UomLabel:     fbutils.GetStringSlot(table, 24),
 		Formatting:   fbutils.GetStringSlot(table, 26),

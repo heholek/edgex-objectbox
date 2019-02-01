@@ -108,7 +108,6 @@ func (command_EntityInfo) SetId(object interface{}, id uint64) {
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
 func (command_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
-
 	return nil
 }
 

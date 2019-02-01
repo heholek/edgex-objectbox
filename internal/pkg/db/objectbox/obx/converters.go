@@ -1,8 +1,7 @@
 package obx
 
 import (
-	"bytes"
-	"encoding/gob"
+	"encoding/json"
 	"github.com/globalsign/mgo/bson"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"strconv"
@@ -23,35 +22,28 @@ func bsonIdToDatabaseValue(goValue bson.ObjectId) uint64 {
 	return objectbox.StringIdConvertToDatabaseValue(string(goValue))
 }
 
-// TODO benchmark whether it's faster to construct encoder or use a global one with a mutex
-
-func interfaceGobToEntityProperty(dbValue []byte) interface{} {
+func interfaceJsonToEntityProperty(dbValue []byte) interface{} {
 	if dbValue == nil {
 		return nil
 	}
 
-	var b = bytes.NewBuffer(dbValue)
-	var decoder = gob.NewDecoder(b)
-
 	var value interface{}
-	if err := decoder.Decode(&value); err != nil {
+
+	if err := json.Unmarshal(dbValue, &value); err != nil {
 		panic(err)
 	}
 
 	return value
 }
 
-func interfaceGobToDatabaseValue(goValue interface{}) []byte {
+func interfaceJsonToDatabaseValue(goValue interface{}) []byte {
 	if goValue == nil {
 		return nil
 	}
 
-	var b bytes.Buffer
-	var encoder = gob.NewEncoder(&b)
-
-	if err := encoder.Encode(goValue); err != nil {
+	if bytes, err := json.Marshal(goValue); err != nil {
 		panic(err)
+	} else {
+		return bytes
 	}
-
-	return b.Bytes()
 }

@@ -4,6 +4,7 @@ package objectbox
 // TODO indexes
 
 import (
+	"fmt"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
 	contract "github.com/edgexfoundry/edgex-go/pkg/models"
@@ -469,16 +470,7 @@ func (client *coreMetaDataClient) GetAllDeviceServices() ([]contract.DeviceServi
 
 func (client *coreMetaDataClient) AddDeviceService(ds contract.DeviceService) (string, error) {
 	onCreate(&ds.BaseObject)
-
-	// TODO remove this manual check, it should be done automatically by `unique` constraint
-	if existing, err := client.GetDeviceServiceByName(ds.Name); err != nil {
-		if err != db.ErrNotFound {
-			return "", err
-		}
-	} else if len(existing.Id) > 0 {
-		return "", db.ErrNotUnique
-	}
-
+	fmt.Println(ds.Addressable.Name)
 	id, err := client.deviceServiceBox.Put(&ds)
 	return obx.IdToString(id), err
 }

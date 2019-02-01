@@ -41,6 +41,7 @@ type coreDataQueries struct {
 		name     valueDescriptorQuery
 		names    valueDescriptorQuery
 		typ      valueDescriptorQuery
+		labels   valueDescriptorQuery
 		uomlabel valueDescriptorQuery
 	}
 }
@@ -125,6 +126,11 @@ func newCoreDataClient(objectBox *objectbox.ObjectBox) (*coreDataClient, error) 
 
 	//region ValueDescriptor
 	if err == nil {
+		client.queries.valueDescriptor.labels.ValueDescriptorQuery, err =
+			client.valueDescriptorBox.QueryOrError(obx.ValueDescriptor_.Labels.Contains("", true))
+	}
+
+	if err == nil {
 		client.queries.valueDescriptor.name.ValueDescriptorQuery, err =
 			client.valueDescriptorBox.QueryOrError(obx.ValueDescriptor_.Name.Equals("", true))
 	}
@@ -171,7 +177,7 @@ func (client *coreDataClient) AddEvent(event contract.Event) (string, error) {
 		event.Created = db.MakeTimestamp()
 	}
 
-	// TODO readings
+	// TODO currently tests don't add any readings to the event
 
 	var id uint64
 	var err error
@@ -463,6 +469,8 @@ func (client *coreDataClient) AddValueDescriptor(v contract.ValueDescriptor) (st
 		v.Created = db.MakeTimestamp()
 	}
 
+	// TODO tests don't set Max, Min, Default (interface{})
+
 	id, err := client.valueDescriptorBox.Put(&v)
 	return obx.IdToString(id), err
 }
@@ -559,22 +567,16 @@ func (client *coreDataClient) ValueDescriptorsByUomLabel(uomLabel string) ([]con
 }
 
 func (client *coreDataClient) ValueDescriptorsByLabel(label string) ([]contract.ValueDescriptor, error) {
-	// TODO implement queries on `[]string` in the core
-	if objects, err := client.ValueDescriptors(); err != nil {
+	var query = &client.queries.valueDescriptor.labels
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.ValueDescriptor_.Labels, label); err != nil {
 		return nil, err
-	} else {
-		// manually search all value descriptors for the given label
-		var result = make([]contract.ValueDescriptor, 0)
-		for _, object := range objects {
-			for _, str := range object.Labels {
-				if label == str {
-					result = append(result, object)
-					break
-				}
-			}
-		}
-		return result, nil
 	}
+
+	return query.Find()
 }
 
 func (client *coreDataClient) ValueDescriptorsByType(t string) ([]contract.ValueDescriptor, error) {

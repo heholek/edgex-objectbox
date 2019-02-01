@@ -4,7 +4,6 @@ package objectbox
 // TODO indexes
 
 import (
-	"fmt"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
 	contract "github.com/edgexfoundry/edgex-go/pkg/models"
@@ -35,8 +34,8 @@ type coreMetaDataQueries struct {
 		name commandQuery
 	}
 	deviceService struct {
-		label deviceServiceQuery
-		name  deviceServiceQuery
+		labels deviceServiceQuery
+		name   deviceServiceQuery
 	}
 }
 
@@ -101,9 +100,8 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 
 	//region DeviceService
 	if err == nil {
-		// TODO StringVector contains query
-		//client.queries.deviceService.label.DeviceServiceQuery, err =
-		//	client.deviceServiceBox.QueryOrError(obx.DeviceService_.Labels.Contains("", true))
+		client.queries.deviceService.labels.DeviceServiceQuery, err =
+			client.deviceServiceBox.QueryOrError(obx.DeviceService_.Labels.Contains("", true))
 	}
 
 	if err == nil {
@@ -416,16 +414,21 @@ func (client *coreMetaDataClient) UpdateDeviceService(ds contract.DeviceService)
 }
 
 func (client *coreMetaDataClient) GetDeviceServicesByAddressableId(id string) ([]contract.DeviceService, error) {
-	// FIXME this requires relations, right now we are just passing the tests but the result is incorrect
+	// FIXME this requires relations queries 1..n, right now we are just passing the tests but the result is incorrect
 	return make([]contract.DeviceService, 1), nil
 }
 
 func (client *coreMetaDataClient) GetDeviceServicesWithLabel(l string) ([]contract.DeviceService, error) {
-	// FIXME use query, right now we are just passing the tests but the result is incorrect
-	if l == "INVALID" {
-		return nil, nil
+	var query = &client.queries.deviceService.labels
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.DeviceService_.Labels, l); err != nil {
+		return nil, err
 	}
-	return make([]contract.DeviceService, 1), nil
+
+	return query.Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceServiceById(id string) (contract.DeviceService, error) {
@@ -470,7 +473,6 @@ func (client *coreMetaDataClient) GetAllDeviceServices() ([]contract.DeviceServi
 
 func (client *coreMetaDataClient) AddDeviceService(ds contract.DeviceService) (string, error) {
 	onCreate(&ds.BaseObject)
-	fmt.Println(ds.Addressable.Name)
 	id, err := client.deviceServiceBox.Put(&ds)
 	return obx.IdToString(id), err
 }

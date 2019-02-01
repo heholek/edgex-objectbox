@@ -64,7 +64,8 @@ func getDeviceService(db interfaces.DBClient, i int) (models.DeviceService, erro
 	ds.LastReported = 5
 	ds.Description = name
 
-	_, err := db.AddAddressable(ds.Addressable)
+	var err error
+	ds.Addressable.Id, err = db.AddAddressable(ds.Addressable)
 	if err != nil {
 		return ds, fmt.Errorf("Error creating addressable: %v", err)
 	}

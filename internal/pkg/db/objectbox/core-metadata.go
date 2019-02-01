@@ -16,6 +16,7 @@ type coreMetaDataClient struct {
 
 	addressableBox   *obx.AddressableBox
 	commandBox       *obx.CommandBox
+	deviceReportBox  *obx.DeviceReportBox
 	deviceServiceBox *obx.DeviceServiceBox
 	scheduleBox      *obx.ScheduleBox
 
@@ -34,6 +35,11 @@ type coreMetaDataQueries struct {
 	command struct {
 		name commandQuery
 	}
+	deviceReport struct {
+		device deviceReportQuery
+		event  deviceReportQuery
+		name   deviceReportQuery
+	}
 	deviceService struct {
 		labels deviceServiceQuery
 		name   deviceServiceQuery
@@ -50,6 +56,11 @@ type addressableQuery struct {
 
 type commandQuery struct {
 	*obx.CommandQuery
+	sync.Mutex
+}
+
+type deviceReportQuery struct {
+	*obx.DeviceReportQuery
 	sync.Mutex
 }
 
@@ -71,6 +82,7 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 
 	client.addressableBox = obx.BoxForAddressable(objectBox)
 	client.commandBox = obx.BoxForCommand(objectBox)
+	client.deviceReportBox = obx.BoxForDeviceReport(objectBox)
 	client.deviceServiceBox = obx.BoxForDeviceService(objectBox)
 	client.scheduleBox = obx.BoxForSchedule(objectBox)
 
@@ -105,6 +117,21 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	if err == nil {
 		client.queries.command.name.CommandQuery, err =
 			client.commandBox.QueryOrError(obx.Command_.Name.Equals("", true))
+	}
+	//endregion
+
+	//region DeviceReport
+	if err == nil {
+		client.queries.deviceReport.device.DeviceReportQuery, err =
+			client.deviceReportBox.QueryOrError(obx.DeviceReport_.Device.Equals("", true))
+	}
+	if err == nil {
+		client.queries.deviceReport.event.DeviceReportQuery, err =
+			client.deviceReportBox.QueryOrError(obx.DeviceReport_.Event.Equals("", true))
+	}
+	if err == nil {
+		client.queries.deviceReport.name.DeviceReportQuery, err =
+			client.deviceReportBox.QueryOrError(obx.DeviceReport_.Name.Equals("", true))
 	}
 	//endregion
 
@@ -245,34 +272,95 @@ func (client *coreMetaDataClient) DeleteScheduleById(id string) error {
 }
 
 func (client *coreMetaDataClient) GetAllDeviceReports() ([]contract.DeviceReport, error) {
-	panic(notImplemented())
+	return client.deviceReportBox.GetAll()
 }
 
 func (client *coreMetaDataClient) GetDeviceReportByDeviceName(n string) ([]contract.DeviceReport, error) {
-	panic(notImplemented())
+	var query = &client.queries.deviceReport.device
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.DeviceReport_.Device, n); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceReportByName(n string) (contract.DeviceReport, error) {
-	panic(notImplemented())
+	var query = &client.queries.deviceReport.name
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.DeviceReport_.Name, n); err != nil {
+		return contract.DeviceReport{}, err
+	}
+
+	if list, err := query.Limit(1).Find(); err != nil {
+		return contract.DeviceReport{}, err
+	} else if len(list) == 0 {
+		return contract.DeviceReport{}, db.ErrNotFound
+	} else {
+		return list[0], nil
+	}
 }
 
 func (client *coreMetaDataClient) GetDeviceReportById(id string) (contract.DeviceReport, error) {
-	panic(notImplemented())
+	if id, err := obx.IdFromString(id); err != nil {
+		return contract.DeviceReport{}, err
+	} else if object, err := client.deviceReportBox.Get(id); err != nil {
+		return contract.DeviceReport{}, err
+	} else if object == nil {
+		return contract.DeviceReport{}, db.ErrNotFound
+	} else {
+		return *object, nil
+	}
 }
 
 func (client *coreMetaDataClient) AddDeviceReport(dr contract.DeviceReport) (string, error) {
-	panic(notImplemented())
+	onCreate(&dr.BaseObject)
+
+	id, err := client.deviceReportBox.Put(&dr)
+	return obx.IdToString(id), err
 }
 
 func (client *coreMetaDataClient) UpdateDeviceReport(dr contract.DeviceReport) error {
-	panic(notImplemented())
+	onUpdate(&dr.BaseObject)
+
+	if id, err := obx.IdFromString(dr.Id); err != nil {
+		return err
+	} else if exists, err := client.deviceReportBox.Contains(id); err != nil {
+		return err
+	} else if !exists {
+		return db.ErrNotFound
+	}
+
+	_, err := client.deviceReportBox.Put(&dr)
+	return err
 }
 
 func (client *coreMetaDataClient) GetDeviceReportsByScheduleEventName(n string) ([]contract.DeviceReport, error) {
-	panic(notImplemented())
+	var query = &client.queries.deviceReport.event
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.DeviceReport_.Event, n); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
-func (client *coreMetaDataClient) DeleteDeviceReportById(id string) error { panic(notImplemented()) }
+func (client *coreMetaDataClient) DeleteDeviceReportById(id string) error {
+	if id, err := obx.IdFromString(id); err != nil {
+		return err
+	} else {
+		return client.deviceReportBox.Box.Remove(id)
+	}
+}
 
 func (client *coreMetaDataClient) UpdateDevice(d contract.Device) error { panic(notImplemented()) }
 

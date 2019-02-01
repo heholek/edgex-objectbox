@@ -281,7 +281,7 @@ func populateProvisionWatcher(db interfaces.DBClient, count int) (string, error)
 		if err != nil {
 			return id, err
 		}
-		_, err = db.AddDeviceService(d.Service)
+		d.Service.Id, err = db.AddDeviceService(d.Service)
 		if err != nil {
 			return id, fmt.Errorf("Error creating DeviceService: %v", err)
 		}
@@ -289,7 +289,7 @@ func populateProvisionWatcher(db interfaces.DBClient, count int) (string, error)
 		if err != nil {
 			return id, fmt.Errorf("Error getting DeviceProfile: %v", err)
 		}
-		id, err = db.AddDeviceProfile(d.Profile)
+		d.Profile.Id, err = db.AddDeviceProfile(d.Profile)
 		if err != nil {
 			return id, fmt.Errorf("Error creating DeviceProfile: %v", err)
 		}
@@ -1377,7 +1377,7 @@ func testDBProvisionWatcher(t *testing.T, db interfaces.DBClient) {
 	if pw.Id != id {
 		t.Fatalf("Id does not match %s - %s", pw.Id, id)
 	}
-	pw, err = db.GetProvisionWatcherById("INVALID")
+	_, err = db.GetProvisionWatcherById("INVALID")
 	if err == nil {
 		t.Fatalf("ProvisionWatcher should not be found")
 	}
@@ -1389,7 +1389,7 @@ func testDBProvisionWatcher(t *testing.T, db interfaces.DBClient) {
 	if pw.Name != "name1" {
 		t.Fatalf("Id does not match %s - %s", pw.Id, id)
 	}
-	pw, err = db.GetProvisionWatcherByName("INVALID")
+	_, err = db.GetProvisionWatcherByName("INVALID")
 	if err == nil {
 		t.Fatalf("ProvisionWatcher should not be found")
 	}
@@ -1402,7 +1402,7 @@ func testDBProvisionWatcher(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 1 provisionWatchers instead of %d", len(provisionWatchers))
 	}
 
-	provisionWatchers, err = db.GetProvisionWatchersByServiceId(bson.NewObjectId().Hex())
+	provisionWatchers, err = db.GetProvisionWatchersByServiceId("")
 	if err != nil {
 		t.Fatalf("Error getting provisionWatchers %v", err)
 	}
@@ -1418,7 +1418,7 @@ func testDBProvisionWatcher(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 1 provisionWatchers instead of %d", len(provisionWatchers))
 	}
 
-	provisionWatchers, err = db.GetProvisionWatchersByProfileId(bson.NewObjectId().Hex())
+	provisionWatchers, err = db.GetProvisionWatchersByProfileId("")
 	if err != nil {
 		t.Fatalf("Error getting provisionWatchers %v", err)
 	}

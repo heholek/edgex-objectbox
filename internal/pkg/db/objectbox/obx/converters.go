@@ -31,15 +31,39 @@ func interfaceJsonToEntityProperty(dbValue []byte) interface{} {
 	}
 
 	var value interface{}
-
 	if err := json.Unmarshal(dbValue, &value); err != nil {
 		panic(err)
+	} else {
+		return value
 	}
-
-	return value
 }
 
 func interfaceJsonToDatabaseValue(goValue interface{}) []byte {
+	if goValue == nil {
+		return nil
+	}
+
+	if bytes, err := json.Marshal(goValue); err != nil {
+		panic(err)
+	} else {
+		return bytes
+	}
+}
+
+func mapStringStringJsonToEntityProperty(dbValue []byte) map[string]string {
+	if dbValue == nil {
+		return nil
+	}
+
+	var value map[string]string
+	if err := json.Unmarshal(dbValue, &value); err != nil {
+		panic(err)
+	} else {
+		return value
+	}
+}
+
+func mapStringStringJsonToDatabaseValue(goValue map[string]string) []byte {
 	if goValue == nil {
 		return nil
 	}

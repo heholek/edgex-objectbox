@@ -16,14 +16,15 @@ import (
 type coreMetaDataClient struct {
 	objectBox *objectbox.ObjectBox
 
-	addressableBox   *obx.AddressableBox
-	commandBox       *obx.CommandBox
-	deviceBox        *obx.DeviceBox
-	deviceProfileBox *obx.DeviceProfileBox
-	deviceReportBox  *obx.DeviceReportBox
-	deviceServiceBox *obx.DeviceServiceBox
-	scheduleBox      *obx.ScheduleBox
-	scheduleEventBox *obx.ScheduleEventBox
+	addressableBox      *obx.AddressableBox
+	commandBox          *obx.CommandBox
+	deviceBox           *obx.DeviceBox
+	deviceProfileBox    *obx.DeviceProfileBox
+	deviceReportBox     *obx.DeviceReportBox
+	deviceServiceBox    *obx.DeviceServiceBox
+	provisionWatcherBox *obx.ProvisionWatcherBox
+	scheduleBox         *obx.ScheduleBox
+	scheduleEventBox    *obx.ScheduleEventBox
 
 	queries coreMetaDataQueries
 }
@@ -62,6 +63,11 @@ type coreMetaDataQueries struct {
 	deviceService struct {
 		labels deviceServiceQuery
 		name   deviceServiceQuery
+	}
+	provisionWatcher struct {
+		name    provisionWatcherQuery
+		profile provisionWatcherQuery
+		service provisionWatcherQuery
 	}
 	schedule struct {
 		name scheduleQuery
@@ -104,6 +110,11 @@ type deviceServiceQuery struct {
 	sync.Mutex
 }
 
+type provisionWatcherQuery struct {
+	*obx.ProvisionWatcherQuery
+	sync.Mutex
+}
+
 type scheduleQuery struct {
 	*obx.ScheduleQuery
 	sync.Mutex
@@ -126,6 +137,7 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	client.deviceProfileBox = obx.BoxForDeviceProfile(objectBox)
 	client.deviceReportBox = obx.BoxForDeviceReport(objectBox)
 	client.deviceServiceBox = obx.BoxForDeviceService(objectBox)
+	client.provisionWatcherBox = obx.BoxForProvisionWatcher(objectBox)
 	client.scheduleBox = obx.BoxForSchedule(objectBox)
 	client.scheduleEventBox = obx.BoxForScheduleEvent(objectBox)
 
@@ -235,6 +247,21 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	if err == nil {
 		client.queries.deviceService.name.DeviceServiceQuery, err =
 			client.deviceServiceBox.QueryOrError(obx.DeviceService_.Name.Equals("", true))
+	}
+	//endregion
+
+	//region ProvisionWatcher
+	if err == nil {
+		client.queries.provisionWatcher.name.ProvisionWatcherQuery, err =
+			client.provisionWatcherBox.QueryOrError(obx.ProvisionWatcher_.Name.Equals("", true))
+	}
+	if err == nil {
+		client.queries.provisionWatcher.profile.ProvisionWatcherQuery, err =
+			client.provisionWatcherBox.QueryOrError(obx.ProvisionWatcher_.Profile.Equals(0))
+	}
+	if err == nil {
+		client.queries.provisionWatcher.service.ProvisionWatcherQuery, err =
+			client.provisionWatcherBox.QueryOrError(obx.ProvisionWatcher_.Service.Equals(0))
 	}
 	//endregion
 
@@ -833,7 +860,7 @@ func (client *coreMetaDataClient) GetDeviceProfileByName(n string) (contract.Dev
 
 func (client *coreMetaDataClient) GetDeviceProfilesUsingCommand(c contract.Command) ([]contract.DeviceProfile, error) {
 	// TODO implement using backlinks, this is inefficient
-	if all, err := client.GetAllDeviceProfiles(); err != nil {
+	if all, err := client.deviceProfileBox.GetAll(); err != nil {
 		return nil, err
 	} else {
 		result := make([]contract.DeviceProfile, 0)
@@ -1063,38 +1090,117 @@ func (client *coreMetaDataClient) DeleteDeviceServiceById(idString string) error
 }
 
 func (client *coreMetaDataClient) GetProvisionWatcherById(id string) (contract.ProvisionWatcher, error) {
-	panic(notImplemented())
+	if id, err := obx.IdFromString(id); err != nil {
+		return contract.ProvisionWatcher{}, err
+	} else if object, err := client.provisionWatcherBox.Get(id); err != nil {
+		return contract.ProvisionWatcher{}, err
+	} else if object == nil {
+		return contract.ProvisionWatcher{}, db.ErrNotFound
+	} else {
+		return *object, nil
+	}
 }
 
 func (client *coreMetaDataClient) GetAllProvisionWatchers() ([]contract.ProvisionWatcher, error) {
-	panic(notImplemented())
+	return client.provisionWatcherBox.GetAll()
 }
 
 func (client *coreMetaDataClient) GetProvisionWatcherByName(n string) (contract.ProvisionWatcher, error) {
-	panic(notImplemented())
+	var query = &client.queries.provisionWatcher.name
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.ProvisionWatcher_.Name, n); err != nil {
+		return contract.ProvisionWatcher{}, err
+	}
+
+	if list, err := query.Limit(1).Find(); err != nil {
+		return contract.ProvisionWatcher{}, err
+	} else if len(list) == 0 {
+		return contract.ProvisionWatcher{}, db.ErrNotFound
+	} else {
+		return list[0], nil
+	}
 }
 
 func (client *coreMetaDataClient) GetProvisionWatchersByProfileId(id string) ([]contract.ProvisionWatcher, error) {
-	panic(notImplemented())
+	var query = &client.queries.provisionWatcher.profile
+
+	query.Lock()
+	defer query.Unlock()
+
+	if id, err := obx.IdFromString(id); err != nil {
+		return nil, err
+	} else if err := query.SetInt64Params(obx.ProvisionWatcher_.Profile, int64(id)); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
 func (client *coreMetaDataClient) GetProvisionWatchersByServiceId(id string) ([]contract.ProvisionWatcher, error) {
-	panic(notImplemented())
+	var query = &client.queries.provisionWatcher.service
+
+	query.Lock()
+	defer query.Unlock()
+
+	if id, err := obx.IdFromString(id); err != nil {
+		return nil, err
+	} else if err := query.SetInt64Params(obx.ProvisionWatcher_.Service, int64(id)); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
 func (client *coreMetaDataClient) GetProvisionWatchersByIdentifier(k string, v string) ([]contract.ProvisionWatcher, error) {
-	panic(notImplemented())
+	// TODO can we make this more efficient?
+	//  The biggest problem is that ProvisionWatcher contains relations which are loaded eagerly
+	if all, err := client.provisionWatcherBox.GetAll(); err != nil {
+		return nil, err
+	} else {
+		result := make([]contract.ProvisionWatcher, 0)
+		for _, watcher := range all {
+			if foundValue, found := watcher.Identifiers[k]; found {
+				if foundValue == v {
+					result = append(result, watcher)
+				}
+			}
+		}
+		return result, nil
+	}
 }
 
 func (client *coreMetaDataClient) AddProvisionWatcher(pw contract.ProvisionWatcher) (string, error) {
-	panic(notImplemented())
+	onCreate(&pw.BaseObject)
+
+	id, err := client.provisionWatcherBox.Put(&pw)
+	return obx.IdToString(id), err
 }
 
 func (client *coreMetaDataClient) UpdateProvisionWatcher(pw contract.ProvisionWatcher) error {
-	panic(notImplemented())
+	onUpdate(&pw.BaseObject)
+
+	if id, err := obx.IdFromString(string(pw.Id)); err != nil {
+		return err
+	} else if exists, err := client.provisionWatcherBox.Contains(id); err != nil {
+		return err
+	} else if !exists {
+		return db.ErrNotFound
+	}
+
+	_, err := client.provisionWatcherBox.Put(&pw)
+	return err
 }
 
-func (client *coreMetaDataClient) DeleteProvisionWatcherById(id string) error { panic(notImplemented()) }
+func (client *coreMetaDataClient) DeleteProvisionWatcherById(id string) error {
+	if id, err := obx.IdFromString(id); err != nil {
+		return err
+	} else {
+		return client.provisionWatcherBox.Box.Remove(id)
+	}
+}
 
 func (client *coreMetaDataClient) GetCommandById(id string) (contract.Command, error) {
 	object, err := client.commandById(id)

@@ -195,7 +195,7 @@ func populateScheduleEvent(db interfaces.DBClient, count int) (bson.ObjectId, er
 		se.Parameters = name
 		se.Service = name
 		se.Addressable = getAddressable(i, "se_")
-		_, err = db.AddAddressable(se.Addressable)
+		se.Addressable.Id, err = db.AddAddressable(se.Addressable)
 		if err != nil {
 			return id, fmt.Errorf("Error creating addressable: %v", err)
 		}
@@ -935,6 +935,11 @@ func testDBScheduleEvent(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("Should be an error adding an event with not existing addressable")
 	}
 
+	e.Addressable.Id, err = db.AddAddressable(e.Addressable)
+	if err != nil {
+		t.Fatalf("Error adding addressable %v", err)
+	}
+
 	err = db.GetAllScheduleEvents(&scheduleEvents)
 	if err != nil {
 		t.Fatalf("Error getting ScheduleEvents %v", err)
@@ -991,7 +996,7 @@ func testDBScheduleEvent(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 1 ScheduleEvents instead of %d", len(scheduleEvents))
 	}
 
-	err = db.GetScheduleEventsByAddressableId(&scheduleEvents, bson.NewObjectId().Hex())
+	err = db.GetScheduleEventsByAddressableId(&scheduleEvents, "0")
 	if err != nil {
 		t.Fatalf("Error getting ScheduleEvents %v", err)
 	}

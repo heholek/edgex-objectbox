@@ -22,7 +22,7 @@ func ObjectBoxModel() *objectbox.Model {
 	model.RegisterBinding(ScheduleBinding)
 	model.RegisterBinding(DeviceReportBinding)
 	model.LastEntityId(9, 7590857651029402082)
-	model.LastIndexId(7, 1153755119419732754)
+	model.LastIndexId(8, 3589951353154638988)
 	model.LastRelationId(1, 7766060310030207431)
 
 	return model

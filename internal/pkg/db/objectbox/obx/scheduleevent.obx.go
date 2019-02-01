@@ -120,6 +120,8 @@ func (scheduleEvent_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Id", objectbox.PropertyType_Long, 4, 1449553450431761107)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
 	model.Property("Name", objectbox.PropertyType_String, 5, 2643597168165916624)
+	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
+	model.PropertyIndex(8, 3589951353154638988)
 	model.Property("Schedule", objectbox.PropertyType_String, 6, 5692020356904915195)
 	model.Property("Addressable", objectbox.PropertyType_Relation, 9, 2699934787885094203)
 	model.PropertyRelation("Addressable", 5, 118391878970996196)

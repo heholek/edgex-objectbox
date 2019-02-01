@@ -4,10 +4,12 @@ package objectbox
 // TODO indexes
 
 import (
+	"fmt"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
 	contract "github.com/edgexfoundry/edgex-go/pkg/models"
 	"github.com/objectbox/objectbox-go/objectbox"
+	"github.com/pkg/errors"
 	"sync"
 )
 
@@ -19,6 +21,7 @@ type coreMetaDataClient struct {
 	deviceReportBox  *obx.DeviceReportBox
 	deviceServiceBox *obx.DeviceServiceBox
 	scheduleBox      *obx.ScheduleBox
+	scheduleEventBox *obx.ScheduleEventBox
 
 	queries coreMetaDataQueries
 }
@@ -47,6 +50,12 @@ type coreMetaDataQueries struct {
 	schedule struct {
 		name scheduleQuery
 	}
+	scheduleEvent struct {
+		addressable scheduleEventQuery
+		name        scheduleEventQuery
+		schedule    scheduleEventQuery
+		service     scheduleEventQuery
+	}
 }
 
 type addressableQuery struct {
@@ -74,6 +83,11 @@ type scheduleQuery struct {
 	sync.Mutex
 }
 
+type scheduleEventQuery struct {
+	*obx.ScheduleEventQuery
+	sync.Mutex
+}
+
 //endregion
 
 func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient, error) {
@@ -85,6 +99,7 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	client.deviceReportBox = obx.BoxForDeviceReport(objectBox)
 	client.deviceServiceBox = obx.BoxForDeviceService(objectBox)
 	client.scheduleBox = obx.BoxForSchedule(objectBox)
+	client.scheduleEventBox = obx.BoxForScheduleEvent(objectBox)
 
 	//region Addressable
 	if err == nil {
@@ -154,6 +169,25 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	}
 	//endregion
 
+	//region ScheduleEvent
+	if err == nil {
+		client.queries.scheduleEvent.addressable.ScheduleEventQuery, err =
+			client.scheduleEventBox.QueryOrError(obx.ScheduleEvent_.Addressable.Equals(0))
+	}
+	if err == nil {
+		client.queries.scheduleEvent.name.ScheduleEventQuery, err =
+			client.scheduleEventBox.QueryOrError(obx.ScheduleEvent_.Name.Equals("", true))
+	}
+	if err == nil {
+		client.queries.scheduleEvent.schedule.ScheduleEventQuery, err =
+			client.scheduleEventBox.QueryOrError(obx.ScheduleEvent_.Schedule.Equals("", true))
+	}
+	if err == nil {
+		client.queries.scheduleEvent.service.ScheduleEventQuery, err =
+			client.scheduleEventBox.QueryOrError(obx.ScheduleEvent_.Service.Equals("", true))
+	}
+	//endregion
+
 	if err == nil {
 		return client, nil
 	} else {
@@ -162,38 +196,153 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 }
 
 func (client *coreMetaDataClient) GetAllScheduleEvents(se *[]contract.ScheduleEvent) error {
-	panic(notImplemented())
+	if list, err := client.scheduleEventBox.GetAll(); err != nil {
+		return err
+	} else {
+		*se = list
+		return nil
+	}
+}
+
+func (client *coreMetaDataClient) validateScheduleEvent(se *contract.ScheduleEvent) error {
+	// check the addressable is specified, this is required by tests
+	if addId, err := obx.IdFromString(se.Addressable.Id); err != nil {
+		return err
+	} else if addId == 0 {
+		return errors.New("addressable not specified")
+	} else if exists, err := client.addressableBox.Contains(addId); err != nil {
+		return err
+	} else if !exists {
+		return fmt.Errorf("addressable %s not found", se.Addressable.Id)
+	}
+
+	return nil
 }
 
 func (client *coreMetaDataClient) AddScheduleEvent(se *contract.ScheduleEvent) error {
-	panic(notImplemented())
+	onCreate(&se.BaseObject)
+
+	if err := client.validateScheduleEvent(se); err != nil {
+		return err
+	}
+
+	_, err := client.scheduleEventBox.Put(se)
+	return err
 }
 
 func (client *coreMetaDataClient) GetScheduleEventByName(se *contract.ScheduleEvent, n string) error {
-	panic(notImplemented())
+	var query = &client.queries.scheduleEvent.name
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.ScheduleEvent_.Name, n); err != nil {
+		return err
+	}
+
+	if list, err := query.Limit(1).Find(); err != nil {
+		return err
+	} else if len(list) == 0 {
+		return db.ErrNotFound
+	} else {
+		*se = list[0]
+		return nil
+	}
 }
 
 func (client *coreMetaDataClient) UpdateScheduleEvent(se contract.ScheduleEvent) error {
-	panic(notImplemented())
+	onUpdate(&se.BaseObject)
+
+	if err := client.validateScheduleEvent(&se); err != nil {
+		return err
+	}
+
+	if id, err := obx.IdFromString(string(se.Id)); err != nil {
+		return err
+	} else if exists, err := client.scheduleEventBox.Contains(id); err != nil {
+		return err
+	} else if !exists {
+		return db.ErrNotFound
+	}
+
+	_, err := client.scheduleEventBox.Put(&se)
+	return err
 }
 
 func (client *coreMetaDataClient) GetScheduleEventById(se *contract.ScheduleEvent, id string) error {
-	panic(notImplemented())
+	if id, err := idFromHex(id); err != nil {
+		return err
+	} else if id, err := obx.IdFromString(id); err != nil {
+		return err
+	} else if object, err := client.scheduleEventBox.Get(id); err != nil {
+		return err
+	} else if object == nil {
+		return db.ErrNotFound
+	} else {
+		*se = *object
+		return nil
+	}
 }
 
 func (client *coreMetaDataClient) GetScheduleEventsByScheduleName(se *[]contract.ScheduleEvent, n string) error {
-	panic(notImplemented())
+	var query = &client.queries.scheduleEvent.schedule
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.ScheduleEvent_.Schedule, n); err != nil {
+		return err
+	} else if list, err := query.Find(); err != nil {
+		return err
+	} else {
+		*se = list
+		return nil
+	}
 }
 
 func (client *coreMetaDataClient) GetScheduleEventsByAddressableId(se *[]contract.ScheduleEvent, id string) error {
-	panic(notImplemented())
+	var query = &client.queries.scheduleEvent.addressable
+
+	query.Lock()
+	defer query.Unlock()
+
+	if id, err := obx.IdFromString(id); err != nil {
+		return err
+	} else if err := query.SetInt64Params(obx.ScheduleEvent_.Addressable, int64(id)); err != nil {
+		return err
+	} else if list, err := query.Find(); err != nil {
+		return err
+	} else {
+		*se = list
+		return nil
+	}
 }
 
 func (client *coreMetaDataClient) GetScheduleEventsByServiceName(se *[]contract.ScheduleEvent, n string) error {
-	panic(notImplemented())
+	var query = &client.queries.scheduleEvent.service
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.ScheduleEvent_.Service, n); err != nil {
+		return err
+	} else if list, err := query.Find(); err != nil {
+		return err
+	} else {
+		*se = list
+		return nil
+	}
 }
 
-func (client *coreMetaDataClient) DeleteScheduleEventById(id string) error { panic(notImplemented()) }
+func (client *coreMetaDataClient) DeleteScheduleEventById(id string) error {
+	if id, err := idFromHex(id); err != nil {
+		return err
+	} else if id, err := obx.IdFromString(id); err != nil {
+		return err
+	} else {
+		return client.scheduleEventBox.Box.Remove(id)
+	}
+}
 
 func (client *coreMetaDataClient) GetAllSchedules(s *[]contract.Schedule) error {
 	if list, err := client.scheduleBox.GetAll(); err != nil {

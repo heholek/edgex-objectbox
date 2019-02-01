@@ -22,7 +22,7 @@ import (
 type ScheduleEvent struct {
 	models.BaseObject
 	Id          bson.ObjectId `id type:"uint64" converter:"bsonId"`
-	Name        string
+	Name        string        `unique`
 	Schedule    string
 	Addressable Addressable `link`
 	Parameters  string

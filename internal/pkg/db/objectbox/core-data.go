@@ -194,10 +194,11 @@ func (client *coreDataClient) AddEvent(event contract.Event) (string, error) {
 func (client *coreDataClient) UpdateEvent(e contract.Event) error {
 	e.Modified = db.MakeTimestamp()
 
-	// check whether it exists, otherwise this function must fail
-	if object, err := client.eventById(e.ID); err != nil {
+	if id, err := obx.IdFromString(e.ID); err != nil {
 		return err
-	} else if object == nil {
+	} else if exists, err := client.eventBox.Contains(id); err != nil {
+		return err
+	} else if !exists {
 		return db.ErrNotFound
 	}
 
@@ -212,20 +213,15 @@ func (client *coreDataClient) UpdateEvent(e contract.Event) error {
 }
 
 func (client *coreDataClient) EventById(id string) (contract.Event, error) {
-	object, err := client.eventById(id)
-	if object == nil || err != nil {
+	if id, err := obx.IdFromString(id); err != nil {
 		return contract.Event{}, err
+	} else if object, err := client.eventBox.Get(id); err != nil {
+		return contract.Event{}, err
+	} else if object == nil {
+		return contract.Event{}, db.ErrNotFound
+	} else {
+		return *object, nil
 	}
-	return *object, nil
-}
-
-func (client *coreDataClient) eventById(idString string) (*contract.Event, error) {
-	id, err := obx.IdFromString(idString)
-	if err != nil {
-		return nil, err
-	}
-
-	return client.eventBox.Get(id)
 }
 
 func (client *coreDataClient) EventCount() (count int, err error) {
@@ -251,8 +247,6 @@ func (client *coreDataClient) EventCountByDeviceId(id string) (int, error) {
 }
 
 func (client *coreDataClient) DeleteEventById(idString string) error {
-	// TODO maybe this requires a check whether the item exists
-
 	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return err
@@ -346,10 +340,11 @@ func (client *coreDataClient) AddReading(r contract.Reading) (string, error) {
 func (client *coreDataClient) UpdateReading(r contract.Reading) error {
 	r.Modified = db.MakeTimestamp()
 
-	// check whether it exists, otherwise this function must fail
-	if object, err := client.readingById(r.Id); err != nil {
+	if id, err := obx.IdFromString(r.Id); err != nil {
 		return err
-	} else if object == nil {
+	} else if exists, err := client.readingBox.Contains(id); err != nil {
+		return err
+	} else if !exists {
 		return db.ErrNotFound
 	}
 
@@ -364,20 +359,15 @@ func (client *coreDataClient) UpdateReading(r contract.Reading) error {
 }
 
 func (client *coreDataClient) ReadingById(id string) (contract.Reading, error) {
-	object, err := client.readingById(id)
-	if object == nil || err != nil {
+	if id, err := obx.IdFromString(id); err != nil {
 		return contract.Reading{}, err
+	} else if object, err := client.readingBox.Get(id); err != nil {
+		return contract.Reading{}, err
+	} else if object == nil {
+		return contract.Reading{}, db.ErrNotFound
+	} else {
+		return *object, nil
 	}
-	return *object, nil
-}
-
-func (client *coreDataClient) readingById(idString string) (*contract.Reading, error) {
-	id, err := obx.IdFromString(idString)
-	if err != nil {
-		return nil, err
-	}
-
-	return client.readingBox.Get(id)
 }
 
 func (client *coreDataClient) ReadingCount() (int, error) {
@@ -386,8 +376,6 @@ func (client *coreDataClient) ReadingCount() (int, error) {
 }
 
 func (client *coreDataClient) DeleteReadingById(idString string) error {
-	// TODO maybe this requires a check whether the item exists
-
 	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return err
@@ -494,8 +482,6 @@ func (client *coreDataClient) UpdateValueDescriptor(v contract.ValueDescriptor) 
 }
 
 func (client *coreDataClient) DeleteValueDescriptorById(idString string) error {
-	// TODO maybe this requires a check whether the item exists
-
 	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return err

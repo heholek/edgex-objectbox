@@ -22,7 +22,7 @@ type Command struct {
 	models.BaseObject
 	Id   string
 	Name string
-	// TODO
+	// TODO we can use json here as there are no queries
 	//Get        *models.Get
 	//Put        *models.Put
 }

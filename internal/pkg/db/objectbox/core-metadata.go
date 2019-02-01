@@ -879,10 +879,11 @@ func (client *coreMetaDataClient) GetDeviceProfilesUsingCommand(c contract.Comma
 func (client *coreMetaDataClient) UpdateAddressable(a contract.Addressable) error {
 	onUpdate(&a.BaseObject)
 
-	// check whether it exists, otherwise this function must fail
-	if object, err := client.addressableById(a.Id); err != nil {
+	if id, err := obx.IdFromString(a.Id); err != nil {
 		return err
-	} else if object == nil {
+	} else if exists, err := client.addressableBox.Contains(id); err != nil {
+		return err
+	} else if !exists {
 		return db.ErrNotFound
 	}
 
@@ -898,20 +899,15 @@ func (client *coreMetaDataClient) AddAddressable(a contract.Addressable) (string
 }
 
 func (client *coreMetaDataClient) GetAddressableById(id string) (contract.Addressable, error) {
-	object, err := client.addressableById(id)
-	if object == nil || err != nil {
+	if id, err := obx.IdFromString(id); err != nil {
 		return contract.Addressable{}, err
+	} else if object, err := client.addressableBox.Get(id); err != nil {
+		return contract.Addressable{}, err
+	} else if object == nil {
+		return contract.Addressable{}, db.ErrNotFound
+	} else {
+		return *object, nil
 	}
-	return *object, nil
-}
-
-func (client *coreMetaDataClient) addressableById(idString string) (*contract.Addressable, error) {
-	id, err := obx.IdFromString(idString)
-	if err != nil {
-		return nil, err
-	}
-
-	return client.addressableBox.Get(id)
 }
 
 func (client *coreMetaDataClient) GetAddressableByName(n string) (contract.Addressable, error) {
@@ -990,8 +986,6 @@ func (client *coreMetaDataClient) GetAddressables() ([]contract.Addressable, err
 }
 
 func (client *coreMetaDataClient) DeleteAddressableById(idString string) error {
-	// TODO maybe this requires a check whether the item exists
-
 	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return err
@@ -1003,10 +997,11 @@ func (client *coreMetaDataClient) DeleteAddressableById(idString string) error {
 func (client *coreMetaDataClient) UpdateDeviceService(ds contract.DeviceService) error {
 	onUpdate(&ds.BaseObject)
 
-	// check whether it exists, otherwise this function must fail
-	if object, err := client.deviceServiceById(ds.Id); err != nil {
+	if id, err := obx.IdFromString(ds.Id); err != nil {
 		return err
-	} else if object == nil {
+	} else if exists, err := client.deviceServiceBox.Contains(id); err != nil {
+		return err
+	} else if !exists {
 		return db.ErrNotFound
 	}
 
@@ -1033,20 +1028,15 @@ func (client *coreMetaDataClient) GetDeviceServicesWithLabel(l string) ([]contra
 }
 
 func (client *coreMetaDataClient) GetDeviceServiceById(id string) (contract.DeviceService, error) {
-	object, err := client.deviceServiceById(id)
-	if object == nil || err != nil {
+	if id, err := obx.IdFromString(id); err != nil {
 		return contract.DeviceService{}, err
+	} else if object, err := client.deviceServiceBox.Get(id); err != nil {
+		return contract.DeviceService{}, err
+	} else if object == nil {
+		return contract.DeviceService{}, db.ErrNotFound
+	} else {
+		return *object, nil
 	}
-	return *object, nil
-}
-
-func (client *coreMetaDataClient) deviceServiceById(idString string) (*contract.DeviceService, error) {
-	id, err := obx.IdFromString(idString)
-	if err != nil {
-		return nil, err
-	}
-
-	return client.deviceServiceBox.Get(id)
 }
 
 func (client *coreMetaDataClient) GetDeviceServiceByName(n string) (contract.DeviceService, error) {
@@ -1079,8 +1069,6 @@ func (client *coreMetaDataClient) AddDeviceService(ds contract.DeviceService) (s
 }
 
 func (client *coreMetaDataClient) DeleteDeviceServiceById(idString string) error {
-	// TODO maybe this requires a check whether the item exists
-
 	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return err
@@ -1182,7 +1170,7 @@ func (client *coreMetaDataClient) AddProvisionWatcher(pw contract.ProvisionWatch
 func (client *coreMetaDataClient) UpdateProvisionWatcher(pw contract.ProvisionWatcher) error {
 	onUpdate(&pw.BaseObject)
 
-	if id, err := obx.IdFromString(string(pw.Id)); err != nil {
+	if id, err := obx.IdFromString(pw.Id); err != nil {
 		return err
 	} else if exists, err := client.provisionWatcherBox.Contains(id); err != nil {
 		return err
@@ -1203,20 +1191,15 @@ func (client *coreMetaDataClient) DeleteProvisionWatcherById(id string) error {
 }
 
 func (client *coreMetaDataClient) GetCommandById(id string) (contract.Command, error) {
-	object, err := client.commandById(id)
-	if object == nil || err != nil {
+	if id, err := obx.IdFromString(id); err != nil {
 		return contract.Command{}, err
+	} else if object, err := client.commandBox.Get(id); err != nil {
+		return contract.Command{}, err
+	} else if object == nil {
+		return contract.Command{}, db.ErrNotFound
+	} else {
+		return *object, nil
 	}
-	return *object, nil
-}
-
-func (client *coreMetaDataClient) commandById(idString string) (*contract.Command, error) {
-	id, err := obx.IdFromString(idString)
-	if err != nil {
-		return nil, err
-	}
-
-	return client.commandBox.Get(id)
 }
 
 func (client *coreMetaDataClient) GetCommandByName(name string) ([]contract.Command, error) {
@@ -1254,10 +1237,11 @@ func (client *coreMetaDataClient) GetAllCommands() ([]contract.Command, error) {
 func (client *coreMetaDataClient) UpdateCommand(c contract.Command) error {
 	onUpdate(&c.BaseObject)
 
-	// check whether it exists, otherwise this function must fail
-	if object, err := client.commandById(c.Id); err != nil {
+	if id, err := obx.IdFromString(c.Id); err != nil {
 		return err
-	} else if object == nil {
+	} else if exists, err := client.commandBox.Contains(id); err != nil {
+		return err
+	} else if !exists {
 		return db.ErrNotFound
 	}
 
@@ -1273,8 +1257,6 @@ func (client *coreMetaDataClient) UpdateCommand(c contract.Command) error {
 }
 
 func (client *coreMetaDataClient) DeleteCommandById(idString string) error {
-	// TODO maybe this requires a check whether the item exists
-
 	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return err
@@ -1284,6 +1266,43 @@ func (client *coreMetaDataClient) DeleteCommandById(idString string) error {
 }
 
 func (client *coreMetaDataClient) ScrubMetadata() error {
-	// TODO implement for all boxes
-	return nil
+	var err error
+
+	if err == nil {
+		client.addressableBox.RemoveAll()
+	}
+
+	if err == nil {
+		client.commandBox.RemoveAll()
+	}
+
+	if err == nil {
+		client.deviceBox.RemoveAll()
+	}
+
+	if err == nil {
+		client.deviceProfileBox.RemoveAll()
+	}
+
+	if err == nil {
+		client.deviceReportBox.RemoveAll()
+	}
+
+	if err == nil {
+		client.deviceServiceBox.RemoveAll()
+	}
+
+	if err == nil {
+		client.provisionWatcherBox.RemoveAll()
+	}
+
+	if err == nil {
+		client.scheduleBox.RemoveAll()
+	}
+
+	if err == nil {
+		client.scheduleEventBox.RemoveAll()
+	}
+
+	return err
 }

@@ -22,8 +22,8 @@ func TestObjectBox(t *testing.T) {
 		t.Fatalf("Could not connect: %v", err)
 	}
 
-	//test.TestDataDB(t, client)
-	test.TestMetadataDB(t, client)
+	test.TestDataDB(t, client)
+	//test.TestMetadataDB(t, client)
 	//test.TestExportDB(t, client)
 }
 

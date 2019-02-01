@@ -18,6 +18,7 @@ type coreMetaDataClient struct {
 
 	addressableBox   *obx.AddressableBox
 	commandBox       *obx.CommandBox
+	deviceProfileBox *obx.DeviceProfileBox
 	deviceReportBox  *obx.DeviceReportBox
 	deviceServiceBox *obx.DeviceServiceBox
 	scheduleBox      *obx.ScheduleBox
@@ -37,6 +38,13 @@ type coreMetaDataQueries struct {
 	}
 	command struct {
 		name commandQuery
+	}
+	deviceProfile struct {
+		labels               deviceProfileQuery
+		manufacturer         deviceProfileQuery
+		manufacturerAndModel deviceProfileQuery
+		model                deviceProfileQuery
+		name                 deviceProfileQuery
 	}
 	deviceReport struct {
 		device deviceReportQuery
@@ -68,6 +76,11 @@ type commandQuery struct {
 	sync.Mutex
 }
 
+type deviceProfileQuery struct {
+	*obx.DeviceProfileQuery
+	sync.Mutex
+}
+
 type deviceReportQuery struct {
 	*obx.DeviceReportQuery
 	sync.Mutex
@@ -96,6 +109,7 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 
 	client.addressableBox = obx.BoxForAddressable(objectBox)
 	client.commandBox = obx.BoxForCommand(objectBox)
+	client.deviceProfileBox = obx.BoxForDeviceProfile(objectBox)
 	client.deviceReportBox = obx.BoxForDeviceReport(objectBox)
 	client.deviceServiceBox = obx.BoxForDeviceService(objectBox)
 	client.scheduleBox = obx.BoxForSchedule(objectBox)
@@ -132,6 +146,31 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	if err == nil {
 		client.queries.command.name.CommandQuery, err =
 			client.commandBox.QueryOrError(obx.Command_.Name.Equals("", true))
+	}
+	//endregion
+
+	//region DeviceProfile
+	if err == nil {
+		client.queries.deviceProfile.labels.DeviceProfileQuery, err =
+			client.deviceProfileBox.QueryOrError(obx.DeviceProfile_.Labels.Contains("", true))
+	}
+	if err == nil {
+		client.queries.deviceProfile.manufacturer.DeviceProfileQuery, err =
+			client.deviceProfileBox.QueryOrError(obx.DeviceProfile_.Manufacturer.Equals("", true))
+	}
+	if err == nil {
+		client.queries.deviceProfile.manufacturerAndModel.DeviceProfileQuery, err =
+			client.deviceProfileBox.QueryOrError(
+				obx.DeviceProfile_.Manufacturer.Equals("", true),
+				obx.DeviceProfile_.Model.Equals("", true))
+	}
+	if err == nil {
+		client.queries.deviceProfile.model.DeviceProfileQuery, err =
+			client.deviceProfileBox.QueryOrError(obx.DeviceProfile_.Model.Equals("", true))
+	}
+	if err == nil {
+		client.queries.deviceProfile.name.DeviceProfileQuery, err =
+			client.deviceProfileBox.QueryOrError(obx.DeviceProfile_.Name.Equals("", true))
 	}
 	//endregion
 
@@ -546,45 +585,142 @@ func (client *coreMetaDataClient) AddDevice(d contract.Device) (string, error) {
 func (client *coreMetaDataClient) DeleteDeviceById(id string) error { panic(notImplemented()) }
 
 func (client *coreMetaDataClient) UpdateDeviceProfile(dp contract.DeviceProfile) error {
-	panic(notImplemented())
+	onUpdate(&dp.BaseObject)
+
+	if id, err := obx.IdFromString(dp.Id); err != nil {
+		return err
+	} else if exists, err := client.deviceProfileBox.Contains(id); err != nil {
+		return err
+	} else if !exists {
+		return db.ErrNotFound
+	}
+
+	_, err := client.deviceProfileBox.Put(&dp)
+	return err
 }
 
 func (client *coreMetaDataClient) AddDeviceProfile(d contract.DeviceProfile) (string, error) {
-	panic(notImplemented())
+	onCreate(&d.BaseObject)
+
+	id, err := client.deviceProfileBox.Put(&d)
+	return obx.IdToString(id), err
 }
 
 func (client *coreMetaDataClient) GetAllDeviceProfiles() ([]contract.DeviceProfile, error) {
-	panic(notImplemented())
+	return client.deviceProfileBox.GetAll()
 }
 
 func (client *coreMetaDataClient) GetDeviceProfileById(id string) (contract.DeviceProfile, error) {
-	panic(notImplemented())
+	if id, err := obx.IdFromString(id); err != nil {
+		return contract.DeviceProfile{}, err
+	} else if object, err := client.deviceProfileBox.Get(id); err != nil {
+		return contract.DeviceProfile{}, err
+	} else if object == nil {
+		return contract.DeviceProfile{}, db.ErrNotFound
+	} else {
+		return *object, nil
+	}
 }
 
-func (client *coreMetaDataClient) DeleteDeviceProfileById(id string) error { panic(notImplemented()) }
+func (client *coreMetaDataClient) DeleteDeviceProfileById(id string) error {
+	if id, err := obx.IdFromString(id); err != nil {
+		return err
+	} else {
+		return client.deviceProfileBox.Box.Remove(id)
+	}
+}
 
 func (client *coreMetaDataClient) GetDeviceProfilesByModel(m string) ([]contract.DeviceProfile, error) {
-	panic(notImplemented())
+	var query = &client.queries.deviceProfile.model
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.DeviceProfile_.Model, m); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceProfilesWithLabel(l string) ([]contract.DeviceProfile, error) {
-	panic(notImplemented())
+	var query = &client.queries.deviceProfile.labels
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.DeviceProfile_.Labels, l); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceProfilesByManufacturerModel(man string, mod string) ([]contract.DeviceProfile, error) {
-	panic(notImplemented())
+	var query = &client.queries.deviceProfile.manufacturerAndModel
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.DeviceProfile_.Manufacturer, man); err != nil {
+		return nil, err
+	}
+
+	if err := query.SetStringParams(obx.DeviceProfile_.Model, mod); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceProfilesByManufacturer(man string) ([]contract.DeviceProfile, error) {
-	panic(notImplemented())
+	var query = &client.queries.deviceProfile.manufacturer
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.DeviceProfile_.Manufacturer, man); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceProfileByName(n string) (contract.DeviceProfile, error) {
-	panic(notImplemented())
+	var query = &client.queries.deviceProfile.name
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.DeviceProfile_.Name, n); err != nil {
+		return contract.DeviceProfile{}, err
+	}
+
+	if list, err := query.Limit(1).Find(); err != nil {
+		return contract.DeviceProfile{}, err
+	} else if len(list) == 0 {
+		return contract.DeviceProfile{}, db.ErrNotFound
+	} else {
+		return list[0], nil
+	}
 }
 
 func (client *coreMetaDataClient) GetDeviceProfilesUsingCommand(c contract.Command) ([]contract.DeviceProfile, error) {
-	panic(notImplemented())
+	// TODO implement using backlinks, this is inefficient
+	if all, err := client.GetAllDeviceProfiles(); err != nil {
+		return nil, err
+	} else {
+		result := make([]contract.DeviceProfile, 0)
+		for _, profile := range all {
+			for _, command := range profile.Commands {
+				if command.Id == c.Id {
+					result = append(result, profile)
+					break
+				}
+			}
+		}
+		return result, nil
+	}
 }
 
 func (client *coreMetaDataClient) UpdateAddressable(a contract.Addressable) error {

@@ -263,7 +263,6 @@ func populateDeviceProfile(db interfaces.DBClient, count int) (string, error) {
 		if err != nil {
 			return id, err
 		}
-		id = dp.Id
 	}
 	return id, nil
 }
@@ -1057,7 +1056,7 @@ func testDBDeviceProfile(t *testing.T, db interfaces.DBClient) {
 
 	dp := models.DeviceProfile{}
 	dp.Name = "name1"
-	id, err = db.AddDeviceProfile(dp)
+	_, err = db.AddDeviceProfile(dp)
 	if err == nil {
 		t.Fatalf("Should be an error adding an existing name")
 	}
@@ -1077,7 +1076,7 @@ func testDBDeviceProfile(t *testing.T, db interfaces.DBClient) {
 	if dp.Id != id {
 		t.Fatalf("Id does not match %s - %s", dp.Id, id)
 	}
-	dp, err = db.GetDeviceProfileById("INVALID")
+	_, err = db.GetDeviceProfileById("INVALID")
 	if err == nil {
 		t.Fatalf("DeviceProfile should not be found")
 	}
@@ -1089,7 +1088,7 @@ func testDBDeviceProfile(t *testing.T, db interfaces.DBClient) {
 	if dp.Name != "name1" {
 		t.Fatalf("Id does not match %s - %s", dp.Id, id)
 	}
-	dp, err = db.GetDeviceProfileByName("INVALID")
+	_, err = db.GetDeviceProfileByName("INVALID")
 	if err == nil {
 		t.Fatalf("DeviceProfile should not be found")
 	}

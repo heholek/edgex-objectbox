@@ -425,11 +425,65 @@
           "name": "Expected"
         }
       ]
+    },
+    {
+      "id": "10:6690197610168363980",
+      "name": "DeviceProfile",
+      "lastPropertyId": "10:644120448140403548",
+      "properties": [
+        {
+          "id": "1:4099092599865805928",
+          "name": "Created"
+        },
+        {
+          "id": "2:4793821197109856313",
+          "name": "Modified"
+        },
+        {
+          "id": "3:6951894706366091827",
+          "name": "Origin"
+        },
+        {
+          "id": "4:3150688424886580658",
+          "name": "Description"
+        },
+        {
+          "id": "5:7341771904670780702",
+          "name": "Id"
+        },
+        {
+          "id": "6:4375823626107561751",
+          "name": "Name",
+          "indexId": "9:1236660529267084274"
+        },
+        {
+          "id": "7:3224534455067541750",
+          "name": "Manufacturer"
+        },
+        {
+          "id": "8:6914631900483440985",
+          "name": "Model"
+        },
+        {
+          "id": "9:4876482541250695580",
+          "name": "Labels"
+        },
+        {
+          "id": "10:644120448140403548",
+          "name": "Objects"
+        }
+      ],
+      "relations": [
+        {
+          "id": "2:6470874656960154751",
+          "name": "Commands"
+        }
+      ]
     }
   ],
-  "lastEntityId": "9:7590857651029402082",
-  "lastIndexId": "8:3589951353154638988",
-  "lastRelationId": "1:7766060310030207431",
+  "lastEntityId": "10:6690197610168363980",
+  "lastIndexId": "9:1236660529267084274",
+  "lastRelationId": "2:6470874656960154751",
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [],

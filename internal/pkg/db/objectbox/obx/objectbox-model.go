@@ -21,9 +21,10 @@ func ObjectBoxModel() *objectbox.Model {
 	model.RegisterBinding(ValueDescriptorBinding)
 	model.RegisterBinding(ScheduleBinding)
 	model.RegisterBinding(DeviceReportBinding)
-	model.LastEntityId(9, 7590857651029402082)
-	model.LastIndexId(8, 3589951353154638988)
-	model.LastRelationId(1, 7766060310030207431)
+	model.RegisterBinding(DeviceProfileBinding)
+	model.LastEntityId(10, 6690197610168363980)
+	model.LastIndexId(9, 1236660529267084274)
+	model.LastRelationId(2, 6470874656960154751)
 
 	return model
 }

@@ -222,7 +222,7 @@ func populateDevice(db interfaces.DBClient, count int) (string, error) {
 		d.Labels = append(d.Labels, name)
 
 		d.Addressable = getAddressable(i, "device")
-		_, err = db.AddAddressable(d.Addressable)
+		d.Addressable.Id, err = db.AddAddressable(d.Addressable)
 		if err != nil {
 			return id, fmt.Errorf("Error creating addressable: %v", err)
 		}
@@ -231,7 +231,7 @@ func populateDevice(db interfaces.DBClient, count int) (string, error) {
 		if err != nil {
 			return id, nil
 		}
-		_, err = db.AddDeviceService(d.Service)
+		d.Service.Id, err = db.AddDeviceService(d.Service)
 		if err != nil {
 			return id, fmt.Errorf("Error creating DeviceService: %v", err)
 		}
@@ -239,7 +239,7 @@ func populateDevice(db interfaces.DBClient, count int) (string, error) {
 		if err != nil {
 			return id, fmt.Errorf("Error getting DeviceProfile: %v", err)
 		}
-		id, err = db.AddDeviceProfile(d.Profile)
+		d.Profile.Id, err = db.AddDeviceProfile(d.Profile)
 		if err != nil {
 			return id, fmt.Errorf("Error creating DeviceProfile: %v", err)
 		}
@@ -247,7 +247,6 @@ func populateDevice(db interfaces.DBClient, count int) (string, error) {
 		if err != nil {
 			return id, err
 		}
-		id = d.Id
 	}
 	return id, nil
 }
@@ -1239,7 +1238,7 @@ func testDBDevice(t *testing.T, db interfaces.DBClient) {
 	if d.Id != id {
 		t.Fatalf("Id does not match %s - %s", d.Id, id)
 	}
-	d, err = db.GetDeviceById("INVALID")
+	_, err = db.GetDeviceById("INVALID")
 	if err == nil {
 		t.Fatalf("Device should not be found")
 	}
@@ -1251,7 +1250,7 @@ func testDBDevice(t *testing.T, db interfaces.DBClient) {
 	if d.Name != "name1" {
 		t.Fatalf("Id does not match %s - %s", d.Id, id)
 	}
-	d, err = db.GetDeviceByName("INVALID")
+	_, err = db.GetDeviceByName("INVALID")
 	if err == nil {
 		t.Fatalf("Device should not be found")
 	}
@@ -1264,7 +1263,7 @@ func testDBDevice(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 1 devices instead of %d", len(devices))
 	}
 
-	devices, err = db.GetDevicesByProfileId(bson.NewObjectId().Hex())
+	devices, err = db.GetDevicesByProfileId("")
 	if err != nil {
 		t.Fatalf("Error getting devices %v", err)
 	}
@@ -1280,7 +1279,7 @@ func testDBDevice(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 1 devices instead of %d", len(devices))
 	}
 
-	devices, err = db.GetDevicesByServiceId(bson.NewObjectId().Hex())
+	devices, err = db.GetDevicesByServiceId("")
 	if err != nil {
 		t.Fatalf("Error getting devices %v", err)
 	}
@@ -1296,7 +1295,7 @@ func testDBDevice(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 1 devices instead of %d", len(devices))
 	}
 
-	devices, err = db.GetDevicesByAddressableId(bson.NewObjectId().Hex())
+	devices, err = db.GetDevicesByAddressableId("")
 	if err != nil {
 		t.Fatalf("Error getting devices %v", err)
 	}

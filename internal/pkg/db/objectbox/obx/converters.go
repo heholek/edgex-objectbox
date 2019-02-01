@@ -11,6 +11,9 @@ func IdToString(id uint64) string {
 	return strconv.FormatUint(id, 10)
 }
 func IdFromString(id string) (uint64, error) {
+	if id == "" {
+		return 0, nil
+	}
 	return strconv.ParseUint(id, 10, 64)
 }
 

@@ -1,11 +1,11 @@
 package objectbox
 
 import (
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db/test"
 	"os"
 	"testing"
 
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/test"
 	"github.com/edgexfoundry/edgex-go/pkg/models"
 	"github.com/influxdata/influxdb/pkg/testing/assert"
 )
@@ -26,11 +26,17 @@ func TestObjectBox(t *testing.T) {
 	//} else {
 	//	test.TestMetadataDB(t, client)
 	//}
+	//
+	//if client, err := NewClient(config); err != nil {
+	//	t.Fatalf("Could not connect: %v", err)
+	//} else {
+	//	test.TestExportDB(t, client)
+	//}
 
 	if client, err := NewClient(config); err != nil {
 		t.Fatalf("Could not connect: %v", err)
 	} else {
-		test.TestExportDB(t, client)
+		test.TestSchedulerDB(t, client)
 	}
 }
 

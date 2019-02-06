@@ -13,6 +13,7 @@ type ObjectBoxClient struct {
 	// embedded services
 	*coreDataClient
 	*coreMetaDataClient
+	*exportClient
 }
 
 const asyncPut = false // TODO true
@@ -38,6 +39,10 @@ func (client *ObjectBoxClient) Connect() error {
 
 	if err == nil {
 		client.coreMetaDataClient, err = newCoreMetaDataClient(objectBox)
+	}
+
+	if err == nil {
+		client.exportClient, err = newExportClient(objectBox)
 	}
 
 	if err != nil {

@@ -15,23 +15,23 @@ func TestObjectBox(t *testing.T) {
 
 	defer os.RemoveAll(config.DatabaseName)
 
-	if client, err := NewClient(config); err != nil {
-		t.Fatalf("Could not connect: %v", err)
-	} else {
-		test.TestDataDB(t, client)
-	}
-
-	if client, err := NewClient(config); err != nil {
-		t.Fatalf("Could not connect: %v", err)
-	} else {
-		test.TestMetadataDB(t, client)
-	}
-
 	//if client, err := NewClient(config); err != nil {
 	//	t.Fatalf("Could not connect: %v", err)
 	//} else {
-	//	test.TestExportDB(t, client)
+	//	test.TestDataDB(t, client)
 	//}
+	//
+	//if client, err := NewClient(config); err != nil {
+	//	t.Fatalf("Could not connect: %v", err)
+	//} else {
+	//	test.TestMetadataDB(t, client)
+	//}
+
+	if client, err := NewClient(config); err != nil {
+		t.Fatalf("Could not connect: %v", err)
+	} else {
+		test.TestExportDB(t, client)
+	}
 }
 
 func createClient() *ObjectBoxClient {

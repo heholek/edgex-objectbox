@@ -31,7 +31,6 @@ var DeviceProfile_ = struct {
 	Manufacturer *objectbox.PropertyString
 	Model        *objectbox.PropertyString
 	Labels       *objectbox.PropertyStringVector
-	Objects      *objectbox.PropertyByteVector
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
@@ -105,14 +104,6 @@ var DeviceProfile_ = struct {
 			},
 		},
 	},
-	Objects: &objectbox.PropertyByteVector{
-		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 10,
-			},
-		},
-	},
 }
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
@@ -135,9 +126,8 @@ func (deviceProfile_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Manufacturer", objectbox.PropertyType_String, 7, 3224534455067541750)
 	model.Property("Model", objectbox.PropertyType_String, 8, 6914631900483440985)
 	model.Property("Labels", objectbox.PropertyType_StringVector, 9, 4876482541250695580)
-	model.Property("Objects", objectbox.PropertyType_ByteVector, 10, 644120448140403548)
 	model.EntityLastPropertyId(10, 644120448140403548)
-	model.Relation(2, 6470874656960154751, 2, 1011912376850966092)
+	model.Relation(2, 6470874656960154751, CommandBinding.Id, CommandBinding.Uid)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -161,60 +151,10 @@ func (deviceProfile_EntityInfo) SetId(object interface{}, id uint64) {
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
 func (deviceProfile_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
-	if cursor, err := txn.CursorForName("DeviceProfile"); err != nil {
-		panic(err)
-	} else if rSlice := object.(*DeviceProfile).Commands; rSlice != nil {
-		// get id from the object, if inserting, it would be 0 even if the argument id is already non-zero
-		// this saves us an unnecessary request to RelationIds for new objects (there can't be any relations yet)
-		objId, err := DeviceProfileBinding.GetId(object)
-		if err != nil {
-			return err
-		}
-
-		// make a map of related target entity IDs, marking those that were originally related but should be removed
-		var idsToRemove = make(map[uint64]bool)
-
-		if objId != 0 {
-			if oldRelIds, err := cursor.RelationIds(2, id); err != nil {
-				return err
-			} else {
-				for _, rId := range oldRelIds {
-					idsToRemove[rId] = true
-				}
-			}
-		}
-
-		// walk over the current related objects, mark those that still exist, add the new ones
-		for k := range rSlice {
-			var rel = &rSlice[k] // take a pointer to the slice element so that it is updated during Put()
-			rId, err := CommandBinding.GetId(rel)
-			if err != nil {
-				return err
-			} else if rId == 0 {
-				if rCursor, err := txn.CursorForName("Command"); err != nil {
-					return err
-				} else if rId, err = rCursor.Put(rel); err != nil {
-					return err
-				}
-			}
-
-			if idsToRemove[rId] {
-				// old relation that still exists, keep it
-				delete(idsToRemove, rId)
-			} else {
-				// new relation, add it
-				if err := cursor.RelationPut(2, id, rId); err != nil {
-					return err
-				}
-			}
-		}
-
-		// remove those that were not found in the rSlice but were originally related to this entity
-		for rId := range idsToRemove {
-			if err := cursor.RelationRemove(2, id, rId); err != nil {
-				return err
-			}
-		}
+	if err := txn.RunWithCursor(DeviceProfileBinding.Id, func(cursor *objectbox.Cursor) error {
+		return cursor.RelationReplace(2, CommandBinding.Id, id, object, object.(*DeviceProfile).Commands)
+	}); err != nil {
+		return err
 	}
 	return nil
 }
@@ -227,7 +167,6 @@ func (deviceProfile_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 	var offsetManufacturer = fbutils.CreateStringOffset(fbb, obj.Manufacturer)
 	var offsetModel = fbutils.CreateStringOffset(fbb, obj.Model)
 	var offsetLabels = fbutils.CreateStringVectorOffset(fbb, obj.Labels)
-	var offsetObjects = fbutils.CreateByteVectorOffset(fbb, interfaceJsonToDatabaseValue(obj.Objects))
 
 	// build the FlatBuffers object
 	fbb.StartObject(10)
@@ -240,7 +179,6 @@ func (deviceProfile_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetManufacturer)
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetModel)
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetLabels)
-	fbutils.SetUOffsetTSlot(fbb, 9, offsetObjects)
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
@@ -252,12 +190,15 @@ func (deviceProfile_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) i
 	var id = table.GetUint64Slot(12, 0)
 
 	var relCommands []Command
-	if cursor, err := txn.CursorForName("DeviceProfile"); err != nil {
+	if err := txn.RunWithCursor(DeviceProfileBinding.Id, func(cursor *objectbox.Cursor) error {
+		if rSlice, err := cursor.RelationGetAll(2, CommandBinding.Id, id); err != nil {
+			return err
+		} else {
+			relCommands = rSlice.([]Command)
+			return nil
+		}
+	}); err != nil {
 		panic(err)
-	} else if rSlice, err := cursor.RelationGetAll(2, 2, id); err != nil {
-		panic(err)
-	} else {
-		relCommands = rSlice.([]Command)
 	}
 
 	return &DeviceProfile{
@@ -274,7 +215,6 @@ func (deviceProfile_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) i
 		Manufacturer: fbutils.GetStringSlot(table, 16),
 		Model:        fbutils.GetStringSlot(table, 18),
 		Labels:       fbutils.GetStringVectorSlot(table, 20),
-		Objects:      interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 22)),
 		Commands:     relCommands,
 	}
 }

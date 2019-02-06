@@ -467,10 +467,6 @@
         {
           "id": "9:4876482541250695580",
           "name": "Labels"
-        },
-        {
-          "id": "10:644120448140403548",
-          "name": "Objects"
         }
       ],
       "relations": [
@@ -603,6 +599,8 @@
   "lastRelationId": "2:6470874656960154751",
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    644120448140403548
+  ],
   "retiredRelationUids": null
 }

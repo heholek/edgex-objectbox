@@ -218,39 +218,39 @@ func (device_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface
 		if err != nil {
 			return err
 		} else if rId == 0 {
-			if rCursor, err := txn.CursorForName("Addressable"); err != nil {
+			if err := txn.RunWithCursor(AddressableBinding.Id, func(targetCursor *objectbox.Cursor) error {
+				_, err := targetCursor.Put(rel) // NOTE Put/PutAsync() has a side-effect of setting the rel.ID
 				return err
-			} else if rId, err = rCursor.Put(rel); err != nil {
+			}); err != nil {
 				return err
 			}
 		}
-		// NOTE Put/PutAsync() has a side-effect of setting the rel.ID, so at this point, it is already set
 	}
 	if rel := &object.(*Device).Service; rel != nil {
 		rId, err := DeviceServiceBinding.GetId(rel)
 		if err != nil {
 			return err
 		} else if rId == 0 {
-			if rCursor, err := txn.CursorForName("DeviceService"); err != nil {
+			if err := txn.RunWithCursor(DeviceServiceBinding.Id, func(targetCursor *objectbox.Cursor) error {
+				_, err := targetCursor.Put(rel) // NOTE Put/PutAsync() has a side-effect of setting the rel.ID
 				return err
-			} else if rId, err = rCursor.Put(rel); err != nil {
+			}); err != nil {
 				return err
 			}
 		}
-		// NOTE Put/PutAsync() has a side-effect of setting the rel.ID, so at this point, it is already set
 	}
 	if rel := &object.(*Device).Profile; rel != nil {
 		rId, err := DeviceProfileBinding.GetId(rel)
 		if err != nil {
 			return err
 		} else if rId == 0 {
-			if rCursor, err := txn.CursorForName("DeviceProfile"); err != nil {
+			if err := txn.RunWithCursor(DeviceProfileBinding.Id, func(targetCursor *objectbox.Cursor) error {
+				_, err := targetCursor.Put(rel) // NOTE Put/PutAsync() has a side-effect of setting the rel.ID
 				return err
-			} else if rId, err = rCursor.Put(rel); err != nil {
+			}); err != nil {
 				return err
 			}
 		}
-		// NOTE Put/PutAsync() has a side-effect of setting the rel.ID, so at this point, it is already set
 	}
 	return nil
 }
@@ -321,15 +321,18 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interfac
 
 	var relAddressable *Addressable
 	if rId := table.GetUint64Slot(20, 0); rId > 0 {
-		if cursor, err := txn.CursorForName("Addressable"); err != nil {
+		if err := txn.RunWithCursor(AddressableBinding.Id, func(targetCursor *objectbox.Cursor) error {
+			if relObject, err := targetCursor.Get(rId); err != nil {
+				return err
+			} else if relObj, ok := relObject.(*Addressable); ok {
+				relAddressable = relObj
+			} else {
+				var relObj = relObject.(Addressable)
+				relAddressable = &relObj
+			}
+			return nil
+		}); err != nil {
 			panic(err)
-		} else if relObject, err := cursor.Get(rId); err != nil {
-			panic(err)
-		} else if relObj, ok := relObject.(*Addressable); ok {
-			relAddressable = relObj
-		} else {
-			var relObj = relObject.(Addressable)
-			relAddressable = &relObj
 		}
 	} else {
 		relAddressable = &Addressable{}
@@ -337,15 +340,18 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interfac
 
 	var relService *DeviceService
 	if rId := table.GetUint64Slot(30, 0); rId > 0 {
-		if cursor, err := txn.CursorForName("DeviceService"); err != nil {
+		if err := txn.RunWithCursor(DeviceServiceBinding.Id, func(targetCursor *objectbox.Cursor) error {
+			if relObject, err := targetCursor.Get(rId); err != nil {
+				return err
+			} else if relObj, ok := relObject.(*DeviceService); ok {
+				relService = relObj
+			} else {
+				var relObj = relObject.(DeviceService)
+				relService = &relObj
+			}
+			return nil
+		}); err != nil {
 			panic(err)
-		} else if relObject, err := cursor.Get(rId); err != nil {
-			panic(err)
-		} else if relObj, ok := relObject.(*DeviceService); ok {
-			relService = relObj
-		} else {
-			var relObj = relObject.(DeviceService)
-			relService = &relObj
 		}
 	} else {
 		relService = &DeviceService{}
@@ -353,15 +359,18 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interfac
 
 	var relProfile *DeviceProfile
 	if rId := table.GetUint64Slot(32, 0); rId > 0 {
-		if cursor, err := txn.CursorForName("DeviceProfile"); err != nil {
+		if err := txn.RunWithCursor(DeviceProfileBinding.Id, func(targetCursor *objectbox.Cursor) error {
+			if relObject, err := targetCursor.Get(rId); err != nil {
+				return err
+			} else if relObj, ok := relObject.(*DeviceProfile); ok {
+				relProfile = relObj
+			} else {
+				var relObj = relObject.(DeviceProfile)
+				relProfile = &relObj
+			}
+			return nil
+		}); err != nil {
 			panic(err)
-		} else if relObject, err := cursor.Get(rId); err != nil {
-			panic(err)
-		} else if relObj, ok := relObject.(*DeviceProfile); ok {
-			relProfile = relObj
-		} else {
-			var relObj = relObject.(DeviceProfile)
-			relProfile = &relObj
 		}
 	} else {
 		relProfile = &DeviceProfile{}

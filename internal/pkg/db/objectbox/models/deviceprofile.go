@@ -25,9 +25,8 @@ type DeviceProfile struct {
 	Manufacturer string
 	Model        string
 	Labels       []string
-	Objects      interface{} `type:"[]byte" converter:"interfaceJson"`
 	// TODO we can use json here as there are no queries
-	//DeviceResources []DeviceObject
+	//DeviceResources []DeviceResources
 	//Resources       []ProfileResource
 	Commands []Command
 }

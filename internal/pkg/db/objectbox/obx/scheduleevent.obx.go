@@ -156,13 +156,13 @@ func (scheduleEvent_EntityInfo) PutRelated(txn *objectbox.Transaction, object in
 		if err != nil {
 			return err
 		} else if rId == 0 {
-			if rCursor, err := txn.CursorForName("Addressable"); err != nil {
+			if err := txn.RunWithCursor(AddressableBinding.Id, func(targetCursor *objectbox.Cursor) error {
+				_, err := targetCursor.Put(rel) // NOTE Put/PutAsync() has a side-effect of setting the rel.ID
 				return err
-			} else if rId, err = rCursor.Put(rel); err != nil {
+			}); err != nil {
 				return err
 			}
 		}
-		// NOTE Put/PutAsync() has a side-effect of setting the rel.ID, so at this point, it is already set
 	}
 	return nil
 }
@@ -207,15 +207,18 @@ func (scheduleEvent_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) i
 
 	var relAddressable *Addressable
 	if rId := table.GetUint64Slot(20, 0); rId > 0 {
-		if cursor, err := txn.CursorForName("Addressable"); err != nil {
+		if err := txn.RunWithCursor(AddressableBinding.Id, func(targetCursor *objectbox.Cursor) error {
+			if relObject, err := targetCursor.Get(rId); err != nil {
+				return err
+			} else if relObj, ok := relObject.(*Addressable); ok {
+				relAddressable = relObj
+			} else {
+				var relObj = relObject.(Addressable)
+				relAddressable = &relObj
+			}
+			return nil
+		}); err != nil {
 			panic(err)
-		} else if relObject, err := cursor.Get(rId); err != nil {
-			panic(err)
-		} else if relObj, ok := relObject.(*Addressable); ok {
-			relAddressable = relObj
-		} else {
-			var relObj = relObject.(Addressable)
-			relAddressable = &relObj
 		}
 	} else {
 		relAddressable = &Addressable{}

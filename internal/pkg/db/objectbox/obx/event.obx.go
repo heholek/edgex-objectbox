@@ -104,7 +104,7 @@ func (event_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Origin", objectbox.PropertyType_Long, 6, 7049528420366903229)
 	model.Property("Event", objectbox.PropertyType_String, 7, 2745907413165741853)
 	model.EntityLastPropertyId(7, 2745907413165741853)
-	model.Relation(1, 7766060310030207431, 5, 5720922007709447864)
+	model.Relation(1, 7766060310030207431, ReadingBinding.Id, ReadingBinding.Uid)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -128,60 +128,10 @@ func (event_EntityInfo) SetId(object interface{}, id uint64) {
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
 func (event_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
-	if cursor, err := txn.CursorForName("Event"); err != nil {
-		panic(err)
-	} else if rSlice := object.(*Event).Readings; rSlice != nil {
-		// get id from the object, if inserting, it would be 0 even if the argument id is already non-zero
-		// this saves us an unnecessary request to RelationIds for new objects (there can't be any relations yet)
-		objId, err := EventBinding.GetId(object)
-		if err != nil {
-			return err
-		}
-
-		// make a map of related target entity IDs, marking those that were originally related but should be removed
-		var idsToRemove = make(map[uint64]bool)
-
-		if objId != 0 {
-			if oldRelIds, err := cursor.RelationIds(1, id); err != nil {
-				return err
-			} else {
-				for _, rId := range oldRelIds {
-					idsToRemove[rId] = true
-				}
-			}
-		}
-
-		// walk over the current related objects, mark those that still exist, add the new ones
-		for k := range rSlice {
-			var rel = &rSlice[k] // take a pointer to the slice element so that it is updated during Put()
-			rId, err := ReadingBinding.GetId(rel)
-			if err != nil {
-				return err
-			} else if rId == 0 {
-				if rCursor, err := txn.CursorForName("Reading"); err != nil {
-					return err
-				} else if rId, err = rCursor.Put(rel); err != nil {
-					return err
-				}
-			}
-
-			if idsToRemove[rId] {
-				// old relation that still exists, keep it
-				delete(idsToRemove, rId)
-			} else {
-				// new relation, add it
-				if err := cursor.RelationPut(1, id, rId); err != nil {
-					return err
-				}
-			}
-		}
-
-		// remove those that were not found in the rSlice but were originally related to this entity
-		for rId := range idsToRemove {
-			if err := cursor.RelationRemove(1, id, rId); err != nil {
-				return err
-			}
-		}
+	if err := txn.RunWithCursor(EventBinding.Id, func(cursor *objectbox.Cursor) error {
+		return cursor.RelationReplace(1, ReadingBinding.Id, id, object, object.(*Event).Readings)
+	}); err != nil {
+		return err
 	}
 	return nil
 }
@@ -212,12 +162,15 @@ func (event_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface
 	var id = table.GetUint64Slot(4, 0)
 
 	var relReadings []Reading
-	if cursor, err := txn.CursorForName("Event"); err != nil {
+	if err := txn.RunWithCursor(EventBinding.Id, func(cursor *objectbox.Cursor) error {
+		if rSlice, err := cursor.RelationGetAll(1, ReadingBinding.Id, id); err != nil {
+			return err
+		} else {
+			relReadings = rSlice.([]Reading)
+			return nil
+		}
+	}); err != nil {
 		panic(err)
-	} else if rSlice, err := cursor.RelationGetAll(1, 5, id); err != nil {
-		panic(err)
-	} else {
-		relReadings = rSlice.([]Reading)
 	}
 
 	return &Event{

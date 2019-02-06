@@ -22,14 +22,15 @@ var SubscriptionBinding = subscription_EntityInfo{
 
 // Subscription_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var Subscription_ = struct {
-	Created          *objectbox.PropertyInt64
-	Modified         *objectbox.PropertyInt64
-	Origin           *objectbox.PropertyInt64
-	ID               *objectbox.PropertyUint64
-	Slug             *objectbox.PropertyString
-	Receiver         *objectbox.PropertyString
-	Description      *objectbox.PropertyString
-	SubscribedLabels *objectbox.PropertyStringVector
+	Created              *objectbox.PropertyInt64
+	Modified             *objectbox.PropertyInt64
+	Origin               *objectbox.PropertyInt64
+	ID                   *objectbox.PropertyUint64
+	Slug                 *objectbox.PropertyString
+	Receiver             *objectbox.PropertyString
+	Description          *objectbox.PropertyString
+	SubscribedCategories *objectbox.PropertyStringVector
+	SubscribedLabels     *objectbox.PropertyStringVector
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
@@ -87,6 +88,14 @@ var Subscription_ = struct {
 			},
 		},
 	},
+	SubscribedCategories: &objectbox.PropertyStringVector{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 9,
+			Entity: &objectbox.Entity{
+				Id: 17,
+			},
+		},
+	},
 	SubscribedLabels: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
@@ -115,8 +124,9 @@ func (subscription_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.PropertyIndex(21, 9164704548718956277)
 	model.Property("Receiver", objectbox.PropertyType_String, 6, 3922157183880917579)
 	model.Property("Description", objectbox.PropertyType_String, 7, 3476822173099840601)
+	model.Property("SubscribedCategories", objectbox.PropertyType_StringVector, 9, 1939998668390425764)
 	model.Property("SubscribedLabels", objectbox.PropertyType_StringVector, 8, 3024648589148933406)
-	model.EntityLastPropertyId(8, 3024648589148933406)
+	model.EntityLastPropertyId(9, 1939998668390425764)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -149,10 +159,11 @@ func (subscription_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 	var offsetSlug = fbutils.CreateStringOffset(fbb, obj.Slug)
 	var offsetReceiver = fbutils.CreateStringOffset(fbb, obj.Receiver)
 	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.Description)
+	var offsetSubscribedCategories = fbutils.CreateStringVectorOffset(fbb, notificationsCategoryToDatabaseValue(obj.SubscribedCategories))
 	var offsetSubscribedLabels = fbutils.CreateStringVectorOffset(fbb, obj.SubscribedLabels)
 
 	// build the FlatBuffers object
-	fbb.StartObject(8)
+	fbb.StartObject(9)
 	fbutils.SetInt64Slot(fbb, 0, obj.Created)
 	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
 	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
@@ -160,6 +171,7 @@ func (subscription_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetSlug)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetReceiver)
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetDescription)
+	fbutils.SetUOffsetTSlot(fbb, 8, offsetSubscribedCategories)
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetSubscribedLabels)
 }
 
@@ -177,11 +189,12 @@ func (subscription_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) in
 			Modified: table.GetInt64Slot(6, 0),
 			Origin:   table.GetInt64Slot(8, 0),
 		},
-		ID:               objectbox.StringIdConvertToEntityProperty(id),
-		Slug:             fbutils.GetStringSlot(table, 12),
-		Receiver:         fbutils.GetStringSlot(table, 14),
-		Description:      fbutils.GetStringSlot(table, 16),
-		SubscribedLabels: fbutils.GetStringVectorSlot(table, 18),
+		ID:                   objectbox.StringIdConvertToEntityProperty(id),
+		Slug:                 fbutils.GetStringSlot(table, 12),
+		Receiver:             fbutils.GetStringSlot(table, 14),
+		Description:          fbutils.GetStringSlot(table, 16),
+		SubscribedCategories: notificationsCategoryToEntityProperty(fbutils.GetStringVectorSlot(table, 20)),
+		SubscribedLabels:     fbutils.GetStringVectorSlot(table, 18),
 	}
 }
 

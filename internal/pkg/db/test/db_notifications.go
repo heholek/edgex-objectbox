@@ -36,17 +36,25 @@ func TestNotificationsDB(t *testing.T, db notifications.DBClient) {
 		t.Fatal(err)
 	}
 
-	_, err = db.AddNotification(models.Notification{})
+	_, err = db.AddNotification(models.Notification{
+		Status: models.New,
+		Sender: "Foo",
+		Slug:   "bar",
+		Labels: []string{"abc"}})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, err = db.AddSubscription(models.Subscription{})
+	_, err = db.AddSubscription(models.Subscription{
+		Slug:                 "Foo",
+		Receiver:             "BarB",
+		SubscribedCategories: []models.NotificationsCategory{"cat"},
+		SubscribedLabels:     []string{"label"}})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, err = db.AddTransmission(models.Transmission{})
+	_, err = db.AddTransmission(models.Transmission{Status: models.New})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,7 +89,7 @@ func TestNotificationsDB(t *testing.T, db notifications.DBClient) {
 		t.Fatal(err)
 	}
 
-	nots, err = db.GetNotificationsByEnd(nots[0].Created, 1)
+	nots, err = db.GetNotificationsByEnd(nots[0].Created+1, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +99,7 @@ func TestNotificationsDB(t *testing.T, db notifications.DBClient) {
 		t.Fatal(err)
 	}
 
-	nots, err = db.GetNotificationsByStart(nots[0].Created, 1)
+	nots, err = db.GetNotificationsByStart(nots[0].Created-1, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,22 +149,22 @@ func TestNotificationsDB(t *testing.T, db notifications.DBClient) {
 		t.Fatal(err)
 	}
 
-	trans, err = db.GetTransmissionsByNotificationSlug(nots[0].Slug, trans[0].ResendCount)
+	trans, err = db.GetTransmissionsByNotificationSlug(nots[0].Slug, trans[0].ResendCount+1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	trans, err = db.GetTransmissionsByStart(trans[0].Created, trans[0].ResendCount)
+	trans, err = db.GetTransmissionsByStart(trans[0].Created-1, trans[0].ResendCount+1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	trans, err = db.GetTransmissionsByStartEnd(trans[0].Created, trans[0].Created, trans[0].ResendCount)
+	trans, err = db.GetTransmissionsByStartEnd(trans[0].Created-1, trans[0].Created+1, trans[0].ResendCount+1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	trans, err = db.GetTransmissionsByStatus(trans[0].ResendCount, trans[0].Status)
+	trans, err = db.GetTransmissionsByStatus(trans[0].ResendCount+1, trans[0].Status)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,6 +193,11 @@ func TestNotificationsDB(t *testing.T, db notifications.DBClient) {
 	}
 
 	err = db.DeleteNotificationById(nots[0].ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = db.AddNotification(nots[0])
 	if err != nil {
 		t.Fatal(err)
 	}

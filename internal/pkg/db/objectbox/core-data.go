@@ -286,7 +286,7 @@ func (client *coreDataClient) EventsByCreationTime(start, end int64, limit int) 
 }
 
 func (client *coreDataClient) EventsOlderThanAge(age int64) ([]contract.Event, error) {
-	var time = (db.MakeTimestamp()) - age
+	var time = db.MakeTimestamp() - age
 
 	var query = &client.queries.event.createdLT
 

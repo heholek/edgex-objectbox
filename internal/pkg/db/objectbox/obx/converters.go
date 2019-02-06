@@ -2,6 +2,7 @@ package obx
 
 import (
 	"encoding/json"
+	"github.com/edgexfoundry/edgex-go/pkg/models"
 	"github.com/globalsign/mgo/bson"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"strconv"
@@ -73,4 +74,32 @@ func mapStringStringJsonToDatabaseValue(goValue map[string]string) []byte {
 	} else {
 		return bytes
 	}
+}
+
+func notificationsCategoryToDatabaseValue(goValue []models.NotificationsCategory) []string {
+	if goValue == nil {
+		return nil
+	}
+
+	var result = make([]string, len(goValue))
+
+	for k, v := range goValue {
+		result[k] = string(v)
+	}
+
+	return result
+}
+
+func notificationsCategoryToEntityProperty(dbValue []string) []models.NotificationsCategory {
+	if dbValue == nil {
+		return nil
+	}
+
+	var result = make([]models.NotificationsCategory, len(dbValue))
+
+	for k, v := range dbValue {
+		result[k] = models.NotificationsCategory(v)
+	}
+
+	return result
 }

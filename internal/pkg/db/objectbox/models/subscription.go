@@ -21,11 +21,11 @@ import (
 
 type Subscription struct {
 	models.BaseObject
-	ID          string
-	Slug        string `unique`
-	Receiver    string
-	Description string
-	// TODO converter SubscribedCategories []models.NotificationsCategory
-	SubscribedLabels []string
+	ID                   string
+	Slug                 string `unique`
+	Receiver             string
+	Description          string
+	SubscribedCategories []models.NotificationsCategory `type:"[]string" converter:"notificationsCategory"`
+	SubscribedLabels     []string
 	// TODO Channels             []models.Channel
 }

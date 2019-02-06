@@ -985,13 +985,12 @@ func (client *coreMetaDataClient) GetAddressables() ([]contract.Addressable, err
 	return client.addressableBox.GetAll()
 }
 
-func (client *coreMetaDataClient) DeleteAddressableById(idString string) error {
-	id, err := obx.IdFromString(idString)
-	if err != nil {
+func (client *coreMetaDataClient) DeleteAddressableById(id string) error {
+	if id, err := obx.IdFromString(id); err != nil {
 		return err
+	} else {
+		return client.addressableBox.Box.Remove(id)
 	}
-
-	return client.addressableBox.Box.Remove(id)
 }
 
 func (client *coreMetaDataClient) UpdateDeviceService(ds contract.DeviceService) error {

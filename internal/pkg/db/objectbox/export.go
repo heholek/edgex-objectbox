@@ -123,27 +123,10 @@ func (client *exportClient) RegistrationByName(name string) (contract.Registrati
 }
 
 func (client *exportClient) DeleteRegistrationByName(name string) error {
-	// TODO Limit is currently not supported by Query.Remove()
-	//var query = &client.queries.registration.name
-	//
-	//query.Lock()
-	//defer query.Unlock()
-	//
-	//if err := query.SetStringParams(obx.Registration_.Name, name); err != nil {
-	//	return err
-	//}
-	//
-	//if count, err := query.Limit(1).Remove(); err != nil {
-	//	return err
-	//} else if count == 0 {
-	//	return db.ErrNotFound
-	//} else {
-	//	return nil
-	//}
-	if reg, err := client.RegistrationByName(name); err != nil {
+	if obj, err := client.RegistrationByName(name); err != nil {
 		return err
 	} else {
-		return client.registrationBox.Remove(&reg)
+		return client.registrationBox.Remove(&obj)
 	}
 }
 

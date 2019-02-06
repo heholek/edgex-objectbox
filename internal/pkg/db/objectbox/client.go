@@ -15,6 +15,7 @@ type ObjectBoxClient struct {
 	*coreMetaDataClient
 	*exportClient
 	*schedulerClient
+	*notificationsClient
 }
 
 const asyncPut = false // TODO true
@@ -48,6 +49,10 @@ func (client *ObjectBoxClient) Connect() error {
 
 	if err == nil {
 		client.schedulerClient, err = newSchedulerClient(objectBox)
+	}
+
+	if err == nil {
+		client.notificationsClient, err = newNotificationsClient(objectBox)
 	}
 
 	if err != nil {

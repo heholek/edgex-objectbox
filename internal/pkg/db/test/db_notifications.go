@@ -222,6 +222,12 @@ func TestNotificationsDB(t *testing.T, db notifications.DBClient) {
 		t.Fatal(err)
 	}
 
+	err = db.Cleanup()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = db.CleanupOld(1)
 	if err != nil {
 		t.Fatal(err)
 	}

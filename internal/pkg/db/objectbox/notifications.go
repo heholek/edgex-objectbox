@@ -613,7 +613,7 @@ func (client *notificationsClient) deleteTransmissionsByNotificationId(ids []uin
 		intIds[k] = int64(v)
 	}
 
-	if err := query.SetInt64Params(obx.Transmission_.Notification, intIds...); err != nil {
+	if err := query.SetInt64ParamsIn(obx.Transmission_.Notification, intIds...); err != nil {
 		return err
 	}
 

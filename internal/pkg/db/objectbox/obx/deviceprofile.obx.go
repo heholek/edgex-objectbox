@@ -16,43 +16,43 @@ type deviceProfile_EntityInfo struct {
 }
 
 var DeviceProfileBinding = deviceProfile_EntityInfo{
-	Id:  10,
-	Uid: 6690197610168363980,
+	Id:  4,
+	Uid: 7951361291202121406,
 }
 
 // DeviceProfile_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var DeviceProfile_ = struct {
-	Created      *objectbox.PropertyInt64
-	Modified     *objectbox.PropertyInt64
-	Origin       *objectbox.PropertyInt64
-	Description  *objectbox.PropertyString
-	Id           *objectbox.PropertyUint64
-	Name         *objectbox.PropertyString
-	Manufacturer *objectbox.PropertyString
-	Model        *objectbox.PropertyString
-	Labels       *objectbox.PropertyStringVector
+	BaseObject_Created  *objectbox.PropertyInt64
+	BaseObject_Modified *objectbox.PropertyInt64
+	BaseObject_Origin   *objectbox.PropertyInt64
+	Description         *objectbox.PropertyString
+	Id                  *objectbox.PropertyUint64
+	Name                *objectbox.PropertyString
+	Manufacturer        *objectbox.PropertyString
+	Model               *objectbox.PropertyString
+	Labels              *objectbox.PropertyStringVector
 }{
-	Created: &objectbox.PropertyInt64{
+	BaseObject_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 10,
+				Id: 4,
 			},
 		},
 	},
-	Modified: &objectbox.PropertyInt64{
+	BaseObject_Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 10,
+				Id: 4,
 			},
 		},
 	},
-	Origin: &objectbox.PropertyInt64{
+	BaseObject_Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 10,
+				Id: 4,
 			},
 		},
 	},
@@ -60,7 +60,7 @@ var DeviceProfile_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 10,
+				Id: 4,
 			},
 		},
 	},
@@ -68,7 +68,7 @@ var DeviceProfile_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 10,
+				Id: 4,
 			},
 		},
 	},
@@ -76,7 +76,7 @@ var DeviceProfile_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 10,
+				Id: 4,
 			},
 		},
 	},
@@ -84,7 +84,7 @@ var DeviceProfile_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 10,
+				Id: 4,
 			},
 		},
 	},
@@ -92,7 +92,7 @@ var DeviceProfile_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 10,
+				Id: 4,
 			},
 		},
 	},
@@ -100,7 +100,7 @@ var DeviceProfile_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 9,
 			Entity: &objectbox.Entity{
-				Id: 10,
+				Id: 4,
 			},
 		},
 	},
@@ -113,21 +113,21 @@ func (deviceProfile_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (deviceProfile_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("DeviceProfile", 10, 6690197610168363980)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 4099092599865805928)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 4793821197109856313)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 6951894706366091827)
-	model.Property("Description", objectbox.PropertyType_String, 4, 3150688424886580658)
-	model.Property("Id", objectbox.PropertyType_Long, 5, 7341771904670780702)
+	model.Entity("DeviceProfile", 4, 7951361291202121406)
+	model.Property("BaseObject_Created", objectbox.PropertyType_Long, 1, 2751147015278323059)
+	model.Property("BaseObject_Modified", objectbox.PropertyType_Long, 2, 7324160599522030984)
+	model.Property("BaseObject_Origin", objectbox.PropertyType_Long, 3, 2396734626324066678)
+	model.Property("Description", objectbox.PropertyType_String, 4, 4608997243299135189)
+	model.Property("Id", objectbox.PropertyType_Long, 5, 5191152548807947006)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Name", objectbox.PropertyType_String, 6, 4375823626107561751)
+	model.Property("Name", objectbox.PropertyType_String, 6, 3067891788037451908)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(9, 1236660529267084274)
-	model.Property("Manufacturer", objectbox.PropertyType_String, 7, 3224534455067541750)
-	model.Property("Model", objectbox.PropertyType_String, 8, 6914631900483440985)
-	model.Property("Labels", objectbox.PropertyType_StringVector, 9, 4876482541250695580)
-	model.EntityLastPropertyId(10, 644120448140403548)
-	model.Relation(2, 6470874656960154751, CommandBinding.Id, CommandBinding.Uid)
+	model.PropertyIndex(6, 3526478764705828164)
+	model.Property("Manufacturer", objectbox.PropertyType_String, 7, 269854806382949939)
+	model.Property("Model", objectbox.PropertyType_String, 8, 2963573570272311195)
+	model.Property("Labels", objectbox.PropertyType_StringVector, 9, 5324110111612985287)
+	model.EntityLastPropertyId(9, 5324110111612985287)
+	model.Relation(1, 1818917835568870321, CommandBinding.Id, CommandBinding.Uid)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -152,7 +152,7 @@ func (deviceProfile_EntityInfo) SetId(object interface{}, id uint64) {
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
 func (deviceProfile_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
 	if err := txn.RunWithCursor(DeviceProfileBinding.Id, func(cursor *objectbox.Cursor) error {
-		return cursor.RelationReplace(2, CommandBinding.Id, id, object, object.(*DeviceProfile).Commands)
+		return cursor.RelationReplace(1, CommandBinding.Id, id, object, object.(*DeviceProfile).Commands)
 	}); err != nil {
 		return err
 	}
@@ -160,29 +160,30 @@ func (deviceProfile_EntityInfo) PutRelated(txn *objectbox.Transaction, object in
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (deviceProfile_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (deviceProfile_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*DeviceProfile)
-	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.Description)
+	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.DescribedObject.Description)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetManufacturer = fbutils.CreateStringOffset(fbb, obj.Manufacturer)
 	var offsetModel = fbutils.CreateStringOffset(fbb, obj.Model)
 	var offsetLabels = fbutils.CreateStringVectorOffset(fbb, obj.Labels)
 
 	// build the FlatBuffers object
-	fbb.StartObject(10)
-	fbutils.SetInt64Slot(fbb, 0, obj.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
+	fbb.StartObject(9)
+	fbutils.SetInt64Slot(fbb, 0, obj.DescribedObject.BaseObject.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.DescribedObject.BaseObject.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.DescribedObject.BaseObject.Origin)
 	fbutils.SetUOffsetTSlot(fbb, 3, offsetDescription)
 	fbutils.SetUint64Slot(fbb, 4, id)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetManufacturer)
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetModel)
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetLabels)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (deviceProfile_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (deviceProfile_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -191,14 +192,14 @@ func (deviceProfile_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) i
 
 	var relCommands []Command
 	if err := txn.RunWithCursor(DeviceProfileBinding.Id, func(cursor *objectbox.Cursor) error {
-		if rSlice, err := cursor.RelationGetAll(2, CommandBinding.Id, id); err != nil {
+		if rSlice, err := cursor.RelationGetAll(1, CommandBinding.Id, id); err != nil {
 			return err
 		} else {
 			relCommands = rSlice.([]Command)
 			return nil
 		}
 	}); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	return &DeviceProfile{
@@ -216,7 +217,7 @@ func (deviceProfile_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) i
 		Model:        fbutils.GetStringSlot(table, 18),
 		Labels:       fbutils.GetStringVectorSlot(table, 20),
 		Commands:     relCommands,
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -237,7 +238,7 @@ type DeviceProfileBox struct {
 // BoxForDeviceProfile opens a box of DeviceProfile objects
 func BoxForDeviceProfile(ob *objectbox.ObjectBox) *DeviceProfileBox {
 	return &DeviceProfileBox{
-		Box: ob.InternalBox(10),
+		Box: ob.InternalBox(4),
 	}
 }
 

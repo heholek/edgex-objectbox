@@ -19,10 +19,9 @@ import (
 )
 
 type Command struct {
-	models.BaseObject
-	Id   string
-	Name string
-	// TODO we can use json here as there are no queries
-	//Get        *models.Get
-	//Put        *models.Put
+	models.BaseObject `inline`
+	Id                string
+	Name              string
+	Get               *Get
+	Put               *Put
 }

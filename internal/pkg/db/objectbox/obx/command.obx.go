@@ -17,16 +17,21 @@ type command_EntityInfo struct {
 
 var CommandBinding = command_EntityInfo{
 	Id:  2,
-	Uid: 1011912376850966092,
+	Uid: 5166872351994115756,
 }
 
 // Command_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var Command_ = struct {
-	Created  *objectbox.PropertyInt64
-	Modified *objectbox.PropertyInt64
-	Origin   *objectbox.PropertyInt64
-	Id       *objectbox.PropertyUint64
-	Name     *objectbox.PropertyString
+	Created            *objectbox.PropertyInt64
+	Modified           *objectbox.PropertyInt64
+	Origin             *objectbox.PropertyInt64
+	Id                 *objectbox.PropertyUint64
+	Name               *objectbox.PropertyString
+	Get_Path           *objectbox.PropertyString
+	Get_URL            *objectbox.PropertyString
+	Put_Path           *objectbox.PropertyString
+	Put_URL            *objectbox.PropertyString
+	Put_ParameterNames *objectbox.PropertyStringVector
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
@@ -68,6 +73,46 @@ var Command_ = struct {
 			},
 		},
 	},
+	Get_Path: &objectbox.PropertyString{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 6,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
+		},
+	},
+	Get_URL: &objectbox.PropertyString{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 7,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
+		},
+	},
+	Put_Path: &objectbox.PropertyString{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 8,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
+		},
+	},
+	Put_URL: &objectbox.PropertyString{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 9,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
+		},
+	},
+	Put_ParameterNames: &objectbox.PropertyStringVector{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 10,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
+		},
+	},
 }
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
@@ -77,14 +122,19 @@ func (command_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (command_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Command", 2, 1011912376850966092)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 4016188523039804874)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 821510779389403376)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 7067935641358652382)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 6040193085008071546)
+	model.Entity("Command", 2, 5166872351994115756)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 7340228374689340609)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 6573475164262909138)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 6245790261231062808)
+	model.Property("Id", objectbox.PropertyType_Long, 4, 6996954711424781160)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Name", objectbox.PropertyType_String, 5, 9167756127344448685)
-	model.EntityLastPropertyId(5, 9167756127344448685)
+	model.Property("Name", objectbox.PropertyType_String, 5, 8489958036358772248)
+	model.Property("Get_Path", objectbox.PropertyType_String, 6, 3576257846048649779)
+	model.Property("Get_URL", objectbox.PropertyType_String, 7, 1535449917962667631)
+	model.Property("Put_Path", objectbox.PropertyType_String, 8, 6690416255716911859)
+	model.Property("Put_URL", objectbox.PropertyType_String, 9, 8905997865059874022)
+	model.Property("Put_ParameterNames", objectbox.PropertyType_StringVector, 10, 5077443716411335668)
+	model.EntityLastPropertyId(10, 5077443716411335668)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -112,21 +162,32 @@ func (command_EntityInfo) PutRelated(txn *objectbox.Transaction, object interfac
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (command_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (command_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*Command)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
+	var offsetGet_Path = fbutils.CreateStringOffset(fbb, obj.Get.Action.Path)
+	var offsetGet_URL = fbutils.CreateStringOffset(fbb, obj.Get.Action.URL)
+	var offsetPut_Path = fbutils.CreateStringOffset(fbb, obj.Put.Action.Path)
+	var offsetPut_URL = fbutils.CreateStringOffset(fbb, obj.Put.Action.URL)
+	var offsetPut_ParameterNames = fbutils.CreateStringVectorOffset(fbb, obj.Put.ParameterNames)
 
 	// build the FlatBuffers object
-	fbb.StartObject(5)
-	fbutils.SetInt64Slot(fbb, 0, obj.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
+	fbb.StartObject(10)
+	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
+	fbutils.SetUOffsetTSlot(fbb, 5, offsetGet_Path)
+	fbutils.SetUOffsetTSlot(fbb, 6, offsetGet_URL)
+	fbutils.SetUOffsetTSlot(fbb, 7, offsetPut_Path)
+	fbutils.SetUOffsetTSlot(fbb, 8, offsetPut_URL)
+	fbutils.SetUOffsetTSlot(fbb, 9, offsetPut_ParameterNames)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (command_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (command_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -141,7 +202,20 @@ func (command_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interfa
 		},
 		Id:   objectbox.StringIdConvertToEntityProperty(id),
 		Name: fbutils.GetStringSlot(table, 12),
-	}
+		Get: &Get{
+			Action: Action{
+				Path: fbutils.GetStringSlot(table, 14),
+				URL:  fbutils.GetStringSlot(table, 16),
+			},
+		},
+		Put: &Put{
+			Action: Action{
+				Path: fbutils.GetStringSlot(table, 18),
+				URL:  fbutils.GetStringSlot(table, 20),
+			},
+			ParameterNames: fbutils.GetStringVectorSlot(table, 22),
+		},
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects

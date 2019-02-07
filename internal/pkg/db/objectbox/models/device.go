@@ -19,16 +19,16 @@ import (
 )
 
 type Device struct {
-	models.DescribedObject
-	Id             string
-	Name           string `unique`
-	AdminState     models.AdminState
-	OperatingState models.OperatingState
-	Addressable    Addressable `link`
-	LastConnected  int64
-	LastReported   int64
-	Labels         []string
-	Location       interface{}   `type:"[]byte" converter:"interfaceJson"`
-	Service        DeviceService `link`
-	Profile        DeviceProfile `link`
+	models.DescribedObject `inline`
+	Id                     string
+	Name                   string `unique`
+	AdminState             models.AdminState
+	OperatingState         models.OperatingState
+	Addressable            Addressable `link`
+	LastConnected          int64
+	LastReported           int64
+	Labels                 []string
+	Location               interface{}   `type:"[]byte" converter:"interfaceJson"`
+	Service                DeviceService `link`
+	Profile                DeviceProfile `link`
 }

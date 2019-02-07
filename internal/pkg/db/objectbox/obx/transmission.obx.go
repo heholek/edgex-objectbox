@@ -16,29 +16,29 @@ type transmission_EntityInfo struct {
 }
 
 var TransmissionBinding = transmission_EntityInfo{
-	Id:  18,
-	Uid: 7268404947622954205,
+	Id:  17,
+	Uid: 568708924645106899,
 }
 
 // Transmission_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var Transmission_ = struct {
-	Created       *objectbox.PropertyInt64
-	Modified      *objectbox.PropertyInt64
-	Origin        *objectbox.PropertyInt64
-	ID            *objectbox.PropertyUint64
-	Notification  *objectbox.PropertyUint64
-	Receiver      *objectbox.PropertyString
-	Type          *objectbox.PropertyString
-	MailAddresses *objectbox.PropertyStringVector
-	Url           *objectbox.PropertyString
-	Status        *objectbox.PropertyString
-	ResendCount   *objectbox.PropertyInt
+	Created               *objectbox.PropertyInt64
+	Modified              *objectbox.PropertyInt64
+	Origin                *objectbox.PropertyInt64
+	ID                    *objectbox.PropertyUint64
+	Notification          *objectbox.PropertyUint64
+	Receiver              *objectbox.PropertyString
+	Channel_Type          *objectbox.PropertyString
+	Channel_MailAddresses *objectbox.PropertyStringVector
+	Channel_Url           *objectbox.PropertyString
+	Status                *objectbox.PropertyString
+	ResendCount           *objectbox.PropertyInt
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 18,
+				Id: 17,
 			},
 		},
 	},
@@ -46,7 +46,7 @@ var Transmission_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 18,
+				Id: 17,
 			},
 		},
 	},
@@ -54,7 +54,7 @@ var Transmission_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 18,
+				Id: 17,
 			},
 		},
 	},
@@ -62,7 +62,7 @@ var Transmission_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 18,
+				Id: 17,
 			},
 		},
 	},
@@ -70,7 +70,7 @@ var Transmission_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 18,
+				Id: 17,
 			},
 		},
 	},
@@ -78,31 +78,31 @@ var Transmission_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 18,
+				Id: 17,
 			},
 		},
 	},
-	Type: &objectbox.PropertyString{
+	Channel_Type: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 18,
+				Id: 17,
 			},
 		},
 	},
-	MailAddresses: &objectbox.PropertyStringVector{
+	Channel_MailAddresses: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 18,
+				Id: 17,
 			},
 		},
 	},
-	Url: &objectbox.PropertyString{
+	Channel_Url: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 9,
 			Entity: &objectbox.Entity{
-				Id: 18,
+				Id: 17,
 			},
 		},
 	},
@@ -110,7 +110,7 @@ var Transmission_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 10,
 			Entity: &objectbox.Entity{
-				Id: 18,
+				Id: 17,
 			},
 		},
 	},
@@ -118,7 +118,7 @@ var Transmission_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 11,
 			Entity: &objectbox.Entity{
-				Id: 18,
+				Id: 17,
 			},
 		},
 	},
@@ -131,21 +131,21 @@ func (transmission_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (transmission_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Transmission", 18, 7268404947622954205)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 2622819205072592497)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 8057534553317049369)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 8427391841398322435)
-	model.Property("ID", objectbox.PropertyType_Long, 4, 3762115427702362210)
+	model.Entity("Transmission", 17, 568708924645106899)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 6194874499848524317)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 8335706959230617972)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 340660038000809638)
+	model.Property("ID", objectbox.PropertyType_Long, 4, 328558019935061479)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Notification", objectbox.PropertyType_Relation, 5, 672198910738182114)
-	model.PropertyRelation("Notification", 22, 1978925416779324012)
-	model.Property("Receiver", objectbox.PropertyType_String, 6, 683114911440305998)
-	model.Property("Type", objectbox.PropertyType_String, 7, 5220586603608424273)
-	model.Property("MailAddresses", objectbox.PropertyType_StringVector, 8, 1595641182436391308)
-	model.Property("Url", objectbox.PropertyType_String, 9, 2881819335320714819)
-	model.Property("Status", objectbox.PropertyType_String, 10, 696850488053885938)
-	model.Property("ResendCount", objectbox.PropertyType_Long, 11, 6735132706245533158)
-	model.EntityLastPropertyId(11, 6735132706245533158)
+	model.Property("Notification", objectbox.PropertyType_Relation, 5, 8656392927755662017)
+	model.PropertyRelation("Notification", 21, 267873316193914610)
+	model.Property("Receiver", objectbox.PropertyType_String, 6, 4403412569370574351)
+	model.Property("Channel_Type", objectbox.PropertyType_String, 7, 6785982123671667194)
+	model.Property("Channel_MailAddresses", objectbox.PropertyType_StringVector, 8, 1268731185823466266)
+	model.Property("Channel_Url", objectbox.PropertyType_String, 9, 8618321585324687443)
+	model.Property("Status", objectbox.PropertyType_String, 10, 7086397840993736018)
+	model.Property("ResendCount", objectbox.PropertyType_Long, 11, 2391999354415967429)
+	model.EntityLastPropertyId(11, 2391999354415967429)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -186,18 +186,18 @@ func (transmission_EntityInfo) PutRelated(txn *objectbox.Transaction, object int
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (transmission_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (transmission_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*Transmission)
 	var offsetReceiver = fbutils.CreateStringOffset(fbb, obj.Receiver)
-	var offsetType = fbutils.CreateStringOffset(fbb, string(obj.Channel.Type))
-	var offsetMailAddresses = fbutils.CreateStringVectorOffset(fbb, obj.Channel.MailAddresses)
-	var offsetUrl = fbutils.CreateStringOffset(fbb, obj.Channel.Url)
+	var offsetChannel_Type = fbutils.CreateStringOffset(fbb, string(obj.Channel.Type))
+	var offsetChannel_MailAddresses = fbutils.CreateStringVectorOffset(fbb, obj.Channel.MailAddresses)
+	var offsetChannel_Url = fbutils.CreateStringOffset(fbb, obj.Channel.Url)
 	var offsetStatus = fbutils.CreateStringOffset(fbb, string(obj.Status))
 
 	var rIdNotification uint64
 	if rel := &obj.Notification; rel != nil {
 		if rId, err := NotificationBinding.GetId(rel); err != nil {
-			panic(err) // this must never happen but let's keep the check just to be sure
+			return err
 		} else {
 			rIdNotification = rId
 		}
@@ -205,21 +205,22 @@ func (transmission_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 	// build the FlatBuffers object
 	fbb.StartObject(11)
-	fbutils.SetInt64Slot(fbb, 0, obj.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUint64Slot(fbb, 4, rIdNotification)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetReceiver)
-	fbutils.SetUOffsetTSlot(fbb, 6, offsetType)
-	fbutils.SetUOffsetTSlot(fbb, 7, offsetMailAddresses)
-	fbutils.SetUOffsetTSlot(fbb, 8, offsetUrl)
+	fbutils.SetUOffsetTSlot(fbb, 6, offsetChannel_Type)
+	fbutils.SetUOffsetTSlot(fbb, 7, offsetChannel_MailAddresses)
+	fbutils.SetUOffsetTSlot(fbb, 8, offsetChannel_Url)
 	fbutils.SetUOffsetTSlot(fbb, 9, offsetStatus)
 	fbutils.SetInt64Slot(fbb, 10, int64(obj.ResendCount))
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (transmission_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (transmission_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -239,7 +240,7 @@ func (transmission_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) in
 			}
 			return nil
 		}); err != nil {
-			panic(err)
+			return nil, err
 		}
 	} else {
 		relNotification = &Notification{}
@@ -261,7 +262,7 @@ func (transmission_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) in
 		},
 		Status:      models.TransmissionStatus(fbutils.GetStringSlot(table, 22)),
 		ResendCount: int(table.GetUint64Slot(24, 0)),
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -282,7 +283,7 @@ type TransmissionBox struct {
 // BoxForTransmission opens a box of Transmission objects
 func BoxForTransmission(ob *objectbox.ObjectBox) *TransmissionBox {
 	return &TransmissionBox{
-		Box: ob.InternalBox(18),
+		Box: ob.InternalBox(17),
 	}
 }
 

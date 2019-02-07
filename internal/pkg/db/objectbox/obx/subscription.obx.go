@@ -16,8 +16,8 @@ type subscription_EntityInfo struct {
 }
 
 var SubscriptionBinding = subscription_EntityInfo{
-	Id:  17,
-	Uid: 7894298624090156381,
+	Id:  16,
+	Uid: 5707233647009676917,
 }
 
 // Subscription_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -36,7 +36,7 @@ var Subscription_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 17,
+				Id: 16,
 			},
 		},
 	},
@@ -44,7 +44,7 @@ var Subscription_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 17,
+				Id: 16,
 			},
 		},
 	},
@@ -52,7 +52,7 @@ var Subscription_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 17,
+				Id: 16,
 			},
 		},
 	},
@@ -60,7 +60,7 @@ var Subscription_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 17,
+				Id: 16,
 			},
 		},
 	},
@@ -68,7 +68,7 @@ var Subscription_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 17,
+				Id: 16,
 			},
 		},
 	},
@@ -76,7 +76,7 @@ var Subscription_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 17,
+				Id: 16,
 			},
 		},
 	},
@@ -84,23 +84,23 @@ var Subscription_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 17,
+				Id: 16,
 			},
 		},
 	},
 	SubscribedCategories: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
+			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 17,
+				Id: 16,
 			},
 		},
 	},
 	SubscribedLabels: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
+			Id: 9,
 			Entity: &objectbox.Entity{
-				Id: 17,
+				Id: 16,
 			},
 		},
 	},
@@ -113,20 +113,20 @@ func (subscription_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (subscription_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Subscription", 17, 7894298624090156381)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 8878384828615659975)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 6195469694872409651)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 873948695945843716)
-	model.Property("ID", objectbox.PropertyType_Long, 4, 4082963676260133382)
+	model.Entity("Subscription", 16, 5707233647009676917)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 7841505559683522781)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 6380824154972036906)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 1671289463647424712)
+	model.Property("ID", objectbox.PropertyType_Long, 4, 5860378613557429956)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Slug", objectbox.PropertyType_String, 5, 8736106784052877759)
+	model.Property("Slug", objectbox.PropertyType_String, 5, 9006847262682447404)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(21, 9164704548718956277)
-	model.Property("Receiver", objectbox.PropertyType_String, 6, 3922157183880917579)
-	model.Property("Description", objectbox.PropertyType_String, 7, 3476822173099840601)
-	model.Property("SubscribedCategories", objectbox.PropertyType_StringVector, 9, 1939998668390425764)
-	model.Property("SubscribedLabels", objectbox.PropertyType_StringVector, 8, 3024648589148933406)
-	model.EntityLastPropertyId(9, 1939998668390425764)
+	model.PropertyIndex(20, 3089546788875101383)
+	model.Property("Receiver", objectbox.PropertyType_String, 6, 8543544518008431401)
+	model.Property("Description", objectbox.PropertyType_String, 7, 5464333271186665778)
+	model.Property("SubscribedCategories", objectbox.PropertyType_StringVector, 8, 2832589937380529425)
+	model.Property("SubscribedLabels", objectbox.PropertyType_StringVector, 9, 7156348278107171350)
+	model.EntityLastPropertyId(9, 7156348278107171350)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -154,7 +154,7 @@ func (subscription_EntityInfo) PutRelated(txn *objectbox.Transaction, object int
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (subscription_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (subscription_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*Subscription)
 	var offsetSlug = fbutils.CreateStringOffset(fbb, obj.Slug)
 	var offsetReceiver = fbutils.CreateStringOffset(fbb, obj.Receiver)
@@ -164,19 +164,20 @@ func (subscription_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 	// build the FlatBuffers object
 	fbb.StartObject(9)
-	fbutils.SetInt64Slot(fbb, 0, obj.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetSlug)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetReceiver)
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetDescription)
-	fbutils.SetUOffsetTSlot(fbb, 8, offsetSubscribedCategories)
-	fbutils.SetUOffsetTSlot(fbb, 7, offsetSubscribedLabels)
+	fbutils.SetUOffsetTSlot(fbb, 7, offsetSubscribedCategories)
+	fbutils.SetUOffsetTSlot(fbb, 8, offsetSubscribedLabels)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (subscription_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (subscription_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -193,9 +194,9 @@ func (subscription_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) in
 		Slug:                 fbutils.GetStringSlot(table, 12),
 		Receiver:             fbutils.GetStringSlot(table, 14),
 		Description:          fbutils.GetStringSlot(table, 16),
-		SubscribedCategories: notificationsCategoryToEntityProperty(fbutils.GetStringVectorSlot(table, 20)),
-		SubscribedLabels:     fbutils.GetStringVectorSlot(table, 18),
-	}
+		SubscribedCategories: notificationsCategoryToEntityProperty(fbutils.GetStringVectorSlot(table, 18)),
+		SubscribedLabels:     fbutils.GetStringVectorSlot(table, 20),
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -216,7 +217,7 @@ type SubscriptionBox struct {
 // BoxForSubscription opens a box of Subscription objects
 func BoxForSubscription(ob *objectbox.ObjectBox) *SubscriptionBox {
 	return &SubscriptionBox{
-		Box: ob.InternalBox(17),
+		Box: ob.InternalBox(16),
 	}
 }
 

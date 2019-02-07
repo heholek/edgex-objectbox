@@ -17,26 +17,26 @@ type registration_EntityInfo struct {
 
 var RegistrationBinding = registration_EntityInfo{
 	Id:  13,
-	Uid: 1777544358928205449,
+	Uid: 7634570582013981061,
 }
 
 // Registration_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var Registration_ = struct {
-	ID                 *objectbox.PropertyUint64
-	Created            *objectbox.PropertyInt64
-	Modified           *objectbox.PropertyInt64
-	Origin             *objectbox.PropertyInt64
-	Name               *objectbox.PropertyString
-	Addressable        *objectbox.PropertyUint64
-	Format             *objectbox.PropertyString
-	DeviceIDs          *objectbox.PropertyStringVector
-	ValueDescriptorIDs *objectbox.PropertyStringVector
-	Algo               *objectbox.PropertyString
-	Key                *objectbox.PropertyString
-	InitVector         *objectbox.PropertyString
-	Compression        *objectbox.PropertyString
-	Enable             *objectbox.PropertyBool
-	Destination        *objectbox.PropertyString
+	ID                        *objectbox.PropertyUint64
+	Created                   *objectbox.PropertyInt64
+	Modified                  *objectbox.PropertyInt64
+	Origin                    *objectbox.PropertyInt64
+	Name                      *objectbox.PropertyString
+	Addressable               *objectbox.PropertyUint64
+	Format                    *objectbox.PropertyString
+	Filter_DeviceIDs          *objectbox.PropertyStringVector
+	Filter_ValueDescriptorIDs *objectbox.PropertyStringVector
+	Encryption_Algo           *objectbox.PropertyString
+	Encryption_Key            *objectbox.PropertyString
+	Encryption_InitVector     *objectbox.PropertyString
+	Compression               *objectbox.PropertyString
+	Enable                    *objectbox.PropertyBool
+	Destination               *objectbox.PropertyString
 }{
 	ID: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
@@ -94,7 +94,7 @@ var Registration_ = struct {
 			},
 		},
 	},
-	DeviceIDs: &objectbox.PropertyStringVector{
+	Filter_DeviceIDs: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
@@ -102,7 +102,7 @@ var Registration_ = struct {
 			},
 		},
 	},
-	ValueDescriptorIDs: &objectbox.PropertyStringVector{
+	Filter_ValueDescriptorIDs: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 9,
 			Entity: &objectbox.Entity{
@@ -110,7 +110,7 @@ var Registration_ = struct {
 			},
 		},
 	},
-	Algo: &objectbox.PropertyString{
+	Encryption_Algo: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 10,
 			Entity: &objectbox.Entity{
@@ -118,7 +118,7 @@ var Registration_ = struct {
 			},
 		},
 	},
-	Key: &objectbox.PropertyString{
+	Encryption_Key: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 11,
 			Entity: &objectbox.Entity{
@@ -126,7 +126,7 @@ var Registration_ = struct {
 			},
 		},
 	},
-	InitVector: &objectbox.PropertyString{
+	Encryption_InitVector: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 12,
 			Entity: &objectbox.Entity{
@@ -167,27 +167,27 @@ func (registration_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (registration_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Registration", 13, 1777544358928205449)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 1932437057417907588)
+	model.Entity("Registration", 13, 7634570582013981061)
+	model.Property("ID", objectbox.PropertyType_Long, 1, 4739600724391841289)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 1723658556507391604)
-	model.Property("Modified", objectbox.PropertyType_Long, 3, 5558220246806211158)
-	model.Property("Origin", objectbox.PropertyType_Long, 4, 5252625649810027655)
-	model.Property("Name", objectbox.PropertyType_String, 5, 4829984755459021677)
+	model.Property("Created", objectbox.PropertyType_Long, 2, 1865096029168372524)
+	model.Property("Modified", objectbox.PropertyType_Long, 3, 2482875418636968909)
+	model.Property("Origin", objectbox.PropertyType_Long, 4, 7127382488741398936)
+	model.Property("Name", objectbox.PropertyType_String, 5, 4295782988966448821)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(17, 7291817263863306661)
-	model.Property("Addressable", objectbox.PropertyType_Relation, 6, 6443071323393333825)
-	model.PropertyRelation("Addressable", 18, 4850098691847318113)
-	model.Property("Format", objectbox.PropertyType_String, 7, 3207841584846917571)
-	model.Property("DeviceIDs", objectbox.PropertyType_StringVector, 8, 1264814114696442614)
-	model.Property("ValueDescriptorIDs", objectbox.PropertyType_StringVector, 9, 565595824169484831)
-	model.Property("Algo", objectbox.PropertyType_String, 10, 8501832577132291829)
-	model.Property("Key", objectbox.PropertyType_String, 11, 4347686613676640987)
-	model.Property("InitVector", objectbox.PropertyType_String, 12, 9168431839547464892)
-	model.Property("Compression", objectbox.PropertyType_String, 13, 2155867919680815956)
-	model.Property("Enable", objectbox.PropertyType_Bool, 14, 7081549503906528239)
-	model.Property("Destination", objectbox.PropertyType_String, 15, 8189078154132757228)
-	model.EntityLastPropertyId(15, 8189078154132757228)
+	model.PropertyIndex(15, 1279714968304775307)
+	model.Property("Addressable", objectbox.PropertyType_Relation, 6, 3735895927695370569)
+	model.PropertyRelation("Addressable", 16, 473343030382928749)
+	model.Property("Format", objectbox.PropertyType_String, 7, 4078554114893980436)
+	model.Property("Filter_DeviceIDs", objectbox.PropertyType_StringVector, 8, 4590597437897473969)
+	model.Property("Filter_ValueDescriptorIDs", objectbox.PropertyType_StringVector, 9, 2336536679363645756)
+	model.Property("Encryption_Algo", objectbox.PropertyType_String, 10, 2515537038240284280)
+	model.Property("Encryption_Key", objectbox.PropertyType_String, 11, 380896508047194758)
+	model.Property("Encryption_InitVector", objectbox.PropertyType_String, 12, 7862731985842271541)
+	model.Property("Compression", objectbox.PropertyType_String, 13, 7574209528919188724)
+	model.Property("Enable", objectbox.PropertyType_Bool, 14, 5441578513058459009)
+	model.Property("Destination", objectbox.PropertyType_String, 15, 4611276071137162060)
+	model.EntityLastPropertyId(15, 4611276071137162060)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -228,22 +228,22 @@ func (registration_EntityInfo) PutRelated(txn *objectbox.Transaction, object int
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (registration_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (registration_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*Registration)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetFormat = fbutils.CreateStringOffset(fbb, obj.Format)
-	var offsetDeviceIDs = fbutils.CreateStringVectorOffset(fbb, obj.Filter.DeviceIDs)
-	var offsetValueDescriptorIDs = fbutils.CreateStringVectorOffset(fbb, obj.Filter.ValueDescriptorIDs)
-	var offsetAlgo = fbutils.CreateStringOffset(fbb, obj.Encryption.Algo)
-	var offsetKey = fbutils.CreateStringOffset(fbb, obj.Encryption.Key)
-	var offsetInitVector = fbutils.CreateStringOffset(fbb, obj.Encryption.InitVector)
+	var offsetFilter_DeviceIDs = fbutils.CreateStringVectorOffset(fbb, obj.Filter.DeviceIDs)
+	var offsetFilter_ValueDescriptorIDs = fbutils.CreateStringVectorOffset(fbb, obj.Filter.ValueDescriptorIDs)
+	var offsetEncryption_Algo = fbutils.CreateStringOffset(fbb, obj.Encryption.Algo)
+	var offsetEncryption_Key = fbutils.CreateStringOffset(fbb, obj.Encryption.Key)
+	var offsetEncryption_InitVector = fbutils.CreateStringOffset(fbb, obj.Encryption.InitVector)
 	var offsetCompression = fbutils.CreateStringOffset(fbb, obj.Compression)
 	var offsetDestination = fbutils.CreateStringOffset(fbb, obj.Destination)
 
 	var rIdAddressable uint64
 	if rel := &obj.Addressable; rel != nil {
 		if rId, err := AddressableBinding.GetId(rel); err != nil {
-			panic(err) // this must never happen but let's keep the check just to be sure
+			return err
 		} else {
 			rIdAddressable = rId
 		}
@@ -258,18 +258,19 @@ func (registration_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUint64Slot(fbb, 5, rIdAddressable)
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetFormat)
-	fbutils.SetUOffsetTSlot(fbb, 7, offsetDeviceIDs)
-	fbutils.SetUOffsetTSlot(fbb, 8, offsetValueDescriptorIDs)
-	fbutils.SetUOffsetTSlot(fbb, 9, offsetAlgo)
-	fbutils.SetUOffsetTSlot(fbb, 10, offsetKey)
-	fbutils.SetUOffsetTSlot(fbb, 11, offsetInitVector)
+	fbutils.SetUOffsetTSlot(fbb, 7, offsetFilter_DeviceIDs)
+	fbutils.SetUOffsetTSlot(fbb, 8, offsetFilter_ValueDescriptorIDs)
+	fbutils.SetUOffsetTSlot(fbb, 9, offsetEncryption_Algo)
+	fbutils.SetUOffsetTSlot(fbb, 10, offsetEncryption_Key)
+	fbutils.SetUOffsetTSlot(fbb, 11, offsetEncryption_InitVector)
 	fbutils.SetUOffsetTSlot(fbb, 12, offsetCompression)
 	fbutils.SetBoolSlot(fbb, 13, obj.Enable)
 	fbutils.SetUOffsetTSlot(fbb, 14, offsetDestination)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (registration_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (registration_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -289,7 +290,7 @@ func (registration_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) in
 			}
 			return nil
 		}); err != nil {
-			panic(err)
+			return nil, err
 		}
 	} else {
 		relAddressable = &Addressable{}
@@ -315,7 +316,7 @@ func (registration_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) in
 		Compression: fbutils.GetStringSlot(table, 28),
 		Enable:      table.GetBoolSlot(30, false),
 		Destination: fbutils.GetStringSlot(table, 32),
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects

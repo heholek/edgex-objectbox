@@ -16,46 +16,46 @@ type deviceService_EntityInfo struct {
 }
 
 var DeviceServiceBinding = deviceService_EntityInfo{
-	Id:  3,
-	Uid: 8836165828586304646,
+	Id:  6,
+	Uid: 3876971968383894204,
 }
 
 // DeviceService_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var DeviceService_ = struct {
-	Created        *objectbox.PropertyInt64
-	Modified       *objectbox.PropertyInt64
-	Origin         *objectbox.PropertyInt64
-	Description    *objectbox.PropertyString
-	Id             *objectbox.PropertyUint64
-	Name           *objectbox.PropertyString
-	LastConnected  *objectbox.PropertyInt64
-	LastReported   *objectbox.PropertyInt64
-	OperatingState *objectbox.PropertyString
-	Labels         *objectbox.PropertyStringVector
-	Addressable    *objectbox.PropertyUint64
-	AdminState     *objectbox.PropertyString
+	BaseObject_Created  *objectbox.PropertyInt64
+	BaseObject_Modified *objectbox.PropertyInt64
+	BaseObject_Origin   *objectbox.PropertyInt64
+	Description         *objectbox.PropertyString
+	Id                  *objectbox.PropertyUint64
+	Name                *objectbox.PropertyString
+	LastConnected       *objectbox.PropertyInt64
+	LastReported        *objectbox.PropertyInt64
+	OperatingState      *objectbox.PropertyString
+	Labels              *objectbox.PropertyStringVector
+	Addressable         *objectbox.PropertyUint64
+	AdminState          *objectbox.PropertyString
 }{
-	Created: &objectbox.PropertyInt64{
+	BaseObject_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 3,
+				Id: 6,
 			},
 		},
 	},
-	Modified: &objectbox.PropertyInt64{
+	BaseObject_Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 3,
+				Id: 6,
 			},
 		},
 	},
-	Origin: &objectbox.PropertyInt64{
+	BaseObject_Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 3,
+				Id: 6,
 			},
 		},
 	},
@@ -63,7 +63,7 @@ var DeviceService_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 3,
+				Id: 6,
 			},
 		},
 	},
@@ -71,7 +71,7 @@ var DeviceService_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 3,
+				Id: 6,
 			},
 		},
 	},
@@ -79,7 +79,7 @@ var DeviceService_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 3,
+				Id: 6,
 			},
 		},
 	},
@@ -87,7 +87,7 @@ var DeviceService_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 3,
+				Id: 6,
 			},
 		},
 	},
@@ -95,7 +95,7 @@ var DeviceService_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 3,
+				Id: 6,
 			},
 		},
 	},
@@ -103,7 +103,7 @@ var DeviceService_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 9,
 			Entity: &objectbox.Entity{
-				Id: 3,
+				Id: 6,
 			},
 		},
 	},
@@ -111,23 +111,23 @@ var DeviceService_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 10,
 			Entity: &objectbox.Entity{
-				Id: 3,
+				Id: 6,
 			},
 		},
 	},
 	Addressable: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 12,
+			Id: 11,
 			Entity: &objectbox.Entity{
-				Id: 3,
+				Id: 6,
 			},
 		},
 	},
 	AdminState: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 11,
+			Id: 12,
 			Entity: &objectbox.Entity{
-				Id: 3,
+				Id: 6,
 			},
 		},
 	},
@@ -140,30 +140,30 @@ func (deviceService_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (deviceService_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("DeviceService", 3, 8836165828586304646)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 4922577188059865444)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 3005177954543500914)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 1881167627445631401)
-	model.Property("Description", objectbox.PropertyType_String, 4, 5830165097524782565)
-	model.Property("Id", objectbox.PropertyType_Long, 5, 3867462513657162392)
+	model.Entity("DeviceService", 6, 3876971968383894204)
+	model.Property("BaseObject_Created", objectbox.PropertyType_Long, 1, 7534116706135258649)
+	model.Property("BaseObject_Modified", objectbox.PropertyType_Long, 2, 6549352117869293834)
+	model.Property("BaseObject_Origin", objectbox.PropertyType_Long, 3, 5372152774908502360)
+	model.Property("Description", objectbox.PropertyType_String, 4, 3874963389270055275)
+	model.Property("Id", objectbox.PropertyType_Long, 5, 8452620401034942300)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Name", objectbox.PropertyType_String, 6, 2903365976986741946)
+	model.Property("Name", objectbox.PropertyType_String, 6, 8352777234647930967)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(3, 303875225975174883)
-	model.Property("LastConnected", objectbox.PropertyType_Long, 7, 6226123337255414811)
-	model.Property("LastReported", objectbox.PropertyType_Long, 8, 4011799185789819768)
-	model.Property("OperatingState", objectbox.PropertyType_String, 9, 4667081344725635916)
-	model.Property("Labels", objectbox.PropertyType_StringVector, 10, 7882493407307574917)
-	model.Property("Addressable", objectbox.PropertyType_Relation, 12, 8342298068130374813)
-	model.PropertyRelation("Addressable", 4, 2951639334126412359)
-	model.Property("AdminState", objectbox.PropertyType_String, 11, 7551584300772599559)
-	model.EntityLastPropertyId(12, 8342298068130374813)
+	model.PropertyIndex(8, 6964938437027386171)
+	model.Property("LastConnected", objectbox.PropertyType_Long, 7, 2159682209253399389)
+	model.Property("LastReported", objectbox.PropertyType_Long, 8, 4841913290456990671)
+	model.Property("OperatingState", objectbox.PropertyType_String, 9, 2495166016697651420)
+	model.Property("Labels", objectbox.PropertyType_StringVector, 10, 8893665687124301842)
+	model.Property("Addressable", objectbox.PropertyType_Relation, 11, 9008574691580456328)
+	model.PropertyRelation("Addressable", 9, 72375762301280824)
+	model.Property("AdminState", objectbox.PropertyType_String, 12, 29342871556659806)
+	model.EntityLastPropertyId(12, 29342871556659806)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (deviceService_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*DeviceService); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.Service.Id), nil
 	} else {
 		return objectbox.StringIdConvertToDatabaseValue(object.(DeviceService).Service.Id), nil
 	}
@@ -198,18 +198,18 @@ func (deviceService_EntityInfo) PutRelated(txn *objectbox.Transaction, object in
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (deviceService_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (deviceService_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*DeviceService)
-	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.Description)
-	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
-	var offsetOperatingState = fbutils.CreateStringOffset(fbb, string(obj.OperatingState))
-	var offsetLabels = fbutils.CreateStringVectorOffset(fbb, obj.Labels)
+	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.Service.DescribedObject.Description)
+	var offsetName = fbutils.CreateStringOffset(fbb, obj.Service.Name)
+	var offsetOperatingState = fbutils.CreateStringOffset(fbb, string(obj.Service.OperatingState))
+	var offsetLabels = fbutils.CreateStringVectorOffset(fbb, obj.Service.Labels)
 	var offsetAdminState = fbutils.CreateStringOffset(fbb, string(obj.AdminState))
 
 	var rIdAddressable uint64
 	if rel := &obj.Addressable; rel != nil {
 		if rId, err := AddressableBinding.GetId(rel); err != nil {
-			panic(err) // this must never happen but let's keep the check just to be sure
+			return err
 		} else {
 			rIdAddressable = rId
 		}
@@ -217,22 +217,23 @@ func (deviceService_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 
 	// build the FlatBuffers object
 	fbb.StartObject(12)
-	fbutils.SetInt64Slot(fbb, 0, obj.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.Service.DescribedObject.BaseObject.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.Service.DescribedObject.BaseObject.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.Service.DescribedObject.BaseObject.Origin)
 	fbutils.SetUOffsetTSlot(fbb, 3, offsetDescription)
 	fbutils.SetUint64Slot(fbb, 4, id)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetName)
-	fbutils.SetInt64Slot(fbb, 6, obj.LastConnected)
-	fbutils.SetInt64Slot(fbb, 7, obj.LastReported)
+	fbutils.SetInt64Slot(fbb, 6, obj.Service.LastConnected)
+	fbutils.SetInt64Slot(fbb, 7, obj.Service.LastReported)
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetOperatingState)
 	fbutils.SetUOffsetTSlot(fbb, 9, offsetLabels)
-	fbutils.SetUint64Slot(fbb, 11, rIdAddressable)
-	fbutils.SetUOffsetTSlot(fbb, 10, offsetAdminState)
+	fbutils.SetUint64Slot(fbb, 10, rIdAddressable)
+	fbutils.SetUOffsetTSlot(fbb, 11, offsetAdminState)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (deviceService_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (deviceService_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -240,7 +241,7 @@ func (deviceService_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) i
 	var id = table.GetUint64Slot(12, 0)
 
 	var relAddressable *Addressable
-	if rId := table.GetUint64Slot(26, 0); rId > 0 {
+	if rId := table.GetUint64Slot(24, 0); rId > 0 {
 		if err := txn.RunWithCursor(AddressableBinding.Id, func(targetCursor *objectbox.Cursor) error {
 			if relObject, err := targetCursor.Get(rId); err != nil {
 				return err
@@ -252,7 +253,7 @@ func (deviceService_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) i
 			}
 			return nil
 		}); err != nil {
-			panic(err)
+			return nil, err
 		}
 	} else {
 		relAddressable = &Addressable{}
@@ -276,8 +277,8 @@ func (deviceService_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) i
 			Labels:         fbutils.GetStringVectorSlot(table, 22),
 			Addressable:    *relAddressable,
 		},
-		AdminState: models.AdminState(fbutils.GetStringSlot(table, 24)),
-	}
+		AdminState: models.AdminState(fbutils.GetStringSlot(table, 26)),
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -298,7 +299,7 @@ type DeviceServiceBox struct {
 // BoxForDeviceService opens a box of DeviceService objects
 func BoxForDeviceService(ob *objectbox.ObjectBox) *DeviceServiceBox {
 	return &DeviceServiceBox{
-		Box: ob.InternalBox(3),
+		Box: ob.InternalBox(6),
 	}
 }
 

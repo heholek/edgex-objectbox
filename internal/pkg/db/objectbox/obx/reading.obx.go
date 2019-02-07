@@ -15,8 +15,8 @@ type reading_EntityInfo struct {
 }
 
 var ReadingBinding = reading_EntityInfo{
-	Id:  5,
-	Uid: 5720922007709447864,
+	Id:  7,
+	Uid: 5153159258527756401,
 }
 
 // Reading_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -34,7 +34,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 7,
 			},
 		},
 	},
@@ -42,7 +42,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 7,
 			},
 		},
 	},
@@ -50,7 +50,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 7,
 			},
 		},
 	},
@@ -58,7 +58,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 7,
 			},
 		},
 	},
@@ -66,7 +66,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 7,
 			},
 		},
 	},
@@ -74,7 +74,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 7,
 			},
 		},
 	},
@@ -82,7 +82,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 7,
 			},
 		},
 	},
@@ -90,7 +90,7 @@ var Reading_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 5,
+				Id: 7,
 			},
 		},
 	},
@@ -103,17 +103,17 @@ func (reading_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (reading_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Reading", 5, 5720922007709447864)
-	model.Property("Id", objectbox.PropertyType_Long, 1, 506318890259717221)
+	model.Entity("Reading", 7, 5153159258527756401)
+	model.Property("Id", objectbox.PropertyType_Long, 1, 720312979085228804)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Pushed", objectbox.PropertyType_Long, 2, 857645422171573341)
-	model.Property("Created", objectbox.PropertyType_Long, 3, 2293804091244003818)
-	model.Property("Origin", objectbox.PropertyType_Long, 4, 6649600333394362209)
-	model.Property("Modified", objectbox.PropertyType_Long, 5, 3466270577664053413)
-	model.Property("Device", objectbox.PropertyType_String, 6, 3447591269737415871)
-	model.Property("Name", objectbox.PropertyType_String, 7, 6909240474200120732)
-	model.Property("Value", objectbox.PropertyType_String, 8, 7605577018169475074)
-	model.EntityLastPropertyId(8, 7605577018169475074)
+	model.Property("Pushed", objectbox.PropertyType_Long, 2, 3101718553199156407)
+	model.Property("Created", objectbox.PropertyType_Long, 3, 2792441427954297490)
+	model.Property("Origin", objectbox.PropertyType_Long, 4, 758879012114214353)
+	model.Property("Modified", objectbox.PropertyType_Long, 5, 1481663470480543613)
+	model.Property("Device", objectbox.PropertyType_String, 6, 8021760369308509248)
+	model.Property("Name", objectbox.PropertyType_String, 7, 2078933992804594330)
+	model.Property("Value", objectbox.PropertyType_String, 8, 4285345738141491653)
+	model.EntityLastPropertyId(8, 4285345738141491653)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -141,7 +141,7 @@ func (reading_EntityInfo) PutRelated(txn *objectbox.Transaction, object interfac
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (reading_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (reading_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*Reading)
 	var offsetDevice = fbutils.CreateStringOffset(fbb, obj.Device)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
@@ -157,10 +157,11 @@ func (reading_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, 
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetDevice)
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetValue)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (reading_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (reading_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -176,7 +177,7 @@ func (reading_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interfa
 		Device:   fbutils.GetStringSlot(table, 14),
 		Name:     fbutils.GetStringSlot(table, 16),
 		Value:    fbutils.GetStringSlot(table, 18),
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -197,7 +198,7 @@ type ReadingBox struct {
 // BoxForReading opens a box of Reading objects
 func BoxForReading(ob *objectbox.ObjectBox) *ReadingBox {
 	return &ReadingBox{
-		Box: ob.InternalBox(5),
+		Box: ob.InternalBox(7),
 	}
 }
 

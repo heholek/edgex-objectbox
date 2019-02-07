@@ -16,8 +16,8 @@ type notification_EntityInfo struct {
 }
 
 var NotificationBinding = notification_EntityInfo{
-	Id:  16,
-	Uid: 8917993494415957675,
+	Id:  11,
+	Uid: 473217340861383887,
 }
 
 // Notification_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -40,7 +40,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -48,7 +48,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -56,7 +56,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -64,7 +64,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -72,7 +72,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -80,7 +80,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -88,7 +88,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -96,7 +96,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -104,7 +104,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 9,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -112,7 +112,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 10,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -120,7 +120,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 11,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -128,7 +128,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 12,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -136,7 +136,7 @@ var Notification_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 13,
 			Entity: &objectbox.Entity{
-				Id: 16,
+				Id: 11,
 			},
 		},
 	},
@@ -149,24 +149,24 @@ func (notification_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (notification_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Notification", 16, 8917993494415957675)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 2990738383806693209)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 1100014818752641751)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 231237896451679381)
-	model.Property("ID", objectbox.PropertyType_Long, 4, 3143047023799058912)
+	model.Entity("Notification", 11, 473217340861383887)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 8097807178986063059)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 8972589080235606015)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 7004422487931328765)
+	model.Property("ID", objectbox.PropertyType_Long, 4, 8366513294708486502)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Slug", objectbox.PropertyType_String, 5, 4583901363759771494)
+	model.Property("Slug", objectbox.PropertyType_String, 5, 9191193423331162482)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(20, 6414366713778607850)
-	model.Property("Sender", objectbox.PropertyType_String, 6, 4718914550871457143)
-	model.Property("Category", objectbox.PropertyType_String, 7, 5552081361886993325)
-	model.Property("Severity", objectbox.PropertyType_String, 8, 3218401110776025571)
-	model.Property("Content", objectbox.PropertyType_String, 9, 2013513417001100627)
-	model.Property("Description", objectbox.PropertyType_String, 10, 6494645105481308758)
-	model.Property("Status", objectbox.PropertyType_String, 11, 2598630420199975306)
-	model.Property("Labels", objectbox.PropertyType_StringVector, 12, 769015759726427)
-	model.Property("ContentType", objectbox.PropertyType_String, 13, 941067047126883943)
-	model.EntityLastPropertyId(13, 941067047126883943)
+	model.PropertyIndex(11, 5929069448268439040)
+	model.Property("Sender", objectbox.PropertyType_String, 6, 3293128717989344156)
+	model.Property("Category", objectbox.PropertyType_String, 7, 6717911931500064874)
+	model.Property("Severity", objectbox.PropertyType_String, 8, 5601160557432732794)
+	model.Property("Content", objectbox.PropertyType_String, 9, 2552815875989069884)
+	model.Property("Description", objectbox.PropertyType_String, 10, 1885790405613350261)
+	model.Property("Status", objectbox.PropertyType_String, 11, 4717815493415963654)
+	model.Property("Labels", objectbox.PropertyType_StringVector, 12, 8144753170650843613)
+	model.Property("ContentType", objectbox.PropertyType_String, 13, 1190301343113188450)
+	model.EntityLastPropertyId(13, 1190301343113188450)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -194,7 +194,7 @@ func (notification_EntityInfo) PutRelated(txn *objectbox.Transaction, object int
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (notification_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (notification_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*Notification)
 	var offsetSlug = fbutils.CreateStringOffset(fbb, obj.Slug)
 	var offsetSender = fbutils.CreateStringOffset(fbb, obj.Sender)
@@ -208,9 +208,9 @@ func (notification_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 	// build the FlatBuffers object
 	fbb.StartObject(13)
-	fbutils.SetInt64Slot(fbb, 0, obj.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetSlug)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetSender)
@@ -221,10 +221,11 @@ func (notification_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 	fbutils.SetUOffsetTSlot(fbb, 10, offsetStatus)
 	fbutils.SetUOffsetTSlot(fbb, 11, offsetLabels)
 	fbutils.SetUOffsetTSlot(fbb, 12, offsetContentType)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (notification_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (notification_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -247,7 +248,7 @@ func (notification_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) in
 		Status:      models.NotificationsStatus(fbutils.GetStringSlot(table, 24)),
 		Labels:      fbutils.GetStringVectorSlot(table, 26),
 		ContentType: fbutils.GetStringSlot(table, 28),
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -268,7 +269,7 @@ type NotificationBox struct {
 // BoxForNotification opens a box of Notification objects
 func BoxForNotification(ob *objectbox.ObjectBox) *NotificationBox {
 	return &NotificationBox{
-		Box: ob.InternalBox(16),
+		Box: ob.InternalBox(11),
 	}
 }
 

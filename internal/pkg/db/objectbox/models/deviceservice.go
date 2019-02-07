@@ -19,6 +19,6 @@ import (
 )
 
 type DeviceService struct {
-	Service
+	Service    `inline`
 	AdminState models.AdminState
 }

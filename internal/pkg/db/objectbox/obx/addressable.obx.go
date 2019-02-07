@@ -17,7 +17,7 @@ type addressable_EntityInfo struct {
 
 var AddressableBinding = addressable_EntityInfo{
 	Id:  1,
-	Uid: 7935862170457263125,
+	Uid: 1721289809567479575,
 }
 
 // Addressable_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -158,25 +158,25 @@ func (addressable_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (addressable_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Addressable", 1, 7935862170457263125)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 3615718190778736815)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 104117847403558709)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 8881371260545183950)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 2263870484846289030)
+	model.Entity("Addressable", 1, 1721289809567479575)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 875771883601337383)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 4878870936463090195)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 1782294640679775949)
+	model.Property("Id", objectbox.PropertyType_Long, 4, 9152016347464018966)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Name", objectbox.PropertyType_String, 5, 546509660169544040)
+	model.Property("Name", objectbox.PropertyType_String, 5, 3356351134453809885)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(1, 1889048398976443726)
-	model.Property("Protocol", objectbox.PropertyType_String, 6, 4418971345113201188)
-	model.Property("HTTPMethod", objectbox.PropertyType_String, 7, 1730568939047700080)
-	model.Property("Address", objectbox.PropertyType_String, 8, 6145463009686191040)
-	model.Property("Port", objectbox.PropertyType_Long, 9, 8050842196399642139)
-	model.Property("Path", objectbox.PropertyType_String, 10, 5827872065469493661)
-	model.Property("Publisher", objectbox.PropertyType_String, 11, 6793733555422607151)
-	model.Property("User", objectbox.PropertyType_String, 12, 6657318061718892543)
-	model.Property("Password", objectbox.PropertyType_String, 13, 6306747915668652178)
-	model.Property("Topic", objectbox.PropertyType_String, 14, 8483935008079255088)
-	model.EntityLastPropertyId(14, 8483935008079255088)
+	model.PropertyIndex(1, 2601673616933745916)
+	model.Property("Protocol", objectbox.PropertyType_String, 6, 5905407311921144745)
+	model.Property("HTTPMethod", objectbox.PropertyType_String, 7, 2502386500171221157)
+	model.Property("Address", objectbox.PropertyType_String, 8, 5557684943772970195)
+	model.Property("Port", objectbox.PropertyType_Long, 9, 4038773839236973132)
+	model.Property("Path", objectbox.PropertyType_String, 10, 6747158428837024338)
+	model.Property("Publisher", objectbox.PropertyType_String, 11, 5593598922665912141)
+	model.Property("User", objectbox.PropertyType_String, 12, 6138402367561233300)
+	model.Property("Password", objectbox.PropertyType_String, 13, 9113318437628853022)
+	model.Property("Topic", objectbox.PropertyType_String, 14, 1693260879868456652)
+	model.EntityLastPropertyId(14, 1693260879868456652)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -204,7 +204,7 @@ func (addressable_EntityInfo) PutRelated(txn *objectbox.Transaction, object inte
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (addressable_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (addressable_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*Addressable)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetProtocol = fbutils.CreateStringOffset(fbb, obj.Protocol)
@@ -218,9 +218,9 @@ func (addressable_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Build
 
 	// build the FlatBuffers object
 	fbb.StartObject(14)
-	fbutils.SetInt64Slot(fbb, 0, obj.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetProtocol)
@@ -232,10 +232,11 @@ func (addressable_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Build
 	fbutils.SetUOffsetTSlot(fbb, 11, offsetUser)
 	fbutils.SetUOffsetTSlot(fbb, 12, offsetPassword)
 	fbutils.SetUOffsetTSlot(fbb, 13, offsetTopic)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (addressable_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (addressable_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -259,7 +260,7 @@ func (addressable_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) int
 		User:       fbutils.GetStringSlot(table, 26),
 		Password:   fbutils.GetStringSlot(table, 28),
 		Topic:      fbutils.GetStringSlot(table, 30),
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects

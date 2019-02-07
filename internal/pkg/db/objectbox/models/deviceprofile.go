@@ -19,12 +19,12 @@ import (
 )
 
 type DeviceProfile struct {
-	models.DescribedObject
-	Id           string
-	Name         string `unique`
-	Manufacturer string
-	Model        string
-	Labels       []string
+	models.DescribedObject `inline`
+	Id                     string
+	Name                   string `unique`
+	Manufacturer           string
+	Model                  string
+	Labels                 []string
 	// TODO we can use json here as there are no queries
 	//DeviceResources []DeviceResources
 	//Resources       []ProfileResource

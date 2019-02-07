@@ -15,8 +15,8 @@ type intervalAction_EntityInfo struct {
 }
 
 var IntervalActionBinding = intervalAction_EntityInfo{
-	Id:  14,
-	Uid: 8309354320254979796,
+	Id:  9,
+	Uid: 2756744796714279591,
 }
 
 // IntervalAction_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -43,7 +43,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -51,7 +51,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -59,7 +59,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -67,7 +67,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -75,7 +75,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -83,7 +83,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -91,7 +91,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -99,7 +99,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -107,7 +107,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 9,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -115,7 +115,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 10,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -123,7 +123,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 11,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -131,7 +131,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 12,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -139,7 +139,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 13,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -147,7 +147,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 14,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -155,7 +155,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 15,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -163,7 +163,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 16,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -171,7 +171,7 @@ var IntervalAction_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 17,
 			Entity: &objectbox.Entity{
-				Id: 14,
+				Id: 9,
 			},
 		},
 	},
@@ -184,26 +184,26 @@ func (intervalAction_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (intervalAction_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("IntervalAction", 14, 8309354320254979796)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 3241635992076766952)
+	model.Entity("IntervalAction", 9, 2756744796714279591)
+	model.Property("ID", objectbox.PropertyType_Long, 1, 7420223465596233035)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 8958770775629826053)
-	model.Property("Modified", objectbox.PropertyType_Long, 3, 2752901763418171419)
-	model.Property("Origin", objectbox.PropertyType_Long, 4, 8805513253649256135)
-	model.Property("Name", objectbox.PropertyType_String, 5, 4458233158842817570)
-	model.Property("Interval", objectbox.PropertyType_String, 6, 5942745969656613565)
-	model.Property("Parameters", objectbox.PropertyType_String, 7, 1755529907256891007)
-	model.Property("Target", objectbox.PropertyType_String, 8, 6307116119634217154)
-	model.Property("Protocol", objectbox.PropertyType_String, 9, 2180741778496999009)
-	model.Property("HTTPMethod", objectbox.PropertyType_String, 10, 8638649444994655564)
-	model.Property("Address", objectbox.PropertyType_String, 11, 8382364478252852470)
-	model.Property("Port", objectbox.PropertyType_Long, 12, 5521203471720954411)
-	model.Property("Path", objectbox.PropertyType_String, 13, 4575702314597763596)
-	model.Property("Publisher", objectbox.PropertyType_String, 14, 3171359825596285253)
-	model.Property("User", objectbox.PropertyType_String, 15, 1810096507306771396)
-	model.Property("Password", objectbox.PropertyType_String, 16, 2190276628769884747)
-	model.Property("Topic", objectbox.PropertyType_String, 17, 5857513277453708753)
-	model.EntityLastPropertyId(17, 5857513277453708753)
+	model.Property("Created", objectbox.PropertyType_Long, 2, 326969378931318024)
+	model.Property("Modified", objectbox.PropertyType_Long, 3, 8212849254297936236)
+	model.Property("Origin", objectbox.PropertyType_Long, 4, 738028464208107115)
+	model.Property("Name", objectbox.PropertyType_String, 5, 4933633578353384552)
+	model.Property("Interval", objectbox.PropertyType_String, 6, 5283703314264311266)
+	model.Property("Parameters", objectbox.PropertyType_String, 7, 3543707062021049254)
+	model.Property("Target", objectbox.PropertyType_String, 8, 3745173396511053028)
+	model.Property("Protocol", objectbox.PropertyType_String, 9, 133680632503980738)
+	model.Property("HTTPMethod", objectbox.PropertyType_String, 10, 7777723197401595499)
+	model.Property("Address", objectbox.PropertyType_String, 11, 7874742624379905478)
+	model.Property("Port", objectbox.PropertyType_Long, 12, 4919605734646660559)
+	model.Property("Path", objectbox.PropertyType_String, 13, 8245929477933611564)
+	model.Property("Publisher", objectbox.PropertyType_String, 14, 4267442333403608480)
+	model.Property("User", objectbox.PropertyType_String, 15, 1111650812930557467)
+	model.Property("Password", objectbox.PropertyType_String, 16, 72978472924665700)
+	model.Property("Topic", objectbox.PropertyType_String, 17, 8496152850176280729)
+	model.EntityLastPropertyId(17, 8496152850176280729)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -231,7 +231,7 @@ func (intervalAction_EntityInfo) PutRelated(txn *objectbox.Transaction, object i
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (intervalAction_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (intervalAction_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*IntervalAction)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetInterval = fbutils.CreateStringOffset(fbb, obj.Interval)
@@ -265,10 +265,11 @@ func (intervalAction_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bu
 	fbutils.SetUOffsetTSlot(fbb, 14, offsetUser)
 	fbutils.SetUOffsetTSlot(fbb, 15, offsetPassword)
 	fbutils.SetUOffsetTSlot(fbb, 16, offsetTopic)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (intervalAction_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (intervalAction_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -293,7 +294,7 @@ func (intervalAction_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) 
 		User:       fbutils.GetStringSlot(table, 32),
 		Password:   fbutils.GetStringSlot(table, 34),
 		Topic:      fbutils.GetStringSlot(table, 36),
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -314,7 +315,7 @@ type IntervalActionBox struct {
 // BoxForIntervalAction opens a box of IntervalAction objects
 func BoxForIntervalAction(ob *objectbox.ObjectBox) *IntervalActionBox {
 	return &IntervalActionBox{
-		Box: ob.InternalBox(14),
+		Box: ob.InternalBox(9),
 	}
 }
 

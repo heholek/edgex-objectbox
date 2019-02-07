@@ -19,10 +19,10 @@ import (
 )
 
 type DeviceReport struct {
-	models.BaseObject
-	Id       string
-	Name     string `unique`
-	Device   string
-	Event    string
-	Expected []string
+	models.BaseObject `inline`
+	Id                string
+	Name              string `unique`
+	Device            string
+	Event             string
+	Expected          []string
 }

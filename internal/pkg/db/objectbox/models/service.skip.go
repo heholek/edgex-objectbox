@@ -21,12 +21,12 @@ import (
 // this is not an entity, (that's why the file is named .skip.go)
 
 type Service struct {
-	models.DescribedObject
-	Id             string
-	Name           string `unique`
-	LastConnected  int64
-	LastReported   int64
-	OperatingState models.OperatingState
-	Labels         []string
-	Addressable    Addressable `link`
+	models.DescribedObject `inline`
+	Id                     string
+	Name                   string `unique`
+	LastConnected          int64
+	LastReported           int64
+	OperatingState         models.OperatingState
+	Labels                 []string
+	Addressable            Addressable `link`
 }

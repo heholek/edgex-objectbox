@@ -20,15 +20,15 @@ import (
 )
 
 type Notification struct {
-	models.BaseObject
-	ID          string
-	Slug        string `unique`
-	Sender      string
-	Category    models.NotificationsCategory
-	Severity    models.NotificationsSeverity
-	Content     string
-	Description string
-	Status      models.NotificationsStatus
-	Labels      []string
-	ContentType string
+	models.BaseObject `inline`
+	ID                string
+	Slug              string `unique`
+	Sender            string
+	Category          models.NotificationsCategory
+	Severity          models.NotificationsSeverity
+	Content           string
+	Description       string
+	Status            models.NotificationsStatus
+	Labels            []string
+	ContentType       string
 }

@@ -16,44 +16,44 @@ type schedule_EntityInfo struct {
 }
 
 var ScheduleBinding = schedule_EntityInfo{
-	Id:  8,
-	Uid: 4067349764907139338,
+	Id:  15,
+	Uid: 8113636778904077059,
 }
 
 // Schedule_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var Schedule_ = struct {
-	Created   *objectbox.PropertyInt64
-	Modified  *objectbox.PropertyInt64
-	Origin    *objectbox.PropertyInt64
-	Id        *objectbox.PropertyUint64
-	Name      *objectbox.PropertyString
-	Start     *objectbox.PropertyString
-	End       *objectbox.PropertyString
-	Frequency *objectbox.PropertyString
-	Cron      *objectbox.PropertyString
-	RunOnce   *objectbox.PropertyBool
+	BaseObject_Created  *objectbox.PropertyInt64
+	BaseObject_Modified *objectbox.PropertyInt64
+	BaseObject_Origin   *objectbox.PropertyInt64
+	Id                  *objectbox.PropertyUint64
+	Name                *objectbox.PropertyString
+	Start               *objectbox.PropertyString
+	End                 *objectbox.PropertyString
+	Frequency           *objectbox.PropertyString
+	Cron                *objectbox.PropertyString
+	RunOnce             *objectbox.PropertyBool
 }{
-	Created: &objectbox.PropertyInt64{
+	BaseObject_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 8,
+				Id: 15,
 			},
 		},
 	},
-	Modified: &objectbox.PropertyInt64{
+	BaseObject_Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 8,
+				Id: 15,
 			},
 		},
 	},
-	Origin: &objectbox.PropertyInt64{
+	BaseObject_Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 8,
+				Id: 15,
 			},
 		},
 	},
@@ -61,7 +61,7 @@ var Schedule_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 8,
+				Id: 15,
 			},
 		},
 	},
@@ -69,7 +69,7 @@ var Schedule_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 8,
+				Id: 15,
 			},
 		},
 	},
@@ -77,7 +77,7 @@ var Schedule_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 8,
+				Id: 15,
 			},
 		},
 	},
@@ -85,7 +85,7 @@ var Schedule_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 8,
+				Id: 15,
 			},
 		},
 	},
@@ -93,7 +93,7 @@ var Schedule_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 8,
+				Id: 15,
 			},
 		},
 	},
@@ -101,7 +101,7 @@ var Schedule_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 9,
 			Entity: &objectbox.Entity{
-				Id: 8,
+				Id: 15,
 			},
 		},
 	},
@@ -109,7 +109,7 @@ var Schedule_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 10,
 			Entity: &objectbox.Entity{
-				Id: 8,
+				Id: 15,
 			},
 		},
 	},
@@ -122,21 +122,21 @@ func (schedule_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (schedule_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Schedule", 8, 4067349764907139338)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 7909930573105602136)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 8778588295298554320)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 490830870463961779)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 5305429011094269967)
+	model.Entity("Schedule", 15, 8113636778904077059)
+	model.Property("BaseObject_Created", objectbox.PropertyType_Long, 1, 8890029665615436151)
+	model.Property("BaseObject_Modified", objectbox.PropertyType_Long, 2, 3311521908504909318)
+	model.Property("BaseObject_Origin", objectbox.PropertyType_Long, 3, 3658101186359190718)
+	model.Property("Id", objectbox.PropertyType_Long, 4, 8513390953149415950)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Name", objectbox.PropertyType_String, 5, 2126929043539376522)
+	model.Property("Name", objectbox.PropertyType_String, 5, 2749270577364459771)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(6, 111805786000826979)
-	model.Property("Start", objectbox.PropertyType_String, 6, 3492455530039081286)
-	model.Property("End", objectbox.PropertyType_String, 7, 8518595430825678726)
-	model.Property("Frequency", objectbox.PropertyType_String, 8, 5924737408319318191)
-	model.Property("Cron", objectbox.PropertyType_String, 9, 2158397277146575434)
-	model.Property("RunOnce", objectbox.PropertyType_Bool, 10, 169748011936556701)
-	model.EntityLastPropertyId(10, 169748011936556701)
+	model.PropertyIndex(19, 6106954966621892636)
+	model.Property("Start", objectbox.PropertyType_String, 6, 8350925389999144357)
+	model.Property("End", objectbox.PropertyType_String, 7, 2750129231355797991)
+	model.Property("Frequency", objectbox.PropertyType_String, 8, 7974489129662594472)
+	model.Property("Cron", objectbox.PropertyType_String, 9, 8672935605683336359)
+	model.Property("RunOnce", objectbox.PropertyType_Bool, 10, 4885808067988887958)
+	model.EntityLastPropertyId(10, 4885808067988887958)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -164,7 +164,7 @@ func (schedule_EntityInfo) PutRelated(txn *objectbox.Transaction, object interfa
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (schedule_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (schedule_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*Schedule)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetStart = fbutils.CreateStringOffset(fbb, obj.Start)
@@ -174,9 +174,9 @@ func (schedule_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder,
 
 	// build the FlatBuffers object
 	fbb.StartObject(10)
-	fbutils.SetInt64Slot(fbb, 0, obj.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetStart)
@@ -184,10 +184,11 @@ func (schedule_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder,
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetFrequency)
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetCron)
 	fbutils.SetBoolSlot(fbb, 9, obj.RunOnce)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (schedule_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (schedule_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -207,7 +208,7 @@ func (schedule_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interf
 		Frequency: fbutils.GetStringSlot(table, 18),
 		Cron:      fbutils.GetStringSlot(table, 20),
 		RunOnce:   table.GetBoolSlot(22, false),
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -228,7 +229,7 @@ type ScheduleBox struct {
 // BoxForSchedule opens a box of Schedule objects
 func BoxForSchedule(ob *objectbox.ObjectBox) *ScheduleBox {
 	return &ScheduleBox{
-		Box: ob.InternalBox(8),
+		Box: ob.InternalBox(15),
 	}
 }
 

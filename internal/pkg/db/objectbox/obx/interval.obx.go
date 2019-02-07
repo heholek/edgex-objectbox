@@ -15,8 +15,8 @@ type interval_EntityInfo struct {
 }
 
 var IntervalBinding = interval_EntityInfo{
-	Id:  15,
-	Uid: 1843038163747882080,
+	Id:  10,
+	Uid: 5327467992591774453,
 }
 
 // Interval_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -36,7 +36,7 @@ var Interval_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 15,
+				Id: 10,
 			},
 		},
 	},
@@ -44,7 +44,7 @@ var Interval_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 15,
+				Id: 10,
 			},
 		},
 	},
@@ -52,7 +52,7 @@ var Interval_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 15,
+				Id: 10,
 			},
 		},
 	},
@@ -60,7 +60,7 @@ var Interval_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 15,
+				Id: 10,
 			},
 		},
 	},
@@ -68,7 +68,7 @@ var Interval_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 15,
+				Id: 10,
 			},
 		},
 	},
@@ -76,7 +76,7 @@ var Interval_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 15,
+				Id: 10,
 			},
 		},
 	},
@@ -84,7 +84,7 @@ var Interval_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 15,
+				Id: 10,
 			},
 		},
 	},
@@ -92,7 +92,7 @@ var Interval_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 15,
+				Id: 10,
 			},
 		},
 	},
@@ -100,7 +100,7 @@ var Interval_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 9,
 			Entity: &objectbox.Entity{
-				Id: 15,
+				Id: 10,
 			},
 		},
 	},
@@ -108,7 +108,7 @@ var Interval_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 10,
 			Entity: &objectbox.Entity{
-				Id: 15,
+				Id: 10,
 			},
 		},
 	},
@@ -121,21 +121,21 @@ func (interval_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (interval_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Interval", 15, 1843038163747882080)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 7026780808153419659)
+	model.Entity("Interval", 10, 5327467992591774453)
+	model.Property("ID", objectbox.PropertyType_Long, 1, 4709446466924896420)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 7407031719664088322)
-	model.Property("Modified", objectbox.PropertyType_Long, 3, 5313605938834830925)
-	model.Property("Origin", objectbox.PropertyType_Long, 4, 2725019847084749631)
-	model.Property("Name", objectbox.PropertyType_String, 5, 5958024003810641913)
+	model.Property("Created", objectbox.PropertyType_Long, 2, 3510773364192773715)
+	model.Property("Modified", objectbox.PropertyType_Long, 3, 2533804090205375173)
+	model.Property("Origin", objectbox.PropertyType_Long, 4, 814056020236256753)
+	model.Property("Name", objectbox.PropertyType_String, 5, 6944180935531709531)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(19, 1114083913251701929)
-	model.Property("Start", objectbox.PropertyType_String, 6, 142790824107722098)
-	model.Property("End", objectbox.PropertyType_String, 7, 3265426233578448196)
-	model.Property("Frequency", objectbox.PropertyType_String, 8, 2472198800037645616)
-	model.Property("Cron", objectbox.PropertyType_String, 9, 6117992782866329900)
-	model.Property("RunOnce", objectbox.PropertyType_Bool, 10, 7292712871123113490)
-	model.EntityLastPropertyId(10, 7292712871123113490)
+	model.PropertyIndex(10, 8471938915869008331)
+	model.Property("Start", objectbox.PropertyType_String, 6, 6341369538910341773)
+	model.Property("End", objectbox.PropertyType_String, 7, 7972117540309454636)
+	model.Property("Frequency", objectbox.PropertyType_String, 8, 5146169580259743388)
+	model.Property("Cron", objectbox.PropertyType_String, 9, 6353708099746865083)
+	model.Property("RunOnce", objectbox.PropertyType_Bool, 10, 3551947878891095082)
+	model.EntityLastPropertyId(10, 3551947878891095082)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -163,7 +163,7 @@ func (interval_EntityInfo) PutRelated(txn *objectbox.Transaction, object interfa
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (interval_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (interval_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*Interval)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetStart = fbutils.CreateStringOffset(fbb, obj.Start)
@@ -183,10 +183,11 @@ func (interval_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder,
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetFrequency)
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetCron)
 	fbutils.SetBoolSlot(fbb, 9, obj.RunOnce)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (interval_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (interval_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -204,7 +205,7 @@ func (interval_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interf
 		Frequency: fbutils.GetStringSlot(table, 18),
 		Cron:      fbutils.GetStringSlot(table, 20),
 		RunOnce:   table.GetBoolSlot(22, false),
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -225,7 +226,7 @@ type IntervalBox struct {
 // BoxForInterval opens a box of Interval objects
 func BoxForInterval(ob *objectbox.ObjectBox) *IntervalBox {
 	return &IntervalBox{
-		Box: ob.InternalBox(15),
+		Box: ob.InternalBox(10),
 	}
 }
 

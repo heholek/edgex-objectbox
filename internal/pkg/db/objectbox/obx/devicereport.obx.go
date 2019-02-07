@@ -16,8 +16,8 @@ type deviceReport_EntityInfo struct {
 }
 
 var DeviceReportBinding = deviceReport_EntityInfo{
-	Id:  9,
-	Uid: 7590857651029402082,
+	Id:  5,
+	Uid: 647510041971772493,
 }
 
 // DeviceReport_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -35,7 +35,7 @@ var DeviceReport_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 9,
+				Id: 5,
 			},
 		},
 	},
@@ -43,7 +43,7 @@ var DeviceReport_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 9,
+				Id: 5,
 			},
 		},
 	},
@@ -51,7 +51,7 @@ var DeviceReport_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 9,
+				Id: 5,
 			},
 		},
 	},
@@ -59,7 +59,7 @@ var DeviceReport_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 9,
+				Id: 5,
 			},
 		},
 	},
@@ -67,7 +67,7 @@ var DeviceReport_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 9,
+				Id: 5,
 			},
 		},
 	},
@@ -75,7 +75,7 @@ var DeviceReport_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 9,
+				Id: 5,
 			},
 		},
 	},
@@ -83,7 +83,7 @@ var DeviceReport_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 9,
+				Id: 5,
 			},
 		},
 	},
@@ -91,7 +91,7 @@ var DeviceReport_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 9,
+				Id: 5,
 			},
 		},
 	},
@@ -104,19 +104,19 @@ func (deviceReport_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (deviceReport_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("DeviceReport", 9, 7590857651029402082)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 4933474896156374694)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 1969099305848705273)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 1979297495845376553)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 1146785498998559308)
+	model.Entity("DeviceReport", 5, 647510041971772493)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 5488177921456249775)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 1910341233961500137)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 789497655050910027)
+	model.Property("Id", objectbox.PropertyType_Long, 4, 3326595959808718872)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Name", objectbox.PropertyType_String, 5, 606353385103192842)
+	model.Property("Name", objectbox.PropertyType_String, 5, 122729433673421832)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(7, 1153755119419732754)
-	model.Property("Device", objectbox.PropertyType_String, 6, 8430482458681254821)
-	model.Property("Event", objectbox.PropertyType_String, 7, 9169333573500203216)
-	model.Property("Expected", objectbox.PropertyType_StringVector, 8, 8302111629024204632)
-	model.EntityLastPropertyId(8, 8302111629024204632)
+	model.PropertyIndex(7, 7460020255773218717)
+	model.Property("Device", objectbox.PropertyType_String, 6, 418723660054952328)
+	model.Property("Event", objectbox.PropertyType_String, 7, 9098980313453070502)
+	model.Property("Expected", objectbox.PropertyType_StringVector, 8, 827335505186667472)
+	model.EntityLastPropertyId(8, 827335505186667472)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -144,7 +144,7 @@ func (deviceReport_EntityInfo) PutRelated(txn *objectbox.Transaction, object int
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (deviceReport_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (deviceReport_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*DeviceReport)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetDevice = fbutils.CreateStringOffset(fbb, obj.Device)
@@ -153,18 +153,19 @@ func (deviceReport_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 	// build the FlatBuffers object
 	fbb.StartObject(8)
-	fbutils.SetInt64Slot(fbb, 0, obj.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetDevice)
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetEvent)
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetExpected)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (deviceReport_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (deviceReport_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -182,7 +183,7 @@ func (deviceReport_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) in
 		Device:   fbutils.GetStringSlot(table, 14),
 		Event:    fbutils.GetStringSlot(table, 16),
 		Expected: fbutils.GetStringVectorSlot(table, 18),
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -203,7 +204,7 @@ type DeviceReportBox struct {
 // BoxForDeviceReport opens a box of DeviceReport objects
 func BoxForDeviceReport(ob *objectbox.ObjectBox) *DeviceReportBox {
 	return &DeviceReportBox{
-		Box: ob.InternalBox(9),
+		Box: ob.InternalBox(5),
 	}
 }
 

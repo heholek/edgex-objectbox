@@ -15,8 +15,8 @@ type event_EntityInfo struct {
 }
 
 var EventBinding = event_EntityInfo{
-	Id:  4,
-	Uid: 3857710211787315610,
+	Id:  8,
+	Uid: 3479337365075920111,
 }
 
 // Event_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -33,7 +33,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 8,
 			},
 		},
 	},
@@ -41,7 +41,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 8,
 			},
 		},
 	},
@@ -49,7 +49,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 8,
 			},
 		},
 	},
@@ -57,7 +57,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 8,
 			},
 		},
 	},
@@ -65,7 +65,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 8,
 			},
 		},
 	},
@@ -73,7 +73,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 8,
 			},
 		},
 	},
@@ -81,7 +81,7 @@ var Event_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 4,
+				Id: 8,
 			},
 		},
 	},
@@ -94,17 +94,17 @@ func (event_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (event_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Event", 4, 3857710211787315610)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 1622928315047830037)
+	model.Entity("Event", 8, 3479337365075920111)
+	model.Property("ID", objectbox.PropertyType_Long, 1, 7150544686233801611)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Pushed", objectbox.PropertyType_Long, 2, 5203650226136542723)
-	model.Property("Device", objectbox.PropertyType_String, 3, 6582644851873838598)
-	model.Property("Created", objectbox.PropertyType_Long, 4, 4262060353923574849)
-	model.Property("Modified", objectbox.PropertyType_Long, 5, 4982956061079572949)
-	model.Property("Origin", objectbox.PropertyType_Long, 6, 7049528420366903229)
-	model.Property("Event", objectbox.PropertyType_String, 7, 2745907413165741853)
-	model.EntityLastPropertyId(7, 2745907413165741853)
-	model.Relation(1, 7766060310030207431, ReadingBinding.Id, ReadingBinding.Uid)
+	model.Property("Pushed", objectbox.PropertyType_Long, 2, 2696612706629694030)
+	model.Property("Device", objectbox.PropertyType_String, 3, 4778307009560157127)
+	model.Property("Created", objectbox.PropertyType_Long, 4, 3583575667727096062)
+	model.Property("Modified", objectbox.PropertyType_Long, 5, 3656471225173119384)
+	model.Property("Origin", objectbox.PropertyType_Long, 6, 3524587915626770103)
+	model.Property("Event", objectbox.PropertyType_String, 7, 9008105006658809123)
+	model.EntityLastPropertyId(7, 9008105006658809123)
+	model.Relation(2, 5533510483840274449, ReadingBinding.Id, ReadingBinding.Uid)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -129,7 +129,7 @@ func (event_EntityInfo) SetId(object interface{}, id uint64) {
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
 func (event_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
 	if err := txn.RunWithCursor(EventBinding.Id, func(cursor *objectbox.Cursor) error {
-		return cursor.RelationReplace(1, ReadingBinding.Id, id, object, object.(*Event).Readings)
+		return cursor.RelationReplace(2, ReadingBinding.Id, id, object, object.(*Event).Readings)
 	}); err != nil {
 		return err
 	}
@@ -137,7 +137,7 @@ func (event_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (event_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (event_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*Event)
 	var offsetDevice = fbutils.CreateStringOffset(fbb, obj.Device)
 	var offsetEvent = fbutils.CreateStringOffset(fbb, obj.Event)
@@ -151,10 +151,11 @@ func (event_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id
 	fbutils.SetInt64Slot(fbb, 4, obj.Modified)
 	fbutils.SetInt64Slot(fbb, 5, obj.Origin)
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetEvent)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (event_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (event_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -163,14 +164,14 @@ func (event_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface
 
 	var relReadings []Reading
 	if err := txn.RunWithCursor(EventBinding.Id, func(cursor *objectbox.Cursor) error {
-		if rSlice, err := cursor.RelationGetAll(1, ReadingBinding.Id, id); err != nil {
+		if rSlice, err := cursor.RelationGetAll(2, ReadingBinding.Id, id); err != nil {
 			return err
 		} else {
 			relReadings = rSlice.([]Reading)
 			return nil
 		}
 	}); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	return &Event{
@@ -182,7 +183,7 @@ func (event_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface
 		Origin:   table.GetInt64Slot(14, 0),
 		Event:    fbutils.GetStringSlot(table, 16),
 		Readings: relReadings,
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -203,7 +204,7 @@ type EventBox struct {
 // BoxForEvent opens a box of Event objects
 func BoxForEvent(ob *objectbox.ObjectBox) *EventBox {
 	return &EventBox{
-		Box: ob.InternalBox(4),
+		Box: ob.InternalBox(8),
 	}
 }
 

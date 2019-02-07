@@ -19,16 +19,16 @@ import (
 )
 
 type Addressable struct {
-	models.BaseObject
-	Id         string
-	Name       string `unique`
-	Protocol   string
-	HTTPMethod string
-	Address    string
-	Port       int
-	Path       string
-	Publisher  string
-	User       string
-	Password   string
-	Topic      string
+	models.BaseObject `inline`
+	Id                string
+	Name              string `unique`
+	Protocol          string
+	HTTPMethod        string
+	Address           string
+	Port              int
+	Path              string
+	Publisher         string
+	User              string
+	Password          string
+	Topic             string
 }

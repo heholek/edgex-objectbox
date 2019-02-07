@@ -19,11 +19,11 @@ import (
 )
 
 type ProvisionWatcher struct {
-	models.BaseObject
-	Id             string
-	Name           string            `unique`
-	Identifiers    map[string]string `type:"[]byte" converter:"mapStringStringJson"`
-	Profile        DeviceProfile     `link`
-	Service        DeviceService     `link`
-	OperatingState models.OperatingState
+	models.BaseObject `inline`
+	Id                string
+	Name              string            `unique`
+	Identifiers       map[string]string `type:"[]byte" converter:"mapStringStringJson"`
+	Profile           DeviceProfile     `link`
+	Service           DeviceService     `link`
+	OperatingState    models.OperatingState
 }

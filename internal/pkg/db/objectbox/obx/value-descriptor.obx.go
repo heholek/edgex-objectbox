@@ -15,8 +15,8 @@ type valueDescriptor_EntityInfo struct {
 }
 
 var ValueDescriptorBinding = valueDescriptor_EntityInfo{
-	Id:  7,
-	Uid: 1150785711675845959,
+	Id:  18,
+	Uid: 5270674616764717680,
 }
 
 // ValueDescriptor_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -39,7 +39,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -47,7 +47,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -55,7 +55,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -63,7 +63,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -71,7 +71,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -79,7 +79,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -87,7 +87,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -95,7 +95,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -103,7 +103,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 9,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -111,7 +111,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 10,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -119,7 +119,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 11,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -127,7 +127,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 12,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -135,7 +135,7 @@ var ValueDescriptor_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 13,
 			Entity: &objectbox.Entity{
-				Id: 7,
+				Id: 18,
 			},
 		},
 	},
@@ -148,24 +148,24 @@ func (valueDescriptor_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (valueDescriptor_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("ValueDescriptor", 7, 1150785711675845959)
-	model.Property("Id", objectbox.PropertyType_Long, 1, 2960817727940819416)
+	model.Entity("ValueDescriptor", 18, 5270674616764717680)
+	model.Property("Id", objectbox.PropertyType_Long, 1, 4311317278648370440)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 6602940554488326415)
-	model.Property("Description", objectbox.PropertyType_String, 3, 1382083025167248179)
-	model.Property("Modified", objectbox.PropertyType_Long, 4, 1030141932875619969)
-	model.Property("Origin", objectbox.PropertyType_Long, 5, 8890755342534242801)
-	model.Property("Name", objectbox.PropertyType_String, 6, 8323908190563421157)
+	model.Property("Created", objectbox.PropertyType_Long, 2, 7190112676589905432)
+	model.Property("Description", objectbox.PropertyType_String, 3, 3734164508160642969)
+	model.Property("Modified", objectbox.PropertyType_Long, 4, 6779033823013881678)
+	model.Property("Origin", objectbox.PropertyType_Long, 5, 1458416511237420680)
+	model.Property("Name", objectbox.PropertyType_String, 6, 7490331365197419914)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(2, 8760848507422523802)
-	model.Property("Min", objectbox.PropertyType_ByteVector, 7, 8876492532035279101)
-	model.Property("Max", objectbox.PropertyType_ByteVector, 8, 744441362038922842)
-	model.Property("DefaultValue", objectbox.PropertyType_ByteVector, 9, 2032975048806033077)
-	model.Property("Type", objectbox.PropertyType_String, 10, 4116522817196480542)
-	model.Property("UomLabel", objectbox.PropertyType_String, 11, 2164261809168597900)
-	model.Property("Formatting", objectbox.PropertyType_String, 12, 8239688147856884281)
-	model.Property("Labels", objectbox.PropertyType_StringVector, 13, 7004832270183246104)
-	model.EntityLastPropertyId(13, 7004832270183246104)
+	model.PropertyIndex(22, 167306759802683932)
+	model.Property("Min", objectbox.PropertyType_ByteVector, 7, 1028026556096721188)
+	model.Property("Max", objectbox.PropertyType_ByteVector, 8, 5857314100811027575)
+	model.Property("DefaultValue", objectbox.PropertyType_ByteVector, 9, 7078651487541372965)
+	model.Property("Type", objectbox.PropertyType_String, 10, 6831000694820449078)
+	model.Property("UomLabel", objectbox.PropertyType_String, 11, 3012618130977761530)
+	model.Property("Formatting", objectbox.PropertyType_String, 12, 707808711473441838)
+	model.Property("Labels", objectbox.PropertyType_StringVector, 13, 6793276923309349137)
+	model.EntityLastPropertyId(13, 6793276923309349137)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -193,7 +193,7 @@ func (valueDescriptor_EntityInfo) PutRelated(txn *objectbox.Transaction, object 
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (valueDescriptor_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (valueDescriptor_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*ValueDescriptor)
 	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.Description)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
@@ -220,10 +220,11 @@ func (valueDescriptor_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.B
 	fbutils.SetUOffsetTSlot(fbb, 10, offsetUomLabel)
 	fbutils.SetUOffsetTSlot(fbb, 11, offsetFormatting)
 	fbutils.SetUOffsetTSlot(fbb, 12, offsetLabels)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (valueDescriptor_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (valueDescriptor_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -244,7 +245,7 @@ func (valueDescriptor_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte)
 		UomLabel:     fbutils.GetStringSlot(table, 24),
 		Formatting:   fbutils.GetStringSlot(table, 26),
 		Labels:       fbutils.GetStringVectorSlot(table, 28),
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -265,7 +266,7 @@ type ValueDescriptorBox struct {
 // BoxForValueDescriptor opens a box of ValueDescriptor objects
 func BoxForValueDescriptor(ob *objectbox.ObjectBox) *ValueDescriptorBox {
 	return &ValueDescriptorBox{
-		Box: ob.InternalBox(7),
+		Box: ob.InternalBox(18),
 	}
 }
 

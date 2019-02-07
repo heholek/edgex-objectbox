@@ -20,7 +20,7 @@ import (
 )
 
 type Subscription struct {
-	models.BaseObject
+	models.BaseObject    `inline`
 	ID                   string
 	Slug                 string `unique`
 	Receiver             string

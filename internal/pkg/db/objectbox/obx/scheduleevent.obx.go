@@ -16,8 +16,8 @@ type scheduleEvent_EntityInfo struct {
 }
 
 var ScheduleEventBinding = scheduleEvent_EntityInfo{
-	Id:  6,
-	Uid: 6239202972921638608,
+	Id:  14,
+	Uid: 3878278153385832668,
 }
 
 // ScheduleEvent_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -36,7 +36,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 6,
+				Id: 14,
 			},
 		},
 	},
@@ -44,7 +44,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 6,
+				Id: 14,
 			},
 		},
 	},
@@ -52,7 +52,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 6,
+				Id: 14,
 			},
 		},
 	},
@@ -60,7 +60,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 6,
+				Id: 14,
 			},
 		},
 	},
@@ -68,7 +68,7 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 6,
+				Id: 14,
 			},
 		},
 	},
@@ -76,31 +76,31 @@ var ScheduleEvent_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 6,
+				Id: 14,
 			},
 		},
 	},
 	Addressable: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
+			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 6,
+				Id: 14,
 			},
 		},
 	},
 	Parameters: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
+			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 6,
+				Id: 14,
 			},
 		},
 	},
 	Service: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
+			Id: 9,
 			Entity: &objectbox.Entity{
-				Id: 6,
+				Id: 14,
 			},
 		},
 	},
@@ -113,21 +113,21 @@ func (scheduleEvent_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (scheduleEvent_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("ScheduleEvent", 6, 6239202972921638608)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 8889399643704751207)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 2715634671260664229)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 2309830902551992394)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 1449553450431761107)
+	model.Entity("ScheduleEvent", 14, 3878278153385832668)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 4499814457927578168)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 3527762218119997092)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 6149406976443214343)
+	model.Property("Id", objectbox.PropertyType_Long, 4, 8663741890941006273)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Name", objectbox.PropertyType_String, 5, 2643597168165916624)
+	model.Property("Name", objectbox.PropertyType_String, 5, 4714004664748018977)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(8, 3589951353154638988)
-	model.Property("Schedule", objectbox.PropertyType_String, 6, 5692020356904915195)
-	model.Property("Addressable", objectbox.PropertyType_Relation, 9, 2699934787885094203)
-	model.PropertyRelation("Addressable", 5, 118391878970996196)
-	model.Property("Parameters", objectbox.PropertyType_String, 7, 7056282312459005473)
-	model.Property("Service", objectbox.PropertyType_String, 8, 1885883891643404243)
-	model.EntityLastPropertyId(9, 2699934787885094203)
+	model.PropertyIndex(17, 1346783793593470590)
+	model.Property("Schedule", objectbox.PropertyType_String, 6, 7191269915508626201)
+	model.Property("Addressable", objectbox.PropertyType_Relation, 7, 7335684186241673510)
+	model.PropertyRelation("Addressable", 18, 4021673356146081592)
+	model.Property("Parameters", objectbox.PropertyType_String, 8, 385347438452586899)
+	model.Property("Service", objectbox.PropertyType_String, 9, 3551657899606323243)
+	model.EntityLastPropertyId(9, 3551657899606323243)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -168,7 +168,7 @@ func (scheduleEvent_EntityInfo) PutRelated(txn *objectbox.Transaction, object in
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (scheduleEvent_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (scheduleEvent_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*ScheduleEvent)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetSchedule = fbutils.CreateStringOffset(fbb, obj.Schedule)
@@ -178,7 +178,7 @@ func (scheduleEvent_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 	var rIdAddressable uint64
 	if rel := &obj.Addressable; rel != nil {
 		if rId, err := AddressableBinding.GetId(rel); err != nil {
-			panic(err) // this must never happen but let's keep the check just to be sure
+			return err
 		} else {
 			rIdAddressable = rId
 		}
@@ -186,19 +186,20 @@ func (scheduleEvent_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 
 	// build the FlatBuffers object
 	fbb.StartObject(9)
-	fbutils.SetInt64Slot(fbb, 0, obj.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetSchedule)
-	fbutils.SetUint64Slot(fbb, 8, rIdAddressable)
-	fbutils.SetUOffsetTSlot(fbb, 6, offsetParameters)
-	fbutils.SetUOffsetTSlot(fbb, 7, offsetService)
+	fbutils.SetUint64Slot(fbb, 6, rIdAddressable)
+	fbutils.SetUOffsetTSlot(fbb, 7, offsetParameters)
+	fbutils.SetUOffsetTSlot(fbb, 8, offsetService)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (scheduleEvent_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (scheduleEvent_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -206,7 +207,7 @@ func (scheduleEvent_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) i
 	var id = table.GetUint64Slot(10, 0)
 
 	var relAddressable *Addressable
-	if rId := table.GetUint64Slot(20, 0); rId > 0 {
+	if rId := table.GetUint64Slot(16, 0); rId > 0 {
 		if err := txn.RunWithCursor(AddressableBinding.Id, func(targetCursor *objectbox.Cursor) error {
 			if relObject, err := targetCursor.Get(rId); err != nil {
 				return err
@@ -218,7 +219,7 @@ func (scheduleEvent_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) i
 			}
 			return nil
 		}); err != nil {
-			panic(err)
+			return nil, err
 		}
 	} else {
 		relAddressable = &Addressable{}
@@ -234,9 +235,9 @@ func (scheduleEvent_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) i
 		Name:        fbutils.GetStringSlot(table, 12),
 		Schedule:    fbutils.GetStringSlot(table, 14),
 		Addressable: *relAddressable,
-		Parameters:  fbutils.GetStringSlot(table, 16),
-		Service:     fbutils.GetStringSlot(table, 18),
-	}
+		Parameters:  fbutils.GetStringSlot(table, 18),
+		Service:     fbutils.GetStringSlot(table, 20),
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -257,7 +258,7 @@ type ScheduleEventBox struct {
 // BoxForScheduleEvent opens a box of ScheduleEvent objects
 func BoxForScheduleEvent(ob *objectbox.ObjectBox) *ScheduleEventBox {
 	return &ScheduleEventBox{
-		Box: ob.InternalBox(6),
+		Box: ob.InternalBox(14),
 	}
 }
 

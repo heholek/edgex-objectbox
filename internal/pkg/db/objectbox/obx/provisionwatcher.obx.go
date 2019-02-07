@@ -17,7 +17,7 @@ type provisionWatcher_EntityInfo struct {
 
 var ProvisionWatcherBinding = provisionWatcher_EntityInfo{
 	Id:  12,
-	Uid: 2792288064730897573,
+	Uid: 7116913470590795583,
 }
 
 // ProvisionWatcher_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -113,22 +113,22 @@ func (provisionWatcher_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (provisionWatcher_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("ProvisionWatcher", 12, 2792288064730897573)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 4134344530523943831)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 294854168442656531)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 438597489940559163)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 2977600276730269075)
+	model.Entity("ProvisionWatcher", 12, 7116913470590795583)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 1038690664624318335)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 580560849680174672)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 8778504568219244319)
+	model.Property("Id", objectbox.PropertyType_Long, 4, 5681197862269956959)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Name", objectbox.PropertyType_String, 5, 833140055832520474)
+	model.Property("Name", objectbox.PropertyType_String, 5, 4473016749449217532)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(16, 1233483089611015234)
-	model.Property("Identifiers", objectbox.PropertyType_ByteVector, 6, 6228327316870221369)
-	model.Property("Profile", objectbox.PropertyType_Relation, 7, 917059876878576290)
-	model.PropertyRelation("DeviceProfile", 14, 2297132897547727951)
-	model.Property("Service", objectbox.PropertyType_Relation, 8, 8381375493526060784)
-	model.PropertyRelation("DeviceService", 15, 8181787367630089409)
-	model.Property("OperatingState", objectbox.PropertyType_String, 9, 4611687011465850167)
-	model.EntityLastPropertyId(9, 4611687011465850167)
+	model.PropertyIndex(12, 5394211294854382713)
+	model.Property("Identifiers", objectbox.PropertyType_ByteVector, 6, 7746019713902694696)
+	model.Property("Profile", objectbox.PropertyType_Relation, 7, 2681033652138232267)
+	model.PropertyRelation("DeviceProfile", 13, 5881067106611825786)
+	model.Property("Service", objectbox.PropertyType_Relation, 8, 788498092666620726)
+	model.PropertyRelation("DeviceService", 14, 3456748412572729670)
+	model.Property("OperatingState", objectbox.PropertyType_String, 9, 4988194061826642670)
+	model.EntityLastPropertyId(9, 4988194061826642670)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -182,7 +182,7 @@ func (provisionWatcher_EntityInfo) PutRelated(txn *objectbox.Transaction, object
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (provisionWatcher_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (provisionWatcher_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*ProvisionWatcher)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetIdentifiers = fbutils.CreateByteVectorOffset(fbb, mapStringStringJsonToDatabaseValue(obj.Identifiers))
@@ -191,7 +191,7 @@ func (provisionWatcher_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.
 	var rIdProfile uint64
 	if rel := &obj.Profile; rel != nil {
 		if rId, err := DeviceProfileBinding.GetId(rel); err != nil {
-			panic(err) // this must never happen but let's keep the check just to be sure
+			return err
 		} else {
 			rIdProfile = rId
 		}
@@ -200,7 +200,7 @@ func (provisionWatcher_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.
 	var rIdService uint64
 	if rel := &obj.Service; rel != nil {
 		if rId, err := DeviceServiceBinding.GetId(rel); err != nil {
-			panic(err) // this must never happen but let's keep the check just to be sure
+			return err
 		} else {
 			rIdService = rId
 		}
@@ -208,19 +208,20 @@ func (provisionWatcher_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.
 
 	// build the FlatBuffers object
 	fbb.StartObject(9)
-	fbutils.SetInt64Slot(fbb, 0, obj.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetIdentifiers)
 	fbutils.SetUint64Slot(fbb, 6, rIdProfile)
 	fbutils.SetUint64Slot(fbb, 7, rIdService)
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetOperatingState)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (provisionWatcher_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (provisionWatcher_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -240,7 +241,7 @@ func (provisionWatcher_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte
 			}
 			return nil
 		}); err != nil {
-			panic(err)
+			return nil, err
 		}
 	} else {
 		relProfile = &DeviceProfile{}
@@ -259,7 +260,7 @@ func (provisionWatcher_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte
 			}
 			return nil
 		}); err != nil {
-			panic(err)
+			return nil, err
 		}
 	} else {
 		relService = &DeviceService{}
@@ -277,7 +278,7 @@ func (provisionWatcher_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte
 		Profile:        *relProfile,
 		Service:        *relService,
 		OperatingState: models.OperatingState(fbutils.GetStringSlot(table, 20)),
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects

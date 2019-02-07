@@ -16,49 +16,49 @@ type device_EntityInfo struct {
 }
 
 var DeviceBinding = device_EntityInfo{
-	Id:  11,
-	Uid: 3244738111098508664,
+	Id:  3,
+	Uid: 8277139392933333295,
 }
 
 // Device_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var Device_ = struct {
-	Created        *objectbox.PropertyInt64
-	Modified       *objectbox.PropertyInt64
-	Origin         *objectbox.PropertyInt64
-	Description    *objectbox.PropertyString
-	Id             *objectbox.PropertyUint64
-	Name           *objectbox.PropertyString
-	AdminState     *objectbox.PropertyString
-	OperatingState *objectbox.PropertyString
-	Addressable    *objectbox.PropertyUint64
-	LastConnected  *objectbox.PropertyInt64
-	LastReported   *objectbox.PropertyInt64
-	Labels         *objectbox.PropertyStringVector
-	Location       *objectbox.PropertyByteVector
-	Service        *objectbox.PropertyUint64
-	Profile        *objectbox.PropertyUint64
+	BaseObject_Created  *objectbox.PropertyInt64
+	BaseObject_Modified *objectbox.PropertyInt64
+	BaseObject_Origin   *objectbox.PropertyInt64
+	Description         *objectbox.PropertyString
+	Id                  *objectbox.PropertyUint64
+	Name                *objectbox.PropertyString
+	AdminState          *objectbox.PropertyString
+	OperatingState      *objectbox.PropertyString
+	Addressable         *objectbox.PropertyUint64
+	LastConnected       *objectbox.PropertyInt64
+	LastReported        *objectbox.PropertyInt64
+	Labels              *objectbox.PropertyStringVector
+	Location            *objectbox.PropertyByteVector
+	Service             *objectbox.PropertyUint64
+	Profile             *objectbox.PropertyUint64
 }{
-	Created: &objectbox.PropertyInt64{
+	BaseObject_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 1,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
-	Modified: &objectbox.PropertyInt64{
+	BaseObject_Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 2,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
-	Origin: &objectbox.PropertyInt64{
+	BaseObject_Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 3,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -66,7 +66,7 @@ var Device_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 4,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -74,7 +74,7 @@ var Device_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 5,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -82,7 +82,7 @@ var Device_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 6,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -90,7 +90,7 @@ var Device_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -98,7 +98,7 @@ var Device_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -106,7 +106,7 @@ var Device_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 9,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -114,7 +114,7 @@ var Device_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 10,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -122,7 +122,7 @@ var Device_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 11,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -130,7 +130,7 @@ var Device_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 12,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -138,7 +138,7 @@ var Device_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 13,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -146,7 +146,7 @@ var Device_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 14,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -154,7 +154,7 @@ var Device_ = struct {
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 15,
 			Entity: &objectbox.Entity{
-				Id: 11,
+				Id: 3,
 			},
 		},
 	},
@@ -167,29 +167,29 @@ func (device_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (device_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Device", 11, 3244738111098508664)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 6200023066097763489)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 6419901217317948934)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 8375691817675283275)
-	model.Property("Description", objectbox.PropertyType_String, 4, 389853879280980134)
-	model.Property("Id", objectbox.PropertyType_Long, 5, 4636712746325547943)
+	model.Entity("Device", 3, 8277139392933333295)
+	model.Property("BaseObject_Created", objectbox.PropertyType_Long, 1, 1426902891719146417)
+	model.Property("BaseObject_Modified", objectbox.PropertyType_Long, 2, 5883868846286861351)
+	model.Property("BaseObject_Origin", objectbox.PropertyType_Long, 3, 4095520008548384869)
+	model.Property("Description", objectbox.PropertyType_String, 4, 8000536243793605912)
+	model.Property("Id", objectbox.PropertyType_Long, 5, 4515089217959618723)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
-	model.Property("Name", objectbox.PropertyType_String, 6, 2816728939708047796)
+	model.Property("Name", objectbox.PropertyType_String, 6, 716857237269823862)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(10, 2834687155117155814)
-	model.Property("AdminState", objectbox.PropertyType_String, 7, 2694101664374685093)
-	model.Property("OperatingState", objectbox.PropertyType_String, 8, 4175010934132378774)
-	model.Property("Addressable", objectbox.PropertyType_Relation, 9, 2718920162366058741)
-	model.PropertyRelation("Addressable", 11, 4548991526273045098)
-	model.Property("LastConnected", objectbox.PropertyType_Long, 10, 7043867113911708865)
-	model.Property("LastReported", objectbox.PropertyType_Long, 11, 1390261142637086338)
-	model.Property("Labels", objectbox.PropertyType_StringVector, 12, 5853475524123960384)
-	model.Property("Location", objectbox.PropertyType_ByteVector, 13, 4968086658766920622)
-	model.Property("Service", objectbox.PropertyType_Relation, 14, 6086923192737339262)
-	model.PropertyRelation("DeviceService", 12, 6096677331324472903)
-	model.Property("Profile", objectbox.PropertyType_Relation, 15, 5453769088299421779)
-	model.PropertyRelation("DeviceProfile", 13, 3022107365716799313)
-	model.EntityLastPropertyId(15, 5453769088299421779)
+	model.PropertyIndex(2, 167828898366445354)
+	model.Property("AdminState", objectbox.PropertyType_String, 7, 8163911656701609670)
+	model.Property("OperatingState", objectbox.PropertyType_String, 8, 145868754249953301)
+	model.Property("Addressable", objectbox.PropertyType_Relation, 9, 5293395039385098111)
+	model.PropertyRelation("Addressable", 3, 8824925290223488279)
+	model.Property("LastConnected", objectbox.PropertyType_Long, 10, 783154740742750654)
+	model.Property("LastReported", objectbox.PropertyType_Long, 11, 9043009336819819958)
+	model.Property("Labels", objectbox.PropertyType_StringVector, 12, 1085892164679946752)
+	model.Property("Location", objectbox.PropertyType_ByteVector, 13, 6218275966482027583)
+	model.Property("Service", objectbox.PropertyType_Relation, 14, 6082578288181241795)
+	model.PropertyRelation("DeviceService", 4, 6949046153132189499)
+	model.Property("Profile", objectbox.PropertyType_Relation, 15, 6924709779874779070)
+	model.PropertyRelation("DeviceProfile", 5, 1047090894033747089)
+	model.EntityLastPropertyId(15, 6924709779874779070)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -256,9 +256,9 @@ func (device_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface
 }
 
 // Flatten is called by ObjectBox to transform an object to a FlatBuffer
-func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) {
+func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id uint64) error {
 	obj := object.(*Device)
-	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.Description)
+	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.DescribedObject.Description)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetAdminState = fbutils.CreateStringOffset(fbb, string(obj.AdminState))
 	var offsetOperatingState = fbutils.CreateStringOffset(fbb, string(obj.OperatingState))
@@ -268,7 +268,7 @@ func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, i
 	var rIdAddressable uint64
 	if rel := &obj.Addressable; rel != nil {
 		if rId, err := AddressableBinding.GetId(rel); err != nil {
-			panic(err) // this must never happen but let's keep the check just to be sure
+			return err
 		} else {
 			rIdAddressable = rId
 		}
@@ -277,7 +277,7 @@ func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, i
 	var rIdService uint64
 	if rel := &obj.Service; rel != nil {
 		if rId, err := DeviceServiceBinding.GetId(rel); err != nil {
-			panic(err) // this must never happen but let's keep the check just to be sure
+			return err
 		} else {
 			rIdService = rId
 		}
@@ -286,7 +286,7 @@ func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, i
 	var rIdProfile uint64
 	if rel := &obj.Profile; rel != nil {
 		if rId, err := DeviceProfileBinding.GetId(rel); err != nil {
-			panic(err) // this must never happen but let's keep the check just to be sure
+			return err
 		} else {
 			rIdProfile = rId
 		}
@@ -294,9 +294,9 @@ func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, i
 
 	// build the FlatBuffers object
 	fbb.StartObject(15)
-	fbutils.SetInt64Slot(fbb, 0, obj.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.DescribedObject.BaseObject.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.DescribedObject.BaseObject.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.DescribedObject.BaseObject.Origin)
 	fbutils.SetUOffsetTSlot(fbb, 3, offsetDescription)
 	fbutils.SetUint64Slot(fbb, 4, id)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetName)
@@ -309,10 +309,11 @@ func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, i
 	fbutils.SetUOffsetTSlot(fbb, 12, offsetLocation)
 	fbutils.SetUint64Slot(fbb, 13, rIdService)
 	fbutils.SetUint64Slot(fbb, 14, rIdProfile)
+	return nil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interface{} {
+func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -332,7 +333,7 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interfac
 			}
 			return nil
 		}); err != nil {
-			panic(err)
+			return nil, err
 		}
 	} else {
 		relAddressable = &Addressable{}
@@ -351,7 +352,7 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interfac
 			}
 			return nil
 		}); err != nil {
-			panic(err)
+			return nil, err
 		}
 	} else {
 		relService = &DeviceService{}
@@ -370,7 +371,7 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interfac
 			}
 			return nil
 		}); err != nil {
-			panic(err)
+			return nil, err
 		}
 	} else {
 		relProfile = &DeviceProfile{}
@@ -396,7 +397,7 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) interfac
 		Location:       interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 28)),
 		Service:        *relService,
 		Profile:        *relProfile,
-	}
+	}, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -417,7 +418,7 @@ type DeviceBox struct {
 // BoxForDevice opens a box of Device objects
 func BoxForDevice(ob *objectbox.ObjectBox) *DeviceBox {
 	return &DeviceBox{
-		Box: ob.InternalBox(11),
+		Box: ob.InternalBox(3),
 	}
 }
 

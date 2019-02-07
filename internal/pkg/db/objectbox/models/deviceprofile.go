@@ -25,8 +25,7 @@ type DeviceProfile struct {
 	Manufacturer           string
 	Model                  string
 	Labels                 []string
-	// TODO we can use json here as there are no queries
-	//DeviceResources []DeviceResources
-	//Resources       []ProfileResource
-	Commands []Command
+	DeviceResources        []models.DeviceResource  `type:"[]byte" converter:"deviceResourcesJson"`
+	Resources              []models.ProfileResource `type:"[]byte" converter:"profileResourcesJson"`
+	Commands               []Command
 }

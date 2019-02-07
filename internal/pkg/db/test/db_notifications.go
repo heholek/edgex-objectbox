@@ -54,12 +54,12 @@ func TestNotificationsDB(t *testing.T, db notifications.DBClient) {
 		t.Fatal(err)
 	}
 
-	_, err = db.AddTransmission(models.Transmission{Status: models.New})
+	nots, err := db.GetNotifications()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	nots, err := db.GetNotifications()
+	_, err = db.AddTransmission(models.Transmission{Status: models.New, Notification: nots[0]})
 	if err != nil {
 		t.Fatal(err)
 	}

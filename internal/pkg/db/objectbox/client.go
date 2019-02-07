@@ -34,7 +34,6 @@ func (client *ObjectBoxClient) Connect() error {
 
 	client.objectBox = objectBox
 
-	// TODO if we would know which service this "NewClient" call needs, we could start only that one
 	if err == nil {
 		client.coreDataClient, err = newCoreDataClient(objectBox)
 	}

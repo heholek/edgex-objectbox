@@ -31,6 +31,7 @@ var Subscription_ = struct {
 	Description          *objectbox.PropertyString
 	SubscribedCategories *objectbox.PropertyStringVector
 	SubscribedLabels     *objectbox.PropertyStringVector
+	Channels             *objectbox.PropertyByteVector
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
@@ -104,6 +105,14 @@ var Subscription_ = struct {
 			},
 		},
 	},
+	Channels: &objectbox.PropertyByteVector{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 10,
+			Entity: &objectbox.Entity{
+				Id: 16,
+			},
+		},
+	},
 }
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
@@ -126,7 +135,8 @@ func (subscription_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Description", objectbox.PropertyType_String, 7, 5464333271186665778)
 	model.Property("SubscribedCategories", objectbox.PropertyType_StringVector, 8, 2832589937380529425)
 	model.Property("SubscribedLabels", objectbox.PropertyType_StringVector, 9, 7156348278107171350)
-	model.EntityLastPropertyId(9, 7156348278107171350)
+	model.Property("Channels", objectbox.PropertyType_ByteVector, 10, 179953748454958900)
+	model.EntityLastPropertyId(10, 179953748454958900)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -161,9 +171,10 @@ func (subscription_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.Description)
 	var offsetSubscribedCategories = fbutils.CreateStringVectorOffset(fbb, notificationsCategoryToDatabaseValue(obj.SubscribedCategories))
 	var offsetSubscribedLabels = fbutils.CreateStringVectorOffset(fbb, obj.SubscribedLabels)
+	var offsetChannels = fbutils.CreateByteVectorOffset(fbb, channelsJsonToDatabaseValue(obj.Channels))
 
 	// build the FlatBuffers object
-	fbb.StartObject(9)
+	fbb.StartObject(10)
 	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
 	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
 	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
@@ -173,6 +184,7 @@ func (subscription_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetDescription)
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetSubscribedCategories)
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetSubscribedLabels)
+	fbutils.SetUOffsetTSlot(fbb, 9, offsetChannels)
 	return nil
 }
 
@@ -196,6 +208,7 @@ func (subscription_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 		Description:          fbutils.GetStringSlot(table, 16),
 		SubscribedCategories: notificationsCategoryToEntityProperty(fbutils.GetStringVectorSlot(table, 18)),
 		SubscribedLabels:     fbutils.GetStringVectorSlot(table, 20),
+		Channels:             channelsJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 22)),
 	}, nil
 }
 

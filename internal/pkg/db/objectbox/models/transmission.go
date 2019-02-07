@@ -27,5 +27,5 @@ type Transmission struct {
 	Channel           models.Channel
 	Status            models.TransmissionStatus
 	ResendCount       int
-	// TODO Records      []models.TransmissionRecord
+	Records           []models.TransmissionRecord `type:"[]byte" converter:"transmissionRecordsJson"`
 }

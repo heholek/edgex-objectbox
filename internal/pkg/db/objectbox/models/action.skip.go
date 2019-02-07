@@ -14,8 +14,10 @@
 
 package models
 
+import "github.com/edgexfoundry/edgex-go/pkg/models"
+
 type Action struct {
-	Path string
-	// TODO json? Responses []Response
-	URL string
+	Path      string
+	Responses []models.Response `type:"[]byte" converter:"responsesJson"`
+	URL       string
 }

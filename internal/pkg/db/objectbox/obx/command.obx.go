@@ -28,8 +28,10 @@ var Command_ = struct {
 	Id                 *objectbox.PropertyUint64
 	Name               *objectbox.PropertyString
 	Get_Path           *objectbox.PropertyString
+	Get_Responses      *objectbox.PropertyByteVector
 	Get_URL            *objectbox.PropertyString
 	Put_Path           *objectbox.PropertyString
+	Put_Responses      *objectbox.PropertyByteVector
 	Put_URL            *objectbox.PropertyString
 	Put_ParameterNames *objectbox.PropertyStringVector
 }{
@@ -81,6 +83,14 @@ var Command_ = struct {
 			},
 		},
 	},
+	Get_Responses: &objectbox.PropertyByteVector{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 11,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
+		},
+	},
 	Get_URL: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 7,
@@ -92,6 +102,14 @@ var Command_ = struct {
 	Put_Path: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
 			Id: 8,
+			Entity: &objectbox.Entity{
+				Id: 2,
+			},
+		},
+	},
+	Put_Responses: &objectbox.PropertyByteVector{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 12,
 			Entity: &objectbox.Entity{
 				Id: 2,
 			},
@@ -130,11 +148,13 @@ func (command_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
 	model.Property("Name", objectbox.PropertyType_String, 5, 8489958036358772248)
 	model.Property("Get_Path", objectbox.PropertyType_String, 6, 3576257846048649779)
+	model.Property("Get_Responses", objectbox.PropertyType_ByteVector, 11, 1618997572073696618)
 	model.Property("Get_URL", objectbox.PropertyType_String, 7, 1535449917962667631)
 	model.Property("Put_Path", objectbox.PropertyType_String, 8, 6690416255716911859)
+	model.Property("Put_Responses", objectbox.PropertyType_ByteVector, 12, 1278282680397848405)
 	model.Property("Put_URL", objectbox.PropertyType_String, 9, 8905997865059874022)
 	model.Property("Put_ParameterNames", objectbox.PropertyType_StringVector, 10, 5077443716411335668)
-	model.EntityLastPropertyId(10, 5077443716411335668)
+	model.EntityLastPropertyId(12, 1278282680397848405)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -166,21 +186,25 @@ func (command_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, 
 	obj := object.(*Command)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetGet_Path = fbutils.CreateStringOffset(fbb, obj.Get.Action.Path)
+	var offsetGet_Responses = fbutils.CreateByteVectorOffset(fbb, responsesJsonToDatabaseValue(obj.Get.Action.Responses))
 	var offsetGet_URL = fbutils.CreateStringOffset(fbb, obj.Get.Action.URL)
 	var offsetPut_Path = fbutils.CreateStringOffset(fbb, obj.Put.Action.Path)
+	var offsetPut_Responses = fbutils.CreateByteVectorOffset(fbb, responsesJsonToDatabaseValue(obj.Put.Action.Responses))
 	var offsetPut_URL = fbutils.CreateStringOffset(fbb, obj.Put.Action.URL)
 	var offsetPut_ParameterNames = fbutils.CreateStringVectorOffset(fbb, obj.Put.ParameterNames)
 
 	// build the FlatBuffers object
-	fbb.StartObject(10)
+	fbb.StartObject(12)
 	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
 	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
 	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetGet_Path)
+	fbutils.SetUOffsetTSlot(fbb, 10, offsetGet_Responses)
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetGet_URL)
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetPut_Path)
+	fbutils.SetUOffsetTSlot(fbb, 11, offsetPut_Responses)
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetPut_URL)
 	fbutils.SetUOffsetTSlot(fbb, 9, offsetPut_ParameterNames)
 	return nil
@@ -204,14 +228,16 @@ func (command_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interf
 		Name: fbutils.GetStringSlot(table, 12),
 		Get: &Get{
 			Action: Action{
-				Path: fbutils.GetStringSlot(table, 14),
-				URL:  fbutils.GetStringSlot(table, 16),
+				Path:      fbutils.GetStringSlot(table, 14),
+				Responses: responsesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 24)),
+				URL:       fbutils.GetStringSlot(table, 16),
 			},
 		},
 		Put: &Put{
 			Action: Action{
-				Path: fbutils.GetStringSlot(table, 18),
-				URL:  fbutils.GetStringSlot(table, 20),
+				Path:      fbutils.GetStringSlot(table, 18),
+				Responses: responsesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 26)),
+				URL:       fbutils.GetStringSlot(table, 20),
 			},
 			ParameterNames: fbutils.GetStringVectorSlot(table, 22),
 		},

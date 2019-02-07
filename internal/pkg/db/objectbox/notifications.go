@@ -45,13 +45,13 @@ type notificationsQueries struct {
 		slug                subscriptionQuery
 	}
 	transmission struct {
-		// NOTE most of these also include resendCount but the name would be too long
-		createdB            transmissionQuery
-		createdGT           transmissionQuery
-		createdLT           transmissionQuery
-		notification        transmissionQuery
-		status              transmissionQuery
-		statusAndModifiedLT transmissionQuery
+		createdBAndResendCount     transmissionQuery
+		createdGTAndResendCount    transmissionQuery
+		createdLTAndResendCount    transmissionQuery
+		notification               transmissionQuery
+		notificationAndResendCount transmissionQuery
+		statusAndModifiedLT        transmissionQuery
+		statusAndResendCount       transmissionQuery
 	}
 }
 
@@ -165,27 +165,32 @@ func newNotificationsClient(objectBox *objectbox.ObjectBox) (*notificationsClien
 
 	//region Transmission
 	if err == nil {
-		client.queries.transmission.createdB.TransmissionQuery, err = client.transmissionBox.QueryOrError(
+		client.queries.transmission.createdBAndResendCount.TransmissionQuery, err = client.transmissionBox.QueryOrError(
 			obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Created.Between(0, 0))
 	}
 
 	if err == nil {
-		client.queries.transmission.createdGT.TransmissionQuery, err = client.transmissionBox.QueryOrError(
+		client.queries.transmission.createdGTAndResendCount.TransmissionQuery, err = client.transmissionBox.QueryOrError(
 			obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Created.GreaterThan(0))
 	}
 
 	if err == nil {
-		client.queries.transmission.createdLT.TransmissionQuery, err = client.transmissionBox.QueryOrError(
+		client.queries.transmission.createdLTAndResendCount.TransmissionQuery, err = client.transmissionBox.QueryOrError(
 			obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Created.GreaterThan(0))
 	}
 
 	if err == nil {
 		client.queries.transmission.notification.TransmissionQuery, err =
-			client.transmissionBox.QueryOrError(obx.Transmission_.Notification.In(0))
+			client.transmissionBox.QueryOrError(obx.Transmission_.Notification.In())
 	}
 
 	if err == nil {
-		client.queries.transmission.status.TransmissionQuery, err = client.transmissionBox.QueryOrError(
+		client.queries.transmission.notificationAndResendCount.TransmissionQuery, err =
+			client.transmissionBox.QueryOrError(obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Notification.In())
+	}
+
+	if err == nil {
+		client.queries.transmission.statusAndResendCount.TransmissionQuery, err = client.transmissionBox.QueryOrError(
 			obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Status.Equals("", true))
 	}
 
@@ -483,13 +488,50 @@ func (client *notificationsClient) DeleteSubscriptionBySlug(slug string) error {
 }
 
 func (client *notificationsClient) GetTransmissionsByNotificationSlug(slug string, resendLimit int) ([]contract.Transmission, error) {
-	// TODO query.Link (transmision.Notification.Slug.Equals(slug))
-	//panic(notImplemented())
-	return client.transmissionBox.GetAll()
+	var query = &client.queries.notification.slug
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.Notification_.Slug, slug); err != nil {
+		return nil, err
+	}
+
+	if ids, err := query.FindIds(); err != nil {
+		return nil, err
+	} else {
+		return client.getTransmissionsByNotificationIds(resendLimit, ids)
+	}
+}
+
+func (client *notificationsClient) getTransmissionsByNotificationIds(resendLimit int, ids []uint64) ([]contract.Transmission, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
+	var query = &client.queries.transmission.notificationAndResendCount
+
+	query.Lock()
+	defer query.Unlock()
+
+	intIds := make([]int64, len(ids))
+	for k, v := range ids {
+		intIds[k] = int64(v)
+	}
+
+	if err := query.SetInt64ParamsIn(obx.Transmission_.Notification, intIds...); err != nil {
+		return nil, err
+	}
+
+	if err := query.SetInt64Params(obx.Transmission_.ResendCount, int64(resendLimit)); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
 func (client *notificationsClient) GetTransmissionsByStartEnd(start int64, end int64, resendLimit int) ([]contract.Transmission, error) {
-	var query = &client.queries.transmission.createdB
+	var query = &client.queries.transmission.createdBAndResendCount
 
 	query.Lock()
 	defer query.Unlock()
@@ -506,7 +548,7 @@ func (client *notificationsClient) GetTransmissionsByStartEnd(start int64, end i
 }
 
 func (client *notificationsClient) GetTransmissionsByStart(start int64, resendLimit int) ([]contract.Transmission, error) {
-	var query = &client.queries.transmission.createdGT
+	var query = &client.queries.transmission.createdGTAndResendCount
 
 	query.Lock()
 	defer query.Unlock()
@@ -523,7 +565,7 @@ func (client *notificationsClient) GetTransmissionsByStart(start int64, resendLi
 }
 
 func (client *notificationsClient) GetTransmissionsByEnd(end int64, resendLimit int) ([]contract.Transmission, error) {
-	var query = &client.queries.transmission.createdLT
+	var query = &client.queries.transmission.createdLTAndResendCount
 
 	query.Lock()
 	defer query.Unlock()
@@ -540,7 +582,7 @@ func (client *notificationsClient) GetTransmissionsByEnd(end int64, resendLimit 
 }
 
 func (client *notificationsClient) GetTransmissionsByStatus(resendLimit int, status contract.TransmissionStatus) ([]contract.Transmission, error) {
-	var query = &client.queries.transmission.status
+	var query = &client.queries.transmission.statusAndResendCount
 
 	query.Lock()
 	defer query.Unlock()
@@ -597,7 +639,7 @@ func (client *notificationsClient) DeleteTransmission(age int64, status contract
 	return err
 }
 
-func (client *notificationsClient) deleteTransmissionsByNotificationId(ids []uint64) error {
+func (client *notificationsClient) deleteTransmissionsByNotificationIds(ids []uint64) error {
 	if len(ids) == 0 {
 		return nil
 	}
@@ -623,7 +665,6 @@ func (client *notificationsClient) deleteTransmissionsByNotificationId(ids []uin
 func (client *notificationsClient) Cleanup() error { return client.CleanupOld(client.cleanupDefaultAge) }
 
 func (client *notificationsClient) CleanupOld(age int) error {
-	// TODO transaction - query & delete relations
 	var query = &client.queries.notification.modifiedLT
 
 	query.Lock()
@@ -635,13 +676,12 @@ func (client *notificationsClient) CleanupOld(age int) error {
 		return err
 	}
 
-	if ids, err := query.FindIds(); err != nil {
+	// first remove all notifications (this sets related transmission.NotificationId = 0)
+	if count, err := query.Remove(); err != nil {
 		return err
-	} else if err := client.deleteTransmissionsByNotificationId(ids); err != nil {
-		return err
-	} else if _, err := query.Remove(); err != nil {
-		return err
+	} else if count == 0 {
+		return nil // nothing deleted, no need to delete transmissions
 	} else {
-		return nil
+		return client.deleteTransmissionsByNotificationIds([]uint64{0})
 	}
 }

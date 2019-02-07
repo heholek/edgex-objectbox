@@ -103,3 +103,103 @@ func notificationsCategoryToEntityProperty(dbValue []string) []models.Notificati
 
 	return result
 }
+
+func responsesJsonToEntityProperty(dbValue []byte) (result []models.Response) {
+	if dbValue != nil {
+		if err := json.Unmarshal(dbValue, &result); err != nil {
+			panic(err)
+		}
+	}
+
+	return
+}
+
+func responsesJsonToDatabaseValue(goValue []models.Response) []byte {
+	if goValue == nil {
+		return nil
+	} else if bytes, err := json.Marshal(goValue); err != nil {
+		panic(err)
+	} else {
+		return bytes
+	}
+}
+
+func channelsJsonToEntityProperty(dbValue []byte) (result []models.Channel) {
+	if dbValue != nil {
+		if err := json.Unmarshal(dbValue, &result); err != nil {
+			panic(err)
+		}
+	}
+
+	return
+}
+
+func channelsJsonToDatabaseValue(goValue []models.Channel) []byte {
+	if goValue == nil {
+		return nil
+	} else if bytes, err := json.Marshal(goValue); err != nil {
+		panic(err)
+	} else {
+		return bytes
+	}
+}
+
+func transmissionRecordsJsonToEntityProperty(dbValue []byte) (result []models.TransmissionRecord) {
+	if dbValue != nil {
+		if err := json.Unmarshal(dbValue, &result); err != nil {
+			panic(err)
+		}
+	}
+
+	return
+}
+
+func transmissionRecordsJsonToDatabaseValue(goValue []models.TransmissionRecord) []byte {
+	if goValue == nil {
+		return nil
+	} else if bytes, err := json.Marshal(goValue); err != nil {
+		panic(err)
+	} else {
+		return bytes
+	}
+}
+
+func deviceResourcesJsonToEntityProperty(dbValue []byte) (result []models.DeviceResource) {
+	if dbValue != nil {
+		if err := json.Unmarshal(dbValue, &result); err != nil {
+			panic(err)
+		}
+	}
+
+	return
+}
+
+func deviceResourcesJsonToDatabaseValue(goValue []models.DeviceResource) []byte {
+	if goValue == nil {
+		return nil
+	} else if bytes, err := json.Marshal(goValue); err != nil {
+		panic(err)
+	} else {
+		return bytes
+	}
+}
+
+func profileResourcesJsonToEntityProperty(dbValue []byte) (result []models.ProfileResource) {
+	if dbValue != nil {
+		if err := json.Unmarshal(dbValue, &result); err != nil {
+			panic(err)
+		}
+	}
+
+	return
+}
+
+func profileResourcesJsonToDatabaseValue(goValue []models.ProfileResource) []byte {
+	if goValue == nil {
+		return nil
+	} else if bytes, err := json.Marshal(goValue); err != nil {
+		panic(err)
+	} else {
+		return bytes
+	}
+}

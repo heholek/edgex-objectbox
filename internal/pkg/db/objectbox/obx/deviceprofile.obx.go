@@ -31,6 +31,8 @@ var DeviceProfile_ = struct {
 	Manufacturer        *objectbox.PropertyString
 	Model               *objectbox.PropertyString
 	Labels              *objectbox.PropertyStringVector
+	DeviceResources     *objectbox.PropertyByteVector
+	Resources           *objectbox.PropertyByteVector
 }{
 	BaseObject_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
@@ -104,6 +106,22 @@ var DeviceProfile_ = struct {
 			},
 		},
 	},
+	DeviceResources: &objectbox.PropertyByteVector{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 10,
+			Entity: &objectbox.Entity{
+				Id: 4,
+			},
+		},
+	},
+	Resources: &objectbox.PropertyByteVector{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 11,
+			Entity: &objectbox.Entity{
+				Id: 4,
+			},
+		},
+	},
 }
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
@@ -126,7 +144,9 @@ func (deviceProfile_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Manufacturer", objectbox.PropertyType_String, 7, 269854806382949939)
 	model.Property("Model", objectbox.PropertyType_String, 8, 2963573570272311195)
 	model.Property("Labels", objectbox.PropertyType_StringVector, 9, 5324110111612985287)
-	model.EntityLastPropertyId(9, 5324110111612985287)
+	model.Property("DeviceResources", objectbox.PropertyType_ByteVector, 10, 881340515387153316)
+	model.Property("Resources", objectbox.PropertyType_ByteVector, 11, 4814193141018825531)
+	model.EntityLastPropertyId(11, 4814193141018825531)
 	model.Relation(1, 1818917835568870321, CommandBinding.Id, CommandBinding.Uid)
 }
 
@@ -167,9 +187,11 @@ func (deviceProfile_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 	var offsetManufacturer = fbutils.CreateStringOffset(fbb, obj.Manufacturer)
 	var offsetModel = fbutils.CreateStringOffset(fbb, obj.Model)
 	var offsetLabels = fbutils.CreateStringVectorOffset(fbb, obj.Labels)
+	var offsetDeviceResources = fbutils.CreateByteVectorOffset(fbb, deviceResourcesJsonToDatabaseValue(obj.DeviceResources))
+	var offsetResources = fbutils.CreateByteVectorOffset(fbb, profileResourcesJsonToDatabaseValue(obj.Resources))
 
 	// build the FlatBuffers object
-	fbb.StartObject(9)
+	fbb.StartObject(11)
 	fbutils.SetInt64Slot(fbb, 0, obj.DescribedObject.BaseObject.Created)
 	fbutils.SetInt64Slot(fbb, 1, obj.DescribedObject.BaseObject.Modified)
 	fbutils.SetInt64Slot(fbb, 2, obj.DescribedObject.BaseObject.Origin)
@@ -179,6 +201,8 @@ func (deviceProfile_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetManufacturer)
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetModel)
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetLabels)
+	fbutils.SetUOffsetTSlot(fbb, 9, offsetDeviceResources)
+	fbutils.SetUOffsetTSlot(fbb, 10, offsetResources)
 	return nil
 }
 
@@ -211,12 +235,14 @@ func (deviceProfile_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (
 			},
 			Description: fbutils.GetStringSlot(table, 10),
 		},
-		Id:           objectbox.StringIdConvertToEntityProperty(id),
-		Name:         fbutils.GetStringSlot(table, 14),
-		Manufacturer: fbutils.GetStringSlot(table, 16),
-		Model:        fbutils.GetStringSlot(table, 18),
-		Labels:       fbutils.GetStringVectorSlot(table, 20),
-		Commands:     relCommands,
+		Id:              objectbox.StringIdConvertToEntityProperty(id),
+		Name:            fbutils.GetStringSlot(table, 14),
+		Manufacturer:    fbutils.GetStringSlot(table, 16),
+		Model:           fbutils.GetStringSlot(table, 18),
+		Labels:          fbutils.GetStringVectorSlot(table, 20),
+		DeviceResources: deviceResourcesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 22)),
+		Resources:       profileResourcesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 24)),
+		Commands:        relCommands,
 	}, nil
 }
 

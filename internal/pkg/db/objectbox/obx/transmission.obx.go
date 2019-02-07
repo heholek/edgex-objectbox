@@ -33,6 +33,7 @@ var Transmission_ = struct {
 	Channel_Url           *objectbox.PropertyString
 	Status                *objectbox.PropertyString
 	ResendCount           *objectbox.PropertyInt
+	Records               *objectbox.PropertyByteVector
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
@@ -122,6 +123,14 @@ var Transmission_ = struct {
 			},
 		},
 	},
+	Records: &objectbox.PropertyByteVector{
+		BaseProperty: &objectbox.BaseProperty{
+			Id: 12,
+			Entity: &objectbox.Entity{
+				Id: 17,
+			},
+		},
+	},
 }
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
@@ -145,7 +154,8 @@ func (transmission_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Channel_Url", objectbox.PropertyType_String, 9, 8618321585324687443)
 	model.Property("Status", objectbox.PropertyType_String, 10, 7086397840993736018)
 	model.Property("ResendCount", objectbox.PropertyType_Long, 11, 2391999354415967429)
-	model.EntityLastPropertyId(11, 2391999354415967429)
+	model.Property("Records", objectbox.PropertyType_ByteVector, 12, 6363449556102732928)
+	model.EntityLastPropertyId(12, 6363449556102732928)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -193,6 +203,7 @@ func (transmission_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 	var offsetChannel_MailAddresses = fbutils.CreateStringVectorOffset(fbb, obj.Channel.MailAddresses)
 	var offsetChannel_Url = fbutils.CreateStringOffset(fbb, obj.Channel.Url)
 	var offsetStatus = fbutils.CreateStringOffset(fbb, string(obj.Status))
+	var offsetRecords = fbutils.CreateByteVectorOffset(fbb, transmissionRecordsJsonToDatabaseValue(obj.Records))
 
 	var rIdNotification uint64
 	if rel := &obj.Notification; rel != nil {
@@ -204,7 +215,7 @@ func (transmission_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 	}
 
 	// build the FlatBuffers object
-	fbb.StartObject(11)
+	fbb.StartObject(12)
 	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
 	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
 	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
@@ -216,6 +227,7 @@ func (transmission_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetChannel_Url)
 	fbutils.SetUOffsetTSlot(fbb, 9, offsetStatus)
 	fbutils.SetInt64Slot(fbb, 10, int64(obj.ResendCount))
+	fbutils.SetUOffsetTSlot(fbb, 11, offsetRecords)
 	return nil
 }
 
@@ -262,6 +274,7 @@ func (transmission_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 		},
 		Status:      models.TransmissionStatus(fbutils.GetStringSlot(table, 22)),
 		ResendCount: int(table.GetUint64Slot(24, 0)),
+		Records:     transmissionRecordsJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 26)),
 	}, nil
 }
 

@@ -27,5 +27,5 @@ type Subscription struct {
 	Description          string
 	SubscribedCategories []models.NotificationsCategory `type:"[]string" converter:"notificationsCategory"`
 	SubscribedLabels     []string
-	// TODO Channels             []models.Channel
+	Channels             []models.Channel `type:"[]byte" converter:"channelsJson"`
 }

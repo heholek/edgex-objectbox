@@ -865,7 +865,7 @@ func (client *coreMetaDataClient) GetDeviceProfileByName(n string) (contract.Dev
 }
 
 func (client *coreMetaDataClient) GetDeviceProfilesUsingCommand(c contract.Command) ([]contract.DeviceProfile, error) {
-	// TODO implement using backlinks, this is inefficient
+	// TODO implement using backlinks, this is inefficient; NOTE cursor.RelationIds would be sufficient
 	if all, err := client.deviceProfileBox.GetAll(); err != nil {
 		return nil, err
 	} else {

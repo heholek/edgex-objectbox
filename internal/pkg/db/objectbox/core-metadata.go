@@ -61,8 +61,9 @@ type coreMetaDataQueries struct {
 		name   deviceReportQuery
 	}
 	deviceService struct {
-		labels deviceServiceQuery
-		name   deviceServiceQuery
+		addressable deviceServiceQuery
+		labels      deviceServiceQuery
+		name        deviceServiceQuery
 	}
 	provisionWatcher struct {
 		name    provisionWatcherQuery
@@ -239,6 +240,11 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	//endregion
 
 	//region DeviceService
+	if err == nil {
+		client.queries.deviceService.addressable.DeviceServiceQuery, err =
+			client.deviceServiceBox.QueryOrError(obx.DeviceService_.Addressable.Equals(0))
+	}
+
 	if err == nil {
 		client.queries.deviceService.labels.DeviceServiceQuery, err =
 			client.deviceServiceBox.QueryOrError(obx.DeviceService_.Labels.Contains("", true))
@@ -1009,8 +1015,18 @@ func (client *coreMetaDataClient) UpdateDeviceService(ds contract.DeviceService)
 }
 
 func (client *coreMetaDataClient) GetDeviceServicesByAddressableId(id string) ([]contract.DeviceService, error) {
-	// FIXME this requires relations queries 1..n, right now we are just passing the tests but the result is incorrect
-	return make([]contract.DeviceService, 1), nil
+	var query = &client.queries.deviceService.addressable
+
+	query.Lock()
+	defer query.Unlock()
+
+	if id, err := obx.IdFromString(id); err != nil {
+		return nil, err
+	} else if err := query.SetInt64Params(obx.DeviceService_.Addressable, int64(id)); err != nil {
+		return nil, err
+	}
+
+	return query.Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceServicesWithLabel(l string) ([]contract.DeviceService, error) {

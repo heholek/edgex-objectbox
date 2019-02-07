@@ -669,7 +669,7 @@ func testDBDeviceService(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("The ds should be named name1 instead of %s", ds.Name)
 	}
 
-	ds, err = db.GetDeviceServiceByName("INVALID")
+	_, err = db.GetDeviceServiceByName("INVALID")
 	if err == nil {
 		t.Fatalf("There should be a not found error")
 	}
@@ -681,7 +681,7 @@ func testDBDeviceService(t *testing.T, db interfaces.DBClient) {
 	if len(deviceServices) != 1 {
 		t.Fatalf("There should be 1 deviceServices instead of %d", len(deviceServices))
 	}
-	deviceServices, err = db.GetDeviceServicesByAddressableId(bson.NewObjectId().Hex())
+	deviceServices, err = db.GetDeviceServicesByAddressableId("")
 	if err != nil {
 		t.Fatalf("Error getting deviceServices by addressable id")
 	}

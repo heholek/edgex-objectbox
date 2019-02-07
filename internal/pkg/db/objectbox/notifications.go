@@ -180,7 +180,6 @@ func newNotificationsClient(objectBox *objectbox.ObjectBox) (*notificationsClien
 	}
 
 	if err == nil {
-		// TODO does .In() support dynamic number of arguments?
 		client.queries.transmission.notification.TransmissionQuery, err =
 			client.transmissionBox.QueryOrError(obx.Transmission_.Notification.In(0))
 	}

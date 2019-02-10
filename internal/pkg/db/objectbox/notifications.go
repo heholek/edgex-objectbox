@@ -256,9 +256,12 @@ func (client *notificationsClient) GetNotificationBySender(sender string, limit 
 }
 
 func (client *notificationsClient) GetNotificationsByLabels(labels []string, limit int) ([]contract.Notification, error) {
-	// TODO StringVector.ContainsAll/ContainsAny query
-	//panic(notImplemented())
-	return client.GetNotifications()
+	if query, err := client.notificationBox.QueryOrError(
+		stringVectorContainsAny(obx.Notification_.Labels, labels, true)); err != nil {
+		return nil, err
+	} else {
+		return query.Limit(uint64(limit)).Find()
+	}
 }
 
 func (client *notificationsClient) GetNotificationsByStartEnd(start int64, end int64, limit int) ([]contract.Notification, error) {
@@ -440,21 +443,31 @@ func (client *notificationsClient) GetSubscriptionByReceiver(receiver string) ([
 }
 
 func (client *notificationsClient) GetSubscriptionByCategories(categories []string) ([]contract.Subscription, error) {
-	// TODO StringVector.ContainsAll/ContainsAny query
-	//panic(notImplemented())
-	return client.GetSubscriptions()
+	if query, err := client.subscriptionBox.QueryOrError(
+		stringVectorContainsAny(obx.Subscription_.SubscribedCategories, categories, true)); err != nil {
+		return nil, err
+	} else {
+		return query.Find()
+	}
 }
 
 func (client *notificationsClient) GetSubscriptionByLabels(labels []string) ([]contract.Subscription, error) {
-	// TODO StringVector.ContainsAll/ContainsAny query
-	//panic(notImplemented())
-	return client.GetSubscriptions()
+	if query, err := client.subscriptionBox.QueryOrError(
+		stringVectorContainsAny(obx.Subscription_.SubscribedLabels, labels, true)); err != nil {
+		return nil, err
+	} else {
+		return query.Find()
+	}
 }
 
 func (client *notificationsClient) GetSubscriptionByCategoriesLabels(categories []string, labels []string) ([]contract.Subscription, error) {
-	// TODO StringVector.ContainsAll/ContainsAny query
-	//panic(notImplemented())
-	return client.GetSubscriptions()
+	if query, err := client.subscriptionBox.QueryOrError(
+		stringVectorContainsAny(obx.Subscription_.SubscribedCategories, categories, true),
+		stringVectorContainsAny(obx.Subscription_.SubscribedLabels, labels, true)); err != nil {
+		return nil, err
+	} else {
+		return query.Find()
+	}
 }
 
 func (client *notificationsClient) AddSubscription(s contract.Subscription) (string, error) {

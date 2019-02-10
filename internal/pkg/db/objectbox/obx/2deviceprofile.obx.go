@@ -11,12 +11,14 @@ import (
 )
 
 type deviceProfile_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var DeviceProfileBinding = deviceProfile_EntityInfo{
-	Id:  4,
+	Entity: objectbox.Entity{
+		Id: 4,
+	},
 	Uid: 7951361291202121406,
 }
 
@@ -33,94 +35,78 @@ var DeviceProfile_ = struct {
 	Labels              *objectbox.PropertyStringVector
 	DeviceResources     *objectbox.PropertyByteVector
 	Resources           *objectbox.PropertyByteVector
+	Commands            *objectbox.RelationManyToMany
 }{
 	BaseObject_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 4,
-			},
+			Id:     1,
+			Entity: &DeviceProfileBinding.Entity,
 		},
 	},
 	BaseObject_Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 4,
-			},
+			Id:     2,
+			Entity: &DeviceProfileBinding.Entity,
 		},
 	},
 	BaseObject_Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 4,
-			},
+			Id:     3,
+			Entity: &DeviceProfileBinding.Entity,
 		},
 	},
 	Description: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 4,
-			},
+			Id:     4,
+			Entity: &DeviceProfileBinding.Entity,
 		},
 	},
 	Id: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 4,
-			},
+			Id:     5,
+			Entity: &DeviceProfileBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 4,
-			},
+			Id:     6,
+			Entity: &DeviceProfileBinding.Entity,
 		},
 	},
 	Manufacturer: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 4,
-			},
+			Id:     7,
+			Entity: &DeviceProfileBinding.Entity,
 		},
 	},
 	Model: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 4,
-			},
+			Id:     8,
+			Entity: &DeviceProfileBinding.Entity,
 		},
 	},
 	Labels: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 4,
-			},
+			Id:     9,
+			Entity: &DeviceProfileBinding.Entity,
 		},
 	},
 	DeviceResources: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 4,
-			},
+			Id:     10,
+			Entity: &DeviceProfileBinding.Entity,
 		},
 	},
 	Resources: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 11,
-			Entity: &objectbox.Entity{
-				Id: 4,
-			},
+			Id:     11,
+			Entity: &DeviceProfileBinding.Entity,
 		},
+	},
+	Commands: &objectbox.RelationManyToMany{
+		Id:     1,
+		Source: &DeviceProfileBinding.Entity,
+		Target: &CommandBinding.Entity,
 	},
 }
 

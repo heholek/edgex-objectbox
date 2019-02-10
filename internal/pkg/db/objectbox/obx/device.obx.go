@@ -11,12 +11,14 @@ import (
 )
 
 type device_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var DeviceBinding = device_EntityInfo{
-	Id:  3,
+	Entity: objectbox.Entity{
+		Id: 3,
+	},
 	Uid: 8277139392933333295,
 }
 
@@ -30,133 +32,106 @@ var Device_ = struct {
 	Name                *objectbox.PropertyString
 	AdminState          *objectbox.PropertyString
 	OperatingState      *objectbox.PropertyString
-	Addressable         *objectbox.PropertyUint64
+	Addressable         *objectbox.RelationOneToMany
 	LastConnected       *objectbox.PropertyInt64
 	LastReported        *objectbox.PropertyInt64
 	Labels              *objectbox.PropertyStringVector
 	Location            *objectbox.PropertyByteVector
-	Service             *objectbox.PropertyUint64
-	Profile             *objectbox.PropertyUint64
+	Service             *objectbox.RelationOneToMany
+	Profile             *objectbox.RelationOneToMany
 }{
 	BaseObject_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+			Id:     1,
+			Entity: &DeviceBinding.Entity,
 		},
 	},
 	BaseObject_Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+			Id:     2,
+			Entity: &DeviceBinding.Entity,
 		},
 	},
 	BaseObject_Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+			Id:     3,
+			Entity: &DeviceBinding.Entity,
 		},
 	},
 	Description: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+			Id:     4,
+			Entity: &DeviceBinding.Entity,
 		},
 	},
 	Id: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+			Id:     5,
+			Entity: &DeviceBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+			Id:     6,
+			Entity: &DeviceBinding.Entity,
 		},
 	},
 	AdminState: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+			Id:     7,
+			Entity: &DeviceBinding.Entity,
 		},
 	},
 	OperatingState: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+			Id:     8,
+			Entity: &DeviceBinding.Entity,
 		},
 	},
-	Addressable: &objectbox.PropertyUint64{
-		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+	Addressable: &objectbox.RelationOneToMany{
+		Property: &objectbox.BaseProperty{
+			Id:     9,
+			Entity: &DeviceBinding.Entity,
 		},
+		Target: &AddressableBinding.Entity,
 	},
 	LastConnected: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+			Id:     10,
+			Entity: &DeviceBinding.Entity,
 		},
 	},
 	LastReported: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 11,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+			Id:     11,
+			Entity: &DeviceBinding.Entity,
 		},
 	},
 	Labels: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 12,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+			Id:     12,
+			Entity: &DeviceBinding.Entity,
 		},
 	},
 	Location: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 13,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+			Id:     13,
+			Entity: &DeviceBinding.Entity,
 		},
 	},
-	Service: &objectbox.PropertyUint64{
-		BaseProperty: &objectbox.BaseProperty{
-			Id: 14,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+	Service: &objectbox.RelationOneToMany{
+		Property: &objectbox.BaseProperty{
+			Id:     14,
+			Entity: &DeviceBinding.Entity,
 		},
+		Target: &DeviceServiceBinding.Entity,
 	},
-	Profile: &objectbox.PropertyUint64{
-		BaseProperty: &objectbox.BaseProperty{
-			Id: 15,
-			Entity: &objectbox.Entity{
-				Id: 3,
-			},
+	Profile: &objectbox.RelationOneToMany{
+		Property: &objectbox.BaseProperty{
+			Id:     15,
+			Entity: &DeviceBinding.Entity,
 		},
+		Target: &DeviceProfileBinding.Entity,
 	},
 }
 

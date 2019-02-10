@@ -1,7 +1,6 @@
 package objectbox
 
 // implements export-client service contract
-// TODO indexes
 
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"

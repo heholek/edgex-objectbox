@@ -11,12 +11,14 @@ import (
 )
 
 type command_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var CommandBinding = command_EntityInfo{
-	Id:  2,
+	Entity: objectbox.Entity{
+		Id: 2,
+	},
 	Uid: 5166872351994115756,
 }
 
@@ -37,98 +39,74 @@ var Command_ = struct {
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 2,
-			},
+			Id:     1,
+			Entity: &CommandBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 2,
-			},
+			Id:     2,
+			Entity: &CommandBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 2,
-			},
+			Id:     3,
+			Entity: &CommandBinding.Entity,
 		},
 	},
 	Id: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 2,
-			},
+			Id:     4,
+			Entity: &CommandBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 2,
-			},
+			Id:     5,
+			Entity: &CommandBinding.Entity,
 		},
 	},
 	Get_Path: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 2,
-			},
+			Id:     6,
+			Entity: &CommandBinding.Entity,
 		},
 	},
 	Get_Responses: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 11,
-			Entity: &objectbox.Entity{
-				Id: 2,
-			},
+			Id:     11,
+			Entity: &CommandBinding.Entity,
 		},
 	},
 	Get_URL: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 2,
-			},
+			Id:     7,
+			Entity: &CommandBinding.Entity,
 		},
 	},
 	Put_Path: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 2,
-			},
+			Id:     8,
+			Entity: &CommandBinding.Entity,
 		},
 	},
 	Put_Responses: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 12,
-			Entity: &objectbox.Entity{
-				Id: 2,
-			},
+			Id:     12,
+			Entity: &CommandBinding.Entity,
 		},
 	},
 	Put_URL: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 2,
-			},
+			Id:     9,
+			Entity: &CommandBinding.Entity,
 		},
 	},
 	Put_ParameterNames: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 2,
-			},
+			Id:     10,
+			Entity: &CommandBinding.Entity,
 		},
 	},
 }

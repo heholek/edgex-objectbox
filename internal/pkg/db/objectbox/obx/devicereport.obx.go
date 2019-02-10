@@ -11,12 +11,14 @@ import (
 )
 
 type deviceReport_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var DeviceReportBinding = deviceReport_EntityInfo{
-	Id:  5,
+	Entity: objectbox.Entity{
+		Id: 5,
+	},
 	Uid: 647510041971772493,
 }
 
@@ -33,66 +35,50 @@ var DeviceReport_ = struct {
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 5,
-			},
+			Id:     1,
+			Entity: &DeviceReportBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 5,
-			},
+			Id:     2,
+			Entity: &DeviceReportBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 5,
-			},
+			Id:     3,
+			Entity: &DeviceReportBinding.Entity,
 		},
 	},
 	Id: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 5,
-			},
+			Id:     4,
+			Entity: &DeviceReportBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 5,
-			},
+			Id:     5,
+			Entity: &DeviceReportBinding.Entity,
 		},
 	},
 	Device: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 5,
-			},
+			Id:     6,
+			Entity: &DeviceReportBinding.Entity,
 		},
 	},
 	Event: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 5,
-			},
+			Id:     7,
+			Entity: &DeviceReportBinding.Entity,
 		},
 	},
 	Expected: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 5,
-			},
+			Id:     8,
+			Entity: &DeviceReportBinding.Entity,
 		},
 	},
 }

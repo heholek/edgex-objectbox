@@ -10,12 +10,14 @@ import (
 )
 
 type valueDescriptor_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var ValueDescriptorBinding = valueDescriptor_EntityInfo{
-	Id:  18,
+	Entity: objectbox.Entity{
+		Id: 18,
+	},
 	Uid: 5270674616764717680,
 }
 
@@ -37,106 +39,80 @@ var ValueDescriptor_ = struct {
 }{
 	Id: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     1,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     2,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 	Description: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     3,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     4,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     5,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     6,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 	Min: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     7,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 	Max: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     8,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 	DefaultValue: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     9,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 	Type: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     10,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 	UomLabel: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 11,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     11,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 	Formatting: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 12,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     12,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 	Labels: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 13,
-			Entity: &objectbox.Entity{
-				Id: 18,
-			},
+			Id:     13,
+			Entity: &ValueDescriptorBinding.Entity,
 		},
 	},
 }

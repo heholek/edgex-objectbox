@@ -11,12 +11,14 @@ import (
 )
 
 type provisionWatcher_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var ProvisionWatcherBinding = provisionWatcher_EntityInfo{
-	Id:  12,
+	Entity: objectbox.Entity{
+		Id: 12,
+	},
 	Uid: 7116913470590795583,
 }
 
@@ -28,80 +30,64 @@ var ProvisionWatcher_ = struct {
 	Id             *objectbox.PropertyUint64
 	Name           *objectbox.PropertyString
 	Identifiers    *objectbox.PropertyByteVector
-	Profile        *objectbox.PropertyUint64
-	Service        *objectbox.PropertyUint64
+	Profile        *objectbox.RelationOneToMany
+	Service        *objectbox.RelationOneToMany
 	OperatingState *objectbox.PropertyString
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 12,
-			},
+			Id:     1,
+			Entity: &ProvisionWatcherBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 12,
-			},
+			Id:     2,
+			Entity: &ProvisionWatcherBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 12,
-			},
+			Id:     3,
+			Entity: &ProvisionWatcherBinding.Entity,
 		},
 	},
 	Id: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 12,
-			},
+			Id:     4,
+			Entity: &ProvisionWatcherBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 12,
-			},
+			Id:     5,
+			Entity: &ProvisionWatcherBinding.Entity,
 		},
 	},
 	Identifiers: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 12,
-			},
+			Id:     6,
+			Entity: &ProvisionWatcherBinding.Entity,
 		},
 	},
-	Profile: &objectbox.PropertyUint64{
-		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 12,
-			},
+	Profile: &objectbox.RelationOneToMany{
+		Property: &objectbox.BaseProperty{
+			Id:     7,
+			Entity: &ProvisionWatcherBinding.Entity,
 		},
+		Target: &DeviceProfileBinding.Entity,
 	},
-	Service: &objectbox.PropertyUint64{
-		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 12,
-			},
+	Service: &objectbox.RelationOneToMany{
+		Property: &objectbox.BaseProperty{
+			Id:     8,
+			Entity: &ProvisionWatcherBinding.Entity,
 		},
+		Target: &DeviceServiceBinding.Entity,
 	},
 	OperatingState: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 12,
-			},
+			Id:     9,
+			Entity: &ProvisionWatcherBinding.Entity,
 		},
 	},
 }

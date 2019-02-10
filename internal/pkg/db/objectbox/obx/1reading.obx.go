@@ -10,12 +10,14 @@ import (
 )
 
 type reading_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var ReadingBinding = reading_EntityInfo{
-	Id:  7,
+	Entity: objectbox.Entity{
+		Id: 7,
+	},
 	Uid: 5153159258527756401,
 }
 
@@ -32,66 +34,50 @@ var Reading_ = struct {
 }{
 	Id: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 7,
-			},
+			Id:     1,
+			Entity: &ReadingBinding.Entity,
 		},
 	},
 	Pushed: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 7,
-			},
+			Id:     2,
+			Entity: &ReadingBinding.Entity,
 		},
 	},
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 7,
-			},
+			Id:     3,
+			Entity: &ReadingBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 7,
-			},
+			Id:     4,
+			Entity: &ReadingBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 7,
-			},
+			Id:     5,
+			Entity: &ReadingBinding.Entity,
 		},
 	},
 	Device: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 7,
-			},
+			Id:     6,
+			Entity: &ReadingBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 7,
-			},
+			Id:     7,
+			Entity: &ReadingBinding.Entity,
 		},
 	},
 	Value: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 7,
-			},
+			Id:     8,
+			Entity: &ReadingBinding.Entity,
 		},
 	},
 }

@@ -11,12 +11,14 @@ import (
 )
 
 type deviceService_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var DeviceServiceBinding = deviceService_EntityInfo{
-	Id:  6,
+	Entity: objectbox.Entity{
+		Id: 6,
+	},
 	Uid: 3876971968383894204,
 }
 
@@ -32,103 +34,80 @@ var DeviceService_ = struct {
 	LastReported        *objectbox.PropertyInt64
 	OperatingState      *objectbox.PropertyString
 	Labels              *objectbox.PropertyStringVector
-	Addressable         *objectbox.PropertyUint64
+	Addressable         *objectbox.RelationOneToMany
 	AdminState          *objectbox.PropertyString
 }{
 	BaseObject_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 6,
-			},
+			Id:     1,
+			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
 	BaseObject_Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 6,
-			},
+			Id:     2,
+			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
 	BaseObject_Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 6,
-			},
+			Id:     3,
+			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
 	Description: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 6,
-			},
+			Id:     4,
+			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
 	Id: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 6,
-			},
+			Id:     5,
+			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 6,
-			},
+			Id:     6,
+			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
 	LastConnected: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 6,
-			},
+			Id:     7,
+			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
 	LastReported: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 6,
-			},
+			Id:     8,
+			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
 	OperatingState: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 6,
-			},
+			Id:     9,
+			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
 	Labels: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 6,
-			},
+			Id:     10,
+			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
-	Addressable: &objectbox.PropertyUint64{
-		BaseProperty: &objectbox.BaseProperty{
-			Id: 11,
-			Entity: &objectbox.Entity{
-				Id: 6,
-			},
+	Addressable: &objectbox.RelationOneToMany{
+		Property: &objectbox.BaseProperty{
+			Id:     11,
+			Entity: &DeviceServiceBinding.Entity,
 		},
+		Target: &AddressableBinding.Entity,
 	},
 	AdminState: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 12,
-			Entity: &objectbox.Entity{
-				Id: 6,
-			},
+			Id:     12,
+			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
 }

@@ -10,12 +10,14 @@ import (
 )
 
 type event_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var EventBinding = event_EntityInfo{
-	Id:  8,
+	Entity: objectbox.Entity{
+		Id: 8,
+	},
 	Uid: 3479337365075920111,
 }
 
@@ -28,62 +30,54 @@ var Event_ = struct {
 	Modified *objectbox.PropertyInt64
 	Origin   *objectbox.PropertyInt64
 	Event    *objectbox.PropertyString
+	Readings *objectbox.RelationManyToMany
 }{
 	ID: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 8,
-			},
+			Id:     1,
+			Entity: &EventBinding.Entity,
 		},
 	},
 	Pushed: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 8,
-			},
+			Id:     2,
+			Entity: &EventBinding.Entity,
 		},
 	},
 	Device: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 8,
-			},
+			Id:     3,
+			Entity: &EventBinding.Entity,
 		},
 	},
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 8,
-			},
+			Id:     4,
+			Entity: &EventBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 8,
-			},
+			Id:     5,
+			Entity: &EventBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 8,
-			},
+			Id:     6,
+			Entity: &EventBinding.Entity,
 		},
 	},
 	Event: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 8,
-			},
+			Id:     7,
+			Entity: &EventBinding.Entity,
 		},
+	},
+	Readings: &objectbox.RelationManyToMany{
+		Id:     2,
+		Source: &EventBinding.Entity,
+		Target: &ReadingBinding.Entity,
 	},
 }
 

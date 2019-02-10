@@ -11,12 +11,14 @@ import (
 )
 
 type subscription_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var SubscriptionBinding = subscription_EntityInfo{
-	Id:  16,
+	Entity: objectbox.Entity{
+		Id: 16,
+	},
 	Uid: 5707233647009676917,
 }
 
@@ -35,82 +37,62 @@ var Subscription_ = struct {
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 16,
-			},
+			Id:     1,
+			Entity: &SubscriptionBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 16,
-			},
+			Id:     2,
+			Entity: &SubscriptionBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 16,
-			},
+			Id:     3,
+			Entity: &SubscriptionBinding.Entity,
 		},
 	},
 	ID: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 16,
-			},
+			Id:     4,
+			Entity: &SubscriptionBinding.Entity,
 		},
 	},
 	Slug: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 16,
-			},
+			Id:     5,
+			Entity: &SubscriptionBinding.Entity,
 		},
 	},
 	Receiver: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 16,
-			},
+			Id:     6,
+			Entity: &SubscriptionBinding.Entity,
 		},
 	},
 	Description: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 16,
-			},
+			Id:     7,
+			Entity: &SubscriptionBinding.Entity,
 		},
 	},
 	SubscribedCategories: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 16,
-			},
+			Id:     8,
+			Entity: &SubscriptionBinding.Entity,
 		},
 	},
 	SubscribedLabels: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 16,
-			},
+			Id:     9,
+			Entity: &SubscriptionBinding.Entity,
 		},
 	},
 	Channels: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 16,
-			},
+			Id:     10,
+			Entity: &SubscriptionBinding.Entity,
 		},
 	},
 }

@@ -11,12 +11,14 @@ import (
 )
 
 type transmission_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var TransmissionBinding = transmission_EntityInfo{
-	Id:  17,
+	Entity: objectbox.Entity{
+		Id: 17,
+	},
 	Uid: 568708924645106899,
 }
 
@@ -26,7 +28,7 @@ var Transmission_ = struct {
 	Modified              *objectbox.PropertyInt64
 	Origin                *objectbox.PropertyInt64
 	ID                    *objectbox.PropertyUint64
-	Notification          *objectbox.PropertyUint64
+	Notification          *objectbox.RelationOneToMany
 	Receiver              *objectbox.PropertyString
 	Channel_Type          *objectbox.PropertyString
 	Channel_MailAddresses *objectbox.PropertyStringVector
@@ -37,98 +39,75 @@ var Transmission_ = struct {
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 17,
-			},
+			Id:     1,
+			Entity: &TransmissionBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 17,
-			},
+			Id:     2,
+			Entity: &TransmissionBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 17,
-			},
+			Id:     3,
+			Entity: &TransmissionBinding.Entity,
 		},
 	},
 	ID: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 17,
-			},
+			Id:     4,
+			Entity: &TransmissionBinding.Entity,
 		},
 	},
-	Notification: &objectbox.PropertyUint64{
-		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 17,
-			},
+	Notification: &objectbox.RelationOneToMany{
+		Property: &objectbox.BaseProperty{
+			Id:     5,
+			Entity: &TransmissionBinding.Entity,
 		},
+		Target: &NotificationBinding.Entity,
 	},
 	Receiver: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 17,
-			},
+			Id:     6,
+			Entity: &TransmissionBinding.Entity,
 		},
 	},
 	Channel_Type: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 17,
-			},
+			Id:     7,
+			Entity: &TransmissionBinding.Entity,
 		},
 	},
 	Channel_MailAddresses: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 17,
-			},
+			Id:     8,
+			Entity: &TransmissionBinding.Entity,
 		},
 	},
 	Channel_Url: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 17,
-			},
+			Id:     9,
+			Entity: &TransmissionBinding.Entity,
 		},
 	},
 	Status: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 17,
-			},
+			Id:     10,
+			Entity: &TransmissionBinding.Entity,
 		},
 	},
 	ResendCount: &objectbox.PropertyInt{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 11,
-			Entity: &objectbox.Entity{
-				Id: 17,
-			},
+			Id:     11,
+			Entity: &TransmissionBinding.Entity,
 		},
 	},
 	Records: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 12,
-			Entity: &objectbox.Entity{
-				Id: 17,
-			},
+			Id:     12,
+			Entity: &TransmissionBinding.Entity,
 		},
 	},
 }

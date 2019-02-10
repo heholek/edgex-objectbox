@@ -11,12 +11,14 @@ import (
 )
 
 type notification_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var NotificationBinding = notification_EntityInfo{
-	Id:  11,
+	Entity: objectbox.Entity{
+		Id: 11,
+	},
 	Uid: 473217340861383887,
 }
 
@@ -38,106 +40,80 @@ var Notification_ = struct {
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     1,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     2,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     3,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 	ID: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     4,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 	Slug: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     5,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 	Sender: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     6,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 	Category: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     7,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 	Severity: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     8,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 	Content: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     9,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 	Description: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     10,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 	Status: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 11,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     11,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 	Labels: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 12,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     12,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 	ContentType: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 13,
-			Entity: &objectbox.Entity{
-				Id: 11,
-			},
+			Id:     13,
+			Entity: &NotificationBinding.Entity,
 		},
 	},
 }

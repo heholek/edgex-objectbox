@@ -10,12 +10,14 @@ import (
 )
 
 type intervalAction_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var IntervalActionBinding = intervalAction_EntityInfo{
-	Id:  9,
+	Entity: objectbox.Entity{
+		Id: 9,
+	},
 	Uid: 2756744796714279591,
 }
 
@@ -41,138 +43,104 @@ var IntervalAction_ = struct {
 }{
 	ID: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     1,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     2,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     3,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     4,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     5,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Interval: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     6,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Parameters: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     7,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Target: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     8,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Protocol: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     9,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	HTTPMethod: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     10,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Address: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 11,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     11,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Port: &objectbox.PropertyInt{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 12,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     12,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Path: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 13,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     13,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Publisher: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 14,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     14,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	User: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 15,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     15,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Password: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 16,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     16,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 	Topic: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 17,
-			Entity: &objectbox.Entity{
-				Id: 9,
-			},
+			Id:     17,
+			Entity: &IntervalActionBinding.Entity,
 		},
 	},
 }

@@ -10,12 +10,14 @@ import (
 )
 
 type interval_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var IntervalBinding = interval_EntityInfo{
-	Id:  10,
+	Entity: objectbox.Entity{
+		Id: 10,
+	},
 	Uid: 5327467992591774453,
 }
 
@@ -34,82 +36,62 @@ var Interval_ = struct {
 }{
 	ID: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 10,
-			},
+			Id:     1,
+			Entity: &IntervalBinding.Entity,
 		},
 	},
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 10,
-			},
+			Id:     2,
+			Entity: &IntervalBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 10,
-			},
+			Id:     3,
+			Entity: &IntervalBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 10,
-			},
+			Id:     4,
+			Entity: &IntervalBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 10,
-			},
+			Id:     5,
+			Entity: &IntervalBinding.Entity,
 		},
 	},
 	Start: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 10,
-			},
+			Id:     6,
+			Entity: &IntervalBinding.Entity,
 		},
 	},
 	End: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 10,
-			},
+			Id:     7,
+			Entity: &IntervalBinding.Entity,
 		},
 	},
 	Frequency: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 10,
-			},
+			Id:     8,
+			Entity: &IntervalBinding.Entity,
 		},
 	},
 	Cron: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 10,
-			},
+			Id:     9,
+			Entity: &IntervalBinding.Entity,
 		},
 	},
 	RunOnce: &objectbox.PropertyBool{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 10,
-			},
+			Id:     10,
+			Entity: &IntervalBinding.Entity,
 		},
 	},
 }

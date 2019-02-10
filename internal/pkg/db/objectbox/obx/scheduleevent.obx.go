@@ -11,12 +11,14 @@ import (
 )
 
 type scheduleEvent_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var ScheduleEventBinding = scheduleEvent_EntityInfo{
-	Id:  14,
+	Entity: objectbox.Entity{
+		Id: 14,
+	},
 	Uid: 3878278153385832668,
 }
 
@@ -28,80 +30,63 @@ var ScheduleEvent_ = struct {
 	Id          *objectbox.PropertyUint64
 	Name        *objectbox.PropertyString
 	Schedule    *objectbox.PropertyString
-	Addressable *objectbox.PropertyUint64
+	Addressable *objectbox.RelationOneToMany
 	Parameters  *objectbox.PropertyString
 	Service     *objectbox.PropertyString
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 14,
-			},
+			Id:     1,
+			Entity: &ScheduleEventBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 14,
-			},
+			Id:     2,
+			Entity: &ScheduleEventBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 14,
-			},
+			Id:     3,
+			Entity: &ScheduleEventBinding.Entity,
 		},
 	},
 	Id: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 14,
-			},
+			Id:     4,
+			Entity: &ScheduleEventBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 14,
-			},
+			Id:     5,
+			Entity: &ScheduleEventBinding.Entity,
 		},
 	},
 	Schedule: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 14,
-			},
+			Id:     6,
+			Entity: &ScheduleEventBinding.Entity,
 		},
 	},
-	Addressable: &objectbox.PropertyUint64{
-		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 14,
-			},
+	Addressable: &objectbox.RelationOneToMany{
+		Property: &objectbox.BaseProperty{
+			Id:     7,
+			Entity: &ScheduleEventBinding.Entity,
 		},
+		Target: &AddressableBinding.Entity,
 	},
 	Parameters: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 14,
-			},
+			Id:     8,
+			Entity: &ScheduleEventBinding.Entity,
 		},
 	},
 	Service: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 14,
-			},
+			Id:     9,
+			Entity: &ScheduleEventBinding.Entity,
 		},
 	},
 }

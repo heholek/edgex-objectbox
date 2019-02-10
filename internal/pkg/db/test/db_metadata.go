@@ -1166,7 +1166,7 @@ func testDBDeviceProfile(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 1 deviceProfiles instead of %d", len(deviceProfiles))
 	}
 
-	c.Id = bson.NewObjectId().Hex()
+	c.Id = ""
 	deviceProfiles, err = db.GetDeviceProfilesUsingCommand(c)
 	if err != nil {
 		t.Fatalf("Error getting deviceProfiles %v", err)

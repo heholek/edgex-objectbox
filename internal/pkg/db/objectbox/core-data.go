@@ -1,7 +1,6 @@
 package objectbox
 
 // implements core-data service contract
-// TODO indexes
 
 import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"

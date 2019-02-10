@@ -11,12 +11,14 @@ import (
 )
 
 type registration_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var RegistrationBinding = registration_EntityInfo{
-	Id:  13,
+	Entity: objectbox.Entity{
+		Id: 13,
+	},
 	Uid: 7634570582013981061,
 }
 
@@ -27,7 +29,7 @@ var Registration_ = struct {
 	Modified                  *objectbox.PropertyInt64
 	Origin                    *objectbox.PropertyInt64
 	Name                      *objectbox.PropertyString
-	Addressable               *objectbox.PropertyUint64
+	Addressable               *objectbox.RelationOneToMany
 	Format                    *objectbox.PropertyString
 	Filter_DeviceIDs          *objectbox.PropertyStringVector
 	Filter_ValueDescriptorIDs *objectbox.PropertyStringVector
@@ -40,122 +42,93 @@ var Registration_ = struct {
 }{
 	ID: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     1,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     2,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     3,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     4,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     5,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
-	Addressable: &objectbox.PropertyUint64{
-		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+	Addressable: &objectbox.RelationOneToMany{
+		Property: &objectbox.BaseProperty{
+			Id:     6,
+			Entity: &RegistrationBinding.Entity,
 		},
+		Target: &AddressableBinding.Entity,
 	},
 	Format: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     7,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 	Filter_DeviceIDs: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     8,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 	Filter_ValueDescriptorIDs: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     9,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 	Encryption_Algo: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     10,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 	Encryption_Key: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 11,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     11,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 	Encryption_InitVector: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 12,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     12,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 	Compression: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 13,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     13,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 	Enable: &objectbox.PropertyBool{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 14,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     14,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 	Destination: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 15,
-			Entity: &objectbox.Entity{
-				Id: 13,
-			},
+			Id:     15,
+			Entity: &RegistrationBinding.Entity,
 		},
 	},
 }

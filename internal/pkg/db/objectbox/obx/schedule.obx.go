@@ -11,12 +11,14 @@ import (
 )
 
 type schedule_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var ScheduleBinding = schedule_EntityInfo{
-	Id:  15,
+	Entity: objectbox.Entity{
+		Id: 15,
+	},
 	Uid: 8113636778904077059,
 }
 
@@ -35,82 +37,62 @@ var Schedule_ = struct {
 }{
 	BaseObject_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 15,
-			},
+			Id:     1,
+			Entity: &ScheduleBinding.Entity,
 		},
 	},
 	BaseObject_Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 15,
-			},
+			Id:     2,
+			Entity: &ScheduleBinding.Entity,
 		},
 	},
 	BaseObject_Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 15,
-			},
+			Id:     3,
+			Entity: &ScheduleBinding.Entity,
 		},
 	},
 	Id: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 15,
-			},
+			Id:     4,
+			Entity: &ScheduleBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 15,
-			},
+			Id:     5,
+			Entity: &ScheduleBinding.Entity,
 		},
 	},
 	Start: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 15,
-			},
+			Id:     6,
+			Entity: &ScheduleBinding.Entity,
 		},
 	},
 	End: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 15,
-			},
+			Id:     7,
+			Entity: &ScheduleBinding.Entity,
 		},
 	},
 	Frequency: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 15,
-			},
+			Id:     8,
+			Entity: &ScheduleBinding.Entity,
 		},
 	},
 	Cron: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 15,
-			},
+			Id:     9,
+			Entity: &ScheduleBinding.Entity,
 		},
 	},
 	RunOnce: &objectbox.PropertyBool{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 15,
-			},
+			Id:     10,
+			Entity: &ScheduleBinding.Entity,
 		},
 	},
 }

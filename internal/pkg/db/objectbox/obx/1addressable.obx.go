@@ -11,12 +11,14 @@ import (
 )
 
 type addressable_EntityInfo struct {
-	Id  objectbox.TypeId
+	objectbox.Entity
 	Uid uint64
 }
 
 var AddressableBinding = addressable_EntityInfo{
-	Id:  1,
+	Entity: objectbox.Entity{
+		Id: 1,
+	},
 	Uid: 1721289809567479575,
 }
 
@@ -39,114 +41,86 @@ var Addressable_ = struct {
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 1,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     1,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 2,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     2,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 3,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     3,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Id: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 4,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     4,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Name: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 5,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     5,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Protocol: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 6,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     6,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	HTTPMethod: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 7,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     7,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Address: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 8,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     8,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Port: &objectbox.PropertyInt{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 9,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     9,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Path: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 10,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     10,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Publisher: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 11,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     11,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	User: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 12,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     12,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Password: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 13,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     13,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Topic: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id: 14,
-			Entity: &objectbox.Entity{
-				Id: 1,
-			},
+			Id:     14,
+			Entity: &AddressableBinding.Entity,
 		},
 	},
 }

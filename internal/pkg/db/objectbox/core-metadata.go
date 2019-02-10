@@ -1,7 +1,6 @@
 package objectbox
 
 // implements core-metadata service contract
-// TODO indexes
 
 import (
 	"fmt"
@@ -42,6 +41,7 @@ type coreMetaDataQueries struct {
 		name commandQuery
 	}
 	deviceProfile struct {
+		commands             deviceProfileQuery
 		labels               deviceProfileQuery
 		manufacturer         deviceProfileQuery
 		manufacturerAndModel deviceProfileQuery
@@ -66,9 +66,10 @@ type coreMetaDataQueries struct {
 		name        deviceServiceQuery
 	}
 	provisionWatcher struct {
-		name    provisionWatcherQuery
-		profile provisionWatcherQuery
-		service provisionWatcherQuery
+		identifier provisionWatcherQuery
+		name       provisionWatcherQuery
+		profile    provisionWatcherQuery
+		service    provisionWatcherQuery
 	}
 	schedule struct {
 		name scheduleQuery
@@ -201,6 +202,10 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 
 	//region DeviceProfile
 	if err == nil {
+		client.queries.deviceProfile.commands.DeviceProfileQuery, err =
+			client.deviceProfileBox.QueryOrError(obx.DeviceProfile_.Commands.Link(obx.Command_.Id.Equals(0)))
+	}
+	if err == nil {
 		client.queries.deviceProfile.labels.DeviceProfileQuery, err =
 			client.deviceProfileBox.QueryOrError(obx.DeviceProfile_.Labels.Contains("", true))
 	}
@@ -257,6 +262,10 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	//endregion
 
 	//region ProvisionWatcher
+	if err == nil {
+		client.queries.provisionWatcher.name.ProvisionWatcherQuery, err =
+			client.provisionWatcherBox.QueryOrError(obx.ProvisionWatcher_.Name.Equals("", true))
+	}
 	if err == nil {
 		client.queries.provisionWatcher.name.ProvisionWatcherQuery, err =
 			client.provisionWatcherBox.QueryOrError(obx.ProvisionWatcher_.Name.Equals("", true))
@@ -865,21 +874,18 @@ func (client *coreMetaDataClient) GetDeviceProfileByName(n string) (contract.Dev
 }
 
 func (client *coreMetaDataClient) GetDeviceProfilesUsingCommand(c contract.Command) ([]contract.DeviceProfile, error) {
-	// TODO implement using backlinks, this is inefficient; NOTE cursor.RelationIds would be sufficient
-	if all, err := client.deviceProfileBox.GetAll(); err != nil {
+	var query = &client.queries.deviceProfile.commands
+
+	query.Lock()
+	defer query.Unlock()
+
+	if id, err := obx.IdFromString(c.Id); err != nil {
 		return nil, err
-	} else {
-		result := make([]contract.DeviceProfile, 0)
-		for _, profile := range all {
-			for _, command := range profile.Commands {
-				if command.Id == c.Id {
-					result = append(result, profile)
-					break
-				}
-			}
-		}
-		return result, nil
+	} else if err := query.SetInt64Params(obx.Command_.Id, int64(id)); err != nil {
+		return nil, err
 	}
+
+	return query.Find()
 }
 
 func (client *coreMetaDataClient) UpdateAddressable(a contract.Addressable) error {
@@ -1160,6 +1166,10 @@ func (client *coreMetaDataClient) GetProvisionWatchersByServiceId(id string) ([]
 func (client *coreMetaDataClient) GetProvisionWatchersByIdentifier(k string, v string) ([]contract.ProvisionWatcher, error) {
 	// TODO can we make this more efficient?
 	//  The biggest problem is that ProvisionWatcher contains relations which are loaded eagerly
+	// options are
+	// 	- query on identifiers.contains(`"name":"value"`)
+	//  - current code with lazy-loading relations
+	//  - "property" query (only returns a single property)
 	if all, err := client.provisionWatcherBox.GetAll(); err != nil {
 		return nil, err
 	} else {

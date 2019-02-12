@@ -14,9 +14,12 @@
 package data
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/edgexfoundry/edgex-go/internal/core/data/errors"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/correlation"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/correlation/models"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	contract "github.com/edgexfoundry/edgex-go/pkg/models"
 )
@@ -29,8 +32,8 @@ func countEvents() (int, error) {
 	return count, nil
 }
 
-func countEventsByDevice(device string) (int, error) {
-	err := checkDevice(device)
+func countEventsByDevice(device string, ctx context.Context) (int, error) {
+	err := checkDevice(device, ctx)
 	if err != nil {
 		return -1, err
 	}
@@ -74,8 +77,8 @@ func getEvents(limit int) ([]contract.Event, error) {
 	return events, err
 }
 
-func addNewEvent(e contract.Event) (string, error) {
-	err := checkDevice(e.Device)
+func addNewEvent(e contract.Event, ctx context.Context) (string, error) {
+	err := checkDevice(e.Device, ctx)
 	if err != nil {
 		return "", err
 	}
@@ -109,14 +112,14 @@ func addNewEvent(e contract.Event) (string, error) {
 		e.ID = id
 	}
 
-	putEventOnQueue(e)                              // Push the aux struct to export service (It has the actual readings)
+	putEventOnQueue(e, ctx)                         // Push the aux struct to export service (It has the actual readings)
 	chEvents <- DeviceLastReported{e.Device}        // update last reported connected (device)
 	chEvents <- DeviceServiceLastReported{e.Device} // update last reported connected (device service)
 
 	return e.ID, nil
 }
 
-func updateEvent(from contract.Event) error {
+func updateEvent(from contract.Event, ctx context.Context) error {
 	to, err := dbClient.EventById(from.ID)
 	if err != nil {
 		return errors.NewErrEventNotFound(from.ID)
@@ -125,7 +128,7 @@ func updateEvent(from contract.Event) error {
 	// Update the fields
 	if len(from.Device) > 0 {
 		// Check device
-		err = checkDevice(from.Device)
+		err = checkDevice(from.Device, ctx)
 		if err != nil {
 			return err
 		}
@@ -184,14 +187,14 @@ func getEventById(id string) (contract.Event, error) {
 	return e, nil
 }
 
-func updateEventPushDate(id string) error {
+func updateEventPushDate(id string, ctx context.Context) error {
 	e, err := getEventById(id)
 	if err != nil {
 		return err
 	}
 
 	e.Pushed = db.MakeTimestamp()
-	err = updateEvent(e)
+	err = updateEvent(e, ctx)
 	if err != nil {
 		return err
 	}
@@ -199,10 +202,13 @@ func updateEventPushDate(id string) error {
 }
 
 // Put event on the message queue to be processed by the rules engine
-func putEventOnQueue(e contract.Event) {
+func putEventOnQueue(e contract.Event, ctx context.Context) {
 	LoggingClient.Info("Putting event on message queue")
 	//	Have multiple implementations (start with ZeroMQ)
-	err := ep.SendEventMessage(e)
+	evt := models.Event{}
+	evt.Event = e
+	evt.CorrelationId = correlation.FromContext(ctx)
+	err := ep.SendEventMessage(evt)
 	if err != nil {
 		LoggingClient.Error("Unable to send message for event: " + e.String())
 	}

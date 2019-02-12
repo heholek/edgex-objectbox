@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"fmt"
 	"github.com/google/uuid"
 	"math"
@@ -11,19 +12,20 @@ import (
 	"time"
 
 	"github.com/edgexfoundry/edgex-go/internal/core/data/messaging"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/correlation/models"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 
 	"github.com/edgexfoundry/edgex-go/pkg/clients/logging"
 	"github.com/edgexfoundry/edgex-go/pkg/clients/metadata/mocks"
 	"github.com/edgexfoundry/edgex-go/pkg/clients/types"
-	"github.com/edgexfoundry/edgex-go/pkg/models"
+	contract "github.com/edgexfoundry/edgex-go/pkg/models"
 
 	"github.com/globalsign/mgo/bson"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/mock"
 )
 
-var testEvent models.Event
+var testEvent contract.Event
 var testRoutes *mux.Router
 
 const (
@@ -90,45 +92,40 @@ func reset() {
 func newMockDeviceClient() *mocks.DeviceClient {
 	client := &mocks.DeviceClient{}
 
-	mockAddressable := models.Addressable{
+	mockAddressable := contract.Addressable{
 		Address:  "localhost",
 		Name:     "Test Addressable",
 		Port:     3000,
 		Protocol: "http"}
 
-	mockDeviceResultFn := func(id string) models.Device {
+	mockDeviceResultFn := func(id string, ctx context.Context) contract.Device {
 		if bson.IsObjectIdHex(id) {
-			return models.Device{Id: id, Name: testEvent.Device, Addressable: mockAddressable}
+			return contract.Device{Id: id, Name: testDeviceName, Addressable: mockAddressable}
 		}
-		return models.Device{}
+		return contract.Device{}
 	}
-	client.On("Device", mock.MatchedBy(func(id string) bool {
-		return id == "valid"
-	})).Return(mockDeviceResultFn, nil)
-	client.On("Device", mock.MatchedBy(func(id string) bool {
-		return id == "404"
-	})).Return(mockDeviceResultFn, types.NewErrServiceClient(http.StatusNotFound, []byte{}))
-	client.On("Device", mock.Anything).Return(mockDeviceResultFn, fmt.Errorf("some error"))
+	client.On("Device", "valid", context.Background()).Return(mockDeviceResultFn, nil)
+	client.On("Device", "404", context.Background()).Return(mockDeviceResultFn,
+		types.NewErrServiceClient(http.StatusNotFound, []byte{}))
+	client.On("Device", mock.Anything, context.Background()).Return(mockDeviceResultFn, fmt.Errorf("some error"))
 
-	mockDeviceForNameResultFn := func(name string) models.Device {
-		device := models.Device{Id: uuid.New().String(), Name: name, Addressable: mockAddressable}
+	mockDeviceForNameResultFn := func(name string, ctx context.Context) contract.Device {
+		device := contract.Device{Id: uuid.New().String(), Name: name, Addressable: mockAddressable}
 
 		return device
 	}
-	client.On("DeviceForName", mock.MatchedBy(func(name string) bool {
-		return name == testEvent.Device
-	})).Return(mockDeviceForNameResultFn, nil)
-	client.On("DeviceForName", mock.MatchedBy(func(name string) bool {
-		return name == "404"
-	})).Return(mockDeviceForNameResultFn, types.NewErrServiceClient(http.StatusNotFound, []byte{}))
-	client.On("DeviceForName", mock.Anything).Return(mockDeviceForNameResultFn, fmt.Errorf("some error"))
+	client.On("DeviceForName", testDeviceName, context.Background()).Return(mockDeviceForNameResultFn, nil)
+	client.On("DeviceForName", "404", context.Background()).Return(mockDeviceForNameResultFn,
+		types.NewErrServiceClient(http.StatusNotFound, []byte{}))
+	client.On("DeviceForName", mock.Anything, context.Background()).Return(mockDeviceForNameResultFn,
+		fmt.Errorf("some error"))
 
 	return client
 }
 
-func buildReadings() []models.Reading {
+func buildReadings() []contract.Reading {
 	ticks := db.MakeTimestamp()
-	r1 := models.Reading{Id: bson.NewObjectId().Hex(),
+	r1 := contract.Reading{Id: bson.NewObjectId().Hex(),
 		Name:     "Temperature",
 		Value:    "45",
 		Origin:   testOrigin,
@@ -137,7 +134,7 @@ func buildReadings() []models.Reading {
 		Pushed:   ticks,
 		Device:   testDeviceName}
 
-	r2 := models.Reading{Id: bson.NewObjectId().Hex(),
+	r2 := contract.Reading{Id: bson.NewObjectId().Hex(),
 		Name:     "Pressure",
 		Value:    "1.01325",
 		Origin:   testOrigin,
@@ -145,7 +142,7 @@ func buildReadings() []models.Reading {
 		Modified: ticks,
 		Pushed:   ticks,
 		Device:   testDeviceName}
-	readings := []models.Reading{}
+	readings := []contract.Reading{}
 	readings = append(readings, r1, r2)
 	return readings
 }

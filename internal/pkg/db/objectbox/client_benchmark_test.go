@@ -22,20 +22,6 @@ func BenchmarkObjectBox(b *testing.B) {
 	test.BenchmarkDB(b, client)
 }
 
-// this breaks edgex test suite (`make test` or `go test ./...`)
-// if it needs to be run manually, make it a command
-//func TestBenchmarkFixedNObjectBox(t *testing.T) {
-//	config := db.Configuration{
-//		DatabaseName: "benchmark-test",
-//	}
-//	client, err := NewClient(config)
-//	if err != nil {
-//		fmt.Println(err)
-//		return
-//	}
-//	test.BenchmarkDBFixedN(client, true)
-//}
-
 var mutex sync.Mutex
 
 func doNoDefer() (result []contract.Event, err error) {

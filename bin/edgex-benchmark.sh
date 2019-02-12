@@ -33,7 +33,7 @@ function showHelp() {
     echo "  -g                    - Set CPU performance to maximum" 
     echo
     echo "  -a|--all-backends     - Enable all backends"
-    echo "  -O|--obx              - Enable Objectbox test"
+    echo "  -O|--objectbox              - Enable Objectbox test"
     echo "  -R|--redis            - Enable Redis test"
     echo "  -M|--mongo            - Enable Mongo test"
     
@@ -70,8 +70,8 @@ do
         IGNORE_ERRORS=true
         log "IGNORE_ERRORS=true"
         ;;
-    -O|--obx)
-        ENABLE_OBX=true
+    -O|--objectbox)
+        ENABLE_OBJECTBOX=true
         SOME_TEST_ENABLED=true
         ;;
     -R|--redis)
@@ -167,11 +167,11 @@ getResetWrittenSectors() {
 
 ## } // sectors
 
-OBXGO_PKG=github.com/objectbox/objectbox-go
+OBX_PKG=github.com/objectbox/objectbox-go
 
-if ! [ -d $GOPATH/src/${OBXGO_PKG} ]; then
-    mkdir -vp $GOPATH/src/$(dirname ${OBXGO_PKG})
-    git clone  ${OBXGO_REPO:-git@${OBXGO_PKG}} -b ${OBXGO_BRANCH:-master} $GOPATH/src/${OBXGO_PKG}
+if ! [ -d $GOPATH/src/${OBX_PKG} ]; then
+    mkdir -vp $GOPATH/src/$(dirname ${OBX_PKG})
+    git clone  ${OBJECTBOXGO_REPO:-git@${OBX_PKG}} -b ${OBJECTBOXGO_BRANCH:-master} $GOPATH/src/${OBX_PKG}
 fi
 
 EDGEX_PKG=github.com/edgexfoundry/edgex-go
@@ -179,23 +179,7 @@ EDGEX_PKG=github.com/edgexfoundry/edgex-go
 if ! [ -d $GOPATH/src/${EDGEX_PKG} ]; then
     mkdir -vp $GOPATH/src/$(dirname ${EDGEX_PKG})
     git clone  ${EDGEX_REPO:-https://${EDGEX_PKG}.git} -b  ${EDGEX_BRANCH:-master} $GOPATH/src/${EDGEX_PKG}
-    for pkg in \
-        "github.com/google/flatbuffers/go" \
-        ${EDGEX_PKG}/internal/pkg/db/objectbox  \
-        ${EDGEX_PKG}/internal/pkg/db/mongo \
-        ${EDGEX_PKG}/internal/pkg/db/redis
-    do
-        if ! [ -d $GOPATH/src/$pkg ] ; then
-            go get -t -v "${pkg}"/...
-        fi
-    done
-
-
- 
 fi
-
-   go get -v -t github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/...
-    go get -v -t github.com/edgexfoundry/edgex-go/internal/pkg/db/redis/...
 
 case ${TMPMODE:-no} in
         on|yes)
@@ -228,13 +212,18 @@ initializeDiskStats $TMPDIR
 if ! ${SOME_TEST_ENABLED:-false}
 then
     log "Enable all tests"
-    ENABLE_OBX=true
+    ENABLE_OBJECTBOX=true
     ENABLE_MONGO=true
     ENABLE_REDIS=true
 fi
-: ${ENABLE_OBX:=false}
+: ${ENABLE_OBJECTBOX:=false}
 : ${ENABLE_REDIS:=false}
 : ${ENABLE_MONGO:=false}
+
+if ! [ -d $GOPATH/src/${EDGEX_PKG}/internal/pkg/db/redis ] ; then
+    log "Disabling redis - not found in ${EDGEX_PKG}/internal/pkg/db/redis"
+    ENABLE_REDIS=false
+fi
 
 TTY_OR_EMPTY="$(tty >& /dev/null && tty)" || LOG_D "No connected tty."
 
@@ -263,14 +252,14 @@ if ${ONLY_PREPARE_ENVIRONMENT:-false}; then
     exit 0
 fi
 
-OBJECTBOX_TESTBIN=$TMPDIR/___TestBenchmarkFixedNObjectBox_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_objectbox
+OBJECTBOX_TESTBIN=$TMPDIR/github_com_edgexfoundry_edgex_go_internal_pkg_db_objectbox
 
 function addDependencyFile() {
     DEPENDENCIES="${DEPENDENCIES:-} $*"
 }
 
-if ${ENABLE_OBX}; then 
-    addDependencyFile $TMPDIR/___TestBenchmarkFixedNObjectBox_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_objectbox
+if ${ENABLE_OBJECTBOX}; then 
+    addDependencyFile $OBJECTBOX_TESTBIN
     addDependencyFile $(ldconfig -p | awk '/libobjectbox.so/ {print $NF}')
 fi
 
@@ -278,27 +267,25 @@ if ${ENABLE_MONGO}; then
     addDependencyFile $TMPDIR/___TestBenchmarkFixedNMongo_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_mongo
 fi
 
-if ${ENABLE_REDIS}; then 
+if ${ENABLE_REDIS}; then
     addDependencyFile $TMPDIR/___TestBenchmarkFixedNRedis_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_redis $TESTDIR/redis.conf
 fi
 
 if ! ${NO_BUILD:-false} ; then
-    ! ${NO_BUILD:-false} || ! [ -f ${OBJECTBOX_TESTBIN} ] && ${ENABLE_OBX} && {
-        log "Building obx test..."
-        go build github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox
-        go test -c -tags obxRunning   -o $OBJECTBOX_TESTBIN  github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox
-        
+    ! ${NO_BUILD:-false} || ! [ -f ${OBJECTBOX_TESTBIN} ] && ${ENABLE_OBJECTBOX} && {
+        log "Building objectbox benchmark, binary = $OBJECTBOX_TESTBIN..."
+        go build -o $OBJECTBOX_TESTBIN $EDGEX_PKG/internal/pkg/db/objectbox/benchmark
     }
     ${ENABLE_MONGO} && {
         log "Building Mongo test..."
         requireBinaries mongod
-        go test -c -tags mongoRunning -o $TMPDIR/___TestBenchmarkFixedNMongo_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_mongo         github.com/edgexfoundry/edgex-go/internal/pkg/db/mongo
+        go test -c -tags mongoRunning -o $TMPDIR/___TestBenchmarkFixedNMongo_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_mongo         $EDGEX_PKG/internal/pkg/db/mongo
         
     }
     ${ENABLE_REDIS} && {
         log "Building Redis test..."
         requireBinaries redis-server
-        go test -c -tags redisRunning -o $TMPDIR/___TestBenchmarkFixedNRedis_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_redis          github.com/edgexfoundry/edgex-go/internal/pkg/db/redis
+        go test -c -tags redisRunning -o $TMPDIR/___TestBenchmarkFixedNRedis_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_redis          $EDGEX_PKG/internal/pkg/db/redis
         
     }
 fi
@@ -327,20 +314,24 @@ addVar EDGEX_TEST_COUNT
 addConfigCmd "go version" go version
 #addConfigCmd "cpufreq-info -p"  cpufreq-info  -p
 addConfigCmd prio bash -c 'chrt -v -p $$ | sed "s/$$/PID/g"'
-addConfigCmd mongod-version mongod --version
-addConfigCmd redis-server-version redis-server --version
+if ${ENABLE_MONGO}; then
+    addConfigCmd mongod-version mongod --version
+fi
+if ${ENABLE_REDIS}; then
+    addConfigCmd redis-server-version redis-server --version
+fi
 #addConfigCmd hdType cat /sys/class/block/${PART}/device/model || ## If it doesn't work for the tmp dir, we register it for the rootfs, just in case it's the same
 #   addConfigCmd rootHdType bash -c 'cat /sys/class/block/$(findmnt -n -o SOURCE --target / | cut -f3 -d/ |sed "s/p[0-9]$//")/device/model'
    
 addConfigCmd uname-a uname -a
 
-cc -o $TMPDIR/obx_version_core_string -lobjectbox -xc - <<EOP
+cc -o $TMPDIR/objectbox_version_core_string -lobjectbox -xc - <<EOP
 #include <stdio.h>
 extern const char* obx_version_core_string(void);  //header file is probably not available here
 int main() { puts(obx_version_core_string()); }
 EOP
-addConfigCmd objectbox-version $TMPDIR/obx_version_core_string
-rm -f $TMPDIR/obx_version_core_string
+addConfigCmd objectbox-version $TMPDIR/objectbox_version_core_string
+rm -f $TMPDIR/objectbox_version_core_string
 
 RUNHASH=$(
         (
@@ -427,14 +418,8 @@ function run_objectbox() {
         log "Remove objectbox/..."
         rm -rf ${OBJECTBOX_DB_DIR}
     fi
-    log "Starting obx test... "
-    pwd
-    execute obx ${TMPDIR}/___TestBenchmarkFixedNObjectBox_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_objectbox -test.v -test.run '^TestBenchmarkFixedNObjectBox$'
-    #while ! execute obx ${TMPDIR}/___TestBenchmarkFixedNObjectBox_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_objectbox -test.v -test.run '^TestBenchmarkFixedNObjectBox$'  &&
-        #grep "Queue full, cannot submit async put operation"  $DATADIR/$ENGINE-out.txt
-    #do
-        #log "Repeating..."
-    #done
+    log "Starting objectbox test... "
+    execute objectbox $OBJECTBOX_TESTBIN
     du -sm ${OBJECTBOX_DB_DIR} >> $DATADIR/$ENGINE.datasize || die "No objectbox directory ${OBJECTBOX_DB_DIR} found"
     cd -
 }
@@ -538,7 +523,7 @@ for i in $(seq 1 $N)
     EXECUTION_SEQ_ID=$(nextid)
     log "Iteration #$i. Seq id: ${EXECUTION_SEQ_ID}"
 
-    ${ENABLE_OBX}   && run_objectbox
+    ${ENABLE_OBJECTBOX}   && run_objectbox
     ${ENABLE_REDIS} && run_redis
     ${ENABLE_MONGO} && run_mongo
 
@@ -554,14 +539,14 @@ echo "== Success in $SECONDS seconds. Hash == $RUNHASH :)" >&2
 ## Evaluation
 
 cd $DATADIR
-if [ -f obx.csv ]; then 
+if [ -f objectbox.csv ]; then 
     logs="$(ls -f {redis,mongo}.csv 2> /dev/null | xargs -r echo)" || log  "not all engines available"
     if [[ $logs ]]; then
         for col in {1..5}; do            
-            echo "Factors $logs, col $col:  $(tail -qn 1 obx.csv $logs |awk -v col=$(( $col  + 2 )) 'NR==1 { ref=$col; next; } $col && NR >1 { printf ref / $col " "; } ' )"|| true
+            echo "Factors $logs, col $col:  $(tail -qn 1 objectbox.csv $logs |awk -v col=$(( $col  + 2 )) 'NR==1 { ref=$col; next; } $col && NR >1 { printf ref / $col " "; } ' )"|| true
         done
     else
-        log "Only obx available"
+        log "Only objectbox available"
     fi
 fi
 

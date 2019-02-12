@@ -18,11 +18,14 @@ package test
 
 import (
 	"fmt"
-	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
 	"math"
+	"reflect"
 	"runtime"
 	"strconv"
 	"time"
+
+	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
+	contract "github.com/edgexfoundry/edgex-go/pkg/models"
 )
 
 type BenchmarkContext struct {
@@ -92,5 +95,100 @@ func RunBenchmarkN(db interfaces.DBClient, name string, n int, f func(ctx *Bench
 	durationAvg := time.Duration(uint64(durationSum) / uint64(n))
 	fmt.Printf("%v iterations: avg: %v, lo: %v, hi: %v\n", name, durationAvg, durationLo, durationHi)
 	println()
+
+}
+
+func BenchmarkDBFixedN(db interfaces.DBClient, verify bool) {
+	defer db.CloseSession()
+	durable := true
+	benchmarkReadingsN(db, verify, durable)
+}
+
+func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
+	// Plain IDs do not require .hex(); must use reflect to avoid import cycle to identify DB
+	dbType := reflect.TypeOf(db).String()
+	println("\nBenchmarking " + dbType)
+	println("---------------------------------------------")
+
+	// Remove any events and readings before and after test
+	_ = db.ScrubAllEvents()
+	defer db.ScrubAllEvents()
+
+	count := 100000
+	countPostfix := "[" + strconv.Itoa(count) + "]"
+	readings := make([]string, count)
+	RunBenchmarkN(db, "AddReading", count, func(ctx *BenchmarkContext) error {
+		reading := contract.Reading{}
+		reading.Name = "test" + strconv.Itoa(ctx.I)
+		reading.Device = "device" + strconv.Itoa(ctx.I/100)
+		ctx.StartClock()
+		id, err := db.AddReading(reading)
+		if durable && ctx.I == count-1 {
+			// Last one; ensure DBs actually made data durable
+			durableStart := time.Now()
+			db.EnsureAllDurable(false)
+			ctx.StopClock() // Stop asap before logging
+			durableDuration := time.Since(durableStart)
+			println("Making changes durable: " + durableDuration.String())
+		} else {
+			ctx.StopClock()
+		}
+		readings[ctx.I] = id
+		return err
+	})
+
+	RunBenchmarkN(db, "Readings"+countPostfix, 10, func(ctx *BenchmarkContext) error {
+		readings, err := db.Readings()
+		ctx.StopClock()
+		size := len(readings)
+		if verify && size != count {
+			panic("Unexpected size: " + strconv.Itoa(size))
+		}
+		return err
+	})
+
+	RunBenchmarkN(db, "ReadingCount"+countPostfix, 100, func(ctx *BenchmarkContext) error {
+		size, err := db.ReadingCount()
+		ctx.StopClock()
+		if verify && size != count {
+			panic("Unexpected size: " + strconv.Itoa(size))
+		}
+		return err
+	})
+
+	RunBenchmarkN(db, "ReadingById", count, func(ctx *BenchmarkContext) error {
+		id := readings[ctx.I]
+		ctx.StartClock()
+		reading, err := db.ReadingById(id)
+		ctx.StopClock()
+
+		if verify && reading.Id != id {
+			println(reading.String())
+			panic("Expected ID " + id + " but got " + reading.Id)
+		}
+
+		return err
+	})
+
+	RunBenchmarkN(db, "ReadingsByDevice", 100, func(ctx *BenchmarkContext) error {
+		device := "device" + strconv.Itoa(ctx.I)
+		ctx.StartClock()
+		slice, err := db.ReadingsByDevice(device, 100)
+		ctx.StopClock()
+
+		if verify {
+			if len(slice) != 100 {
+				panic("Unexpected slice size: " + strconv.Itoa(len(slice)))
+			}
+
+			for idx, reading := range slice {
+				if reading.Device != device {
+					println("[" + strconv.Itoa(idx) + "] " + reading.String())
+					panic("Expected device " + device + " but got " + reading.Device)
+				}
+			}
+		}
+		return err
+	})
 
 }

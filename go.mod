@@ -7,6 +7,7 @@ require (
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-kit/kit v0.8.0
 	github.com/go-logfmt/logfmt v0.4.0 // indirect
+	github.com/google/flatbuffers v1.10.0
 	github.com/google/uuid v1.1.0
 	github.com/gorilla/context v1.1.1
 	github.com/gorilla/mux v1.7.0
@@ -18,6 +19,7 @@ require (
 	github.com/magiconair/properties v1.8.0
 	github.com/mattn/go-xmpp v0.0.0-20190124093244-6093f50721ed
 	github.com/mitchellh/consulstructure v0.0.0-20160324233621-b407c521973b
+	github.com/objectbox/objectbox-go v0.0.0
 	github.com/pebbe/zmq4 v1.0.0
 	github.com/pelletier/go-toml v1.2.0
 	github.com/pkg/errors v0.8.1
@@ -26,3 +28,5 @@ require (
 	gopkg.in/eapache/queue.v1 v1.1.0
 	gopkg.in/yaml.v2 v2.2.1
 )
+
+replace github.com/objectbox/objectbox-go => ../objectbox-go

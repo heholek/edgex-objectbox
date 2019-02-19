@@ -36,7 +36,7 @@ File = '/edgex/logs/edgex-support-scheduler.log'
   Port = 27017
   Username = 'scheduler'
   Timeout = 5000
-  Type = 'mongodb'
+  Type = 'objectbox'
 
 [Intervals]
     [Intervals.Midnight]

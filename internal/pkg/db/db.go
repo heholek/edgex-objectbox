@@ -22,6 +22,7 @@ import (
 const (
 	// Databases
 	MongoDB  = "mongodb"
+	ObjectBox = "objectbox"
 
 	// Data
 	EventsCollection          = "event"

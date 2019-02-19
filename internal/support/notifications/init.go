@@ -26,6 +26,7 @@ import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/consul"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/mongo"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox"
 	"github.com/edgexfoundry/edgex-go/internal/support/notifications/interfaces"
 	"github.com/edgexfoundry/edgex-go/pkg/clients"
 	"github.com/edgexfoundry/edgex-go/pkg/clients/logging"
@@ -123,6 +124,8 @@ func newDBClient(dbType string, config db.Configuration) (interfaces.DBClient, e
 	switch dbType {
 	case db.MongoDB:
 		return mongo.NewClient(config)
+	case db.ObjectBox:
+		return objectbox.NewClient(config)
 	default:
 		return nil, db.ErrUnsupportedDatabase
 	}

@@ -30,7 +30,7 @@ cmd/config-seed/config-seed:
 	$(GO) build $(GOFLAGS) -o $@ ./cmd/config-seed
 
 cmd/core-metadata/core-metadata:
-	$(GO) build $(GOFLAGS) -o $@ ./cmd/core-metadata
+	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/core-metadata
 
 cmd/core-data/core-data:
 	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/core-data
@@ -39,22 +39,22 @@ cmd/core-command/core-command:
 	$(GO) build $(GOFLAGS) -o $@ ./cmd/core-command
 
 cmd/export-client/export-client:
-	$(GO) build $(GOFLAGS) -o $@ ./cmd/export-client
+	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/export-client
 
 cmd/export-distro/export-distro:
 	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/export-distro
 
 cmd/support-logging/support-logging:
-	$(GO) build $(GOFLAGS) -o $@ ./cmd/support-logging
+	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/support-logging
 
 cmd/support-notifications/support-notifications:
-	$(GO) build $(GOFLAGS) -o $@ ./cmd/support-notifications
+	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/support-notifications
 
 cmd/sys-mgmt-agent/sys-mgmt-agent:
 	$(GO) build $(GOFLAGS) -o $@ ./cmd/sys-mgmt-agent
 
 cmd/support-scheduler/support-scheduler:
-	$(GO) build $(GOFLAGS) -o $@ ./cmd/support-scheduler
+	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/support-scheduler
 
 clean:
 	rm -f $(MICROSERVICES)

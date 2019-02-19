@@ -34,3 +34,7 @@ parts/*
 prime/*
 stage/*
 snap/.snapcraft/*
+
+# ObjectBox database files
+data.mdb
+lock.mdb

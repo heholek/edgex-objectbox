@@ -7,6 +7,7 @@ require (
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-kit/kit v0.8.0
 	github.com/go-logfmt/logfmt v0.4.0 // indirect
+	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/google/flatbuffers v1.10.0
 	github.com/google/uuid v1.1.0
 	github.com/gorilla/context v1.1.1

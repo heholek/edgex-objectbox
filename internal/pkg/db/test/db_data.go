@@ -8,11 +8,12 @@ package test
 
 import (
 	"fmt"
-	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
-	dbp "github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	contract "github.com/edgexfoundry/edgex-go/pkg/models"
 	"strconv"
 	"testing"
+
+	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
+	dbp "github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 func populateDbReadings(db interfaces.DBClient, count int) (string, error) {

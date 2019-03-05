@@ -7,9 +7,6 @@ docker/docker-compose.yml
 .project
 .vscode/
 
-# build files
-docs/_build/
-
 # binary files
 cmd/config-seed/config-seed
 cmd/core-command/core-command
@@ -21,6 +18,7 @@ cmd/support-logging/support-logging
 cmd/support-notifications/support-notifications
 cmd/sys-mgmt-agent/sys-mgmt-agent
 cmd/support-scheduler/support-scheduler
+cmd/sys-mgmt-executor/sys-mgmt-executor
 docs/_build/
 
 # log dirs

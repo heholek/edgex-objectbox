@@ -20,7 +20,7 @@ import (
 	"net/url"
 
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	contract "github.com/edgexfoundry/edgex-go/pkg/models"
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gorilla/mux"
 )
 
@@ -33,7 +33,7 @@ func restGetAllCommands(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	if len(results) > Configuration.Service.ReadMaxLimit {
-		LoggingClient.Error(err.Error())
+		LoggingClient.Error("Max limit exceeded")
 		http.Error(w, errors.New("Max limit exceeded").Error(), http.StatusRequestEntityTooLarge)
 		return
 	}
@@ -76,7 +76,7 @@ func restUpdateCommand(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if command exists (By ID)
-	c, err := dbClient.GetCommandById(c.Id)
+	former, err := dbClient.GetCommandById(c.Id)
 	if err != nil {
 		LoggingClient.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -85,7 +85,7 @@ func restUpdateCommand(w http.ResponseWriter, r *http.Request) {
 
 	// Name is changed, make sure the new name doesn't conflict with device profile
 	if c.Name != "" {
-		dps, err := dbClient.GetDeviceProfilesUsingCommand(c)
+		dps, err := dbClient.GetDeviceProfilesByCommandId(c.Id)
 		if err != nil {
 			LoggingClient.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -103,6 +103,17 @@ func restUpdateCommand(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+	}
+
+	// Update the fields
+	if c.Name != "" {
+		former.Name = c.Name
+	}
+	if (c.Get.String() != contract.Get{}.String()) {
+		former.Get = c.Get
+	}
+	if (c.Put.String() != contract.Put{}.String()) {
+		former.Put = c.Put
 	}
 
 	if err := dbClient.UpdateCommand(c); err != nil {
@@ -163,7 +174,7 @@ func restDeleteCommandById(w http.ResponseWriter, r *http.Request) {
 	var id string = vars[ID]
 
 	// Check if the command exists
-	c, err := dbClient.GetCommandById(id)
+	_, err := dbClient.GetCommandById(id)
 	if err != nil {
 		LoggingClient.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -171,7 +182,7 @@ func restDeleteCommandById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the command is still in use by a device profile
-	isStillInUse, err := isCommandStillInUse(c)
+	isStillInUse, err := isCommandStillInUse(id)
 	if err != nil {
 		LoggingClient.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -199,8 +210,8 @@ func restDeleteCommandById(w http.ResponseWriter, r *http.Request) {
 }
 
 // Helper function to determine if the command is still in use by device profiles
-func isCommandStillInUse(c contract.Command) (bool, error) {
-	dp, err := dbClient.GetDeviceProfilesUsingCommand(c)
+func isCommandStillInUse(id string) (bool, error) {
+	dp, err := dbClient.GetDeviceProfilesByCommandId(id)
 	if err != nil {
 		return false, err
 	}

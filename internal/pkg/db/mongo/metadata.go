@@ -17,12 +17,13 @@ package mongo
 import (
 	"errors"
 	"fmt"
-	"github.com/globalsign/mgo"
 
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/mongo/models"
-	contract "github.com/edgexfoundry/edgex-go/pkg/models"
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
+	"github.com/google/uuid"
 )
 
 /* -----------------------Schedule Event ------------------------*/
@@ -30,7 +31,7 @@ import (
 func (mc MongoClient) UpdateScheduleEvent(se contract.ScheduleEvent) error {
 	se.Modified = db.MakeTimestamp()
 
-	return mc.updateId(db.ScheduleEvent, se.Id.Hex(), mongoScheduleEvent{ScheduleEvent: se})
+	return mc.updateId(db.ScheduleEvent, se.Id, mongoScheduleEvent{ScheduleEvent: se})
 }
 
 func (mc MongoClient) AddScheduleEvent(se *contract.ScheduleEvent) error {
@@ -47,7 +48,7 @@ func (mc MongoClient) AddScheduleEvent(se *contract.ScheduleEvent) error {
 	ts := db.MakeTimestamp()
 	se.Created = ts
 	se.Modified = ts
-	se.Id = bson.NewObjectId()
+	se.Id = uuid.New().String()
 
 	mse := mongoScheduleEvent{ScheduleEvent: *se}
 
@@ -151,14 +152,14 @@ func (mc MongoClient) AddSchedule(sch *contract.Schedule) error {
 	ts := db.MakeTimestamp()
 	sch.Created = ts
 	sch.Modified = ts
-	sch.Id = bson.NewObjectId()
+	sch.Id = uuid.New().String()
 	return errorMap(col.Insert(sch))
 }
 
 func (mc MongoClient) UpdateSchedule(sch contract.Schedule) error {
 	sch.Modified = db.MakeTimestamp()
 
-	return mc.updateId(db.Schedule, sch.Id.Hex(), sch)
+	return mc.updateId(db.Schedule, sch.Id, sch)
 }
 
 func (mc MongoClient) DeleteScheduleById(id string) error {
@@ -323,13 +324,11 @@ func (mc MongoClient) GetAllDevices() ([]contract.Device, error) {
 }
 
 func (mc MongoClient) GetDevicesByProfileId(id string) ([]contract.Device, error) {
-	name, value, err := idToQueryParameters(id)
+	dp, err := mc.getDeviceProfileById(id)
 	if err != nil {
 		return []contract.Device{}, err
 	}
-
-	name = "profile." + name
-	return mc.getDevices(bson.M{name: value})
+	return mc.getDevices(bson.M{"profile.$id": dp.Id})
 }
 
 func (mc MongoClient) GetDeviceById(id string) (contract.Device, error) {
@@ -345,23 +344,11 @@ func (mc MongoClient) GetDeviceByName(n string) (contract.Device, error) {
 }
 
 func (mc MongoClient) GetDevicesByServiceId(id string) ([]contract.Device, error) {
-	name, value, err := idToQueryParameters(id)
+	ds, err := mc.getDeviceServiceById(id)
 	if err != nil {
 		return []contract.Device{}, err
 	}
-
-	name = "service." + name
-	return mc.getDevices(bson.M{name: value})
-}
-
-func (mc MongoClient) GetDevicesByAddressableId(id string) ([]contract.Device, error) {
-	name, value, err := idToQueryParameters(id)
-	if err != nil {
-		return []contract.Device{}, err
-	}
-
-	name = "addressable." + name
-	return mc.getDevices(bson.M{name: value})
+	return mc.getDevices(bson.M{"service.$id": ds.Id})
 }
 
 func (mc MongoClient) GetDevicesWithLabel(l string) ([]contract.Device, error) {
@@ -556,8 +543,8 @@ func (mc MongoClient) UpdateDeviceProfile(dp contract.DeviceProfile) error {
 }
 
 // Get the device profiles that are currently using the command
-func (mc MongoClient) GetDeviceProfilesUsingCommand(c contract.Command) ([]contract.DeviceProfile, error) {
-	command, err := mc.getCommandById(c.Id)
+func (mc MongoClient) GetDeviceProfilesByCommandId(id string) ([]contract.DeviceProfile, error) {
+	command, err := mc.getCommandById(id)
 	if err != nil {
 		return []contract.DeviceProfile{}, err
 	}
@@ -789,13 +776,11 @@ func (mc MongoClient) GetAllDeviceServices() ([]contract.DeviceService, error) {
 }
 
 func (mc MongoClient) GetDeviceServicesByAddressableId(id string) ([]contract.DeviceService, error) {
-	name, value, err := idToQueryParameters(id)
+	addr, err := mc.getAddressableById(id)
 	if err != nil {
 		return []contract.DeviceService{}, err
 	}
-
-	name = "addressable." + name
-	return mc.getDeviceServices(bson.M{name: value})
+	return mc.getDeviceServices(bson.M{"addressable.$id": addr.Id})
 }
 
 func (mc MongoClient) GetDeviceServicesWithLabel(l string) ([]contract.DeviceService, error) {
@@ -899,33 +884,19 @@ func (mc MongoClient) GetProvisionWatchersByIdentifier(k string, v string) (pw [
 }
 
 func (mc MongoClient) GetProvisionWatchersByServiceId(id string) (pw []contract.ProvisionWatcher, err error) {
-	name, value, err := idToQueryParameters(id)
+	ds, err := mc.getDeviceServiceById(id)
 	if err != nil {
 		return []contract.ProvisionWatcher{}, err
 	}
-
-	name = "service." + name
-	pw, err = mc.getProvisionWatchers(bson.M{name: value})
-	if err != nil {
-		return []contract.ProvisionWatcher{}, err
-	}
-
-	return pw, nil
+	return mc.getProvisionWatchers(bson.M{"service.$id": ds.Id})
 }
 
 func (mc MongoClient) GetProvisionWatchersByProfileId(id string) (pw []contract.ProvisionWatcher, err error) {
-	name, value, err := idToQueryParameters(id)
+	dp, err := mc.getDeviceProfileById(id)
 	if err != nil {
 		return []contract.ProvisionWatcher{}, err
 	}
-
-	name = "profile." + name
-	pw, err = mc.getProvisionWatchers(bson.M{name: value})
-	if err != nil {
-		return []contract.ProvisionWatcher{}, err
-	}
-
-	return pw, nil
+	return mc.getProvisionWatchers(bson.M{"profile.$id": dp.Id})
 }
 
 func (mc MongoClient) GetProvisionWatcherById(id string) (pw contract.ProvisionWatcher, err error) {

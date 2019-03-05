@@ -10,8 +10,8 @@ import (
 	"github.com/edgexfoundry/edgex-go/internal/core/data/errors"
 	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces/mocks"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/pkg/clients/types"
-	"github.com/edgexfoundry/edgex-go/pkg/models"
+	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -463,7 +463,7 @@ func TestAddValueDescriptor(t *testing.T) {
 	}
 }
 
-func TestAddValueDescriptorInUse(t *testing.T) {
+func TestAddDuplicateValueDescriptor(t *testing.T) {
 	reset()
 	myMock := &mocks.DBClient{}
 
@@ -475,10 +475,10 @@ func TestAddValueDescriptorInUse(t *testing.T) {
 
 	if err != nil {
 		switch err.(type) {
-		case *errors.ErrValueDescriptorInUse:
+		case *errors.ErrDuplicateValueDescriptorName:
 			return
 		default:
-			t.Errorf("Unexpected error getting value descriptor by UOM label missing in DB")
+			t.Errorf("Unexpected error adding value descriptor that already exists")
 		}
 	}
 

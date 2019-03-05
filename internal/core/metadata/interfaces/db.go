@@ -14,7 +14,7 @@
 package interfaces
 
 import (
-	contract "github.com/edgexfoundry/edgex-go/pkg/models"
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 type DBClient interface {
@@ -56,7 +56,6 @@ type DBClient interface {
 	GetAllDevices() ([]contract.Device, error)
 	GetDevicesByProfileId(pid string) ([]contract.Device, error)
 	GetDevicesByServiceId(sid string) ([]contract.Device, error)
-	GetDevicesByAddressableId(aid string) ([]contract.Device, error)
 	GetDevicesWithLabel(l string) ([]contract.Device, error)
 	AddDevice(d contract.Device) (string, error)
 	DeleteDeviceById(id string) error
@@ -72,7 +71,7 @@ type DBClient interface {
 	GetDeviceProfilesByManufacturerModel(man string, mod string) ([]contract.DeviceProfile, error)
 	GetDeviceProfilesByManufacturer(man string) ([]contract.DeviceProfile, error)
 	GetDeviceProfileByName(n string) (contract.DeviceProfile, error)
-	GetDeviceProfilesUsingCommand(c contract.Command) ([]contract.DeviceProfile, error)
+	GetDeviceProfilesByCommandId(id string) ([]contract.DeviceProfile, error)
 
 	// Addressable
 	UpdateAddressable(a contract.Addressable) error

@@ -16,13 +16,7 @@ package config
 import (
 	"fmt"
 
-	"github.com/edgexfoundry/edgex-go/pkg/clients"
-)
-
-// Cannot use type string inside structs to be parsed into map[string]interface{} correctly
-// For now using const literals for values
-const (
-	Consul = "consul"
+	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 )
 
 // ServiceInfo contains configuration settings necessary for the basic operation of any EdgeX service.

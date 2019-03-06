@@ -389,7 +389,7 @@ func (client *notificationsClient) DeleteNotificationsOld(age int) error {
 		return err
 	}
 
-	_, err := query.Remove()
+	_, err := query.Limit(0).Remove()
 	return err
 }
 
@@ -438,7 +438,7 @@ func (client *notificationsClient) GetSubscriptionByReceiver(receiver string) ([
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *notificationsClient) GetSubscriptionByCategories(categories []string) ([]contract.Subscription, error) {
@@ -446,7 +446,7 @@ func (client *notificationsClient) GetSubscriptionByCategories(categories []stri
 		stringVectorContainsAny(obx.Subscription_.SubscribedCategories, categories, true)); err != nil {
 		return nil, err
 	} else {
-		return query.Find()
+		return query.Limit(0).Find()
 	}
 }
 
@@ -455,7 +455,7 @@ func (client *notificationsClient) GetSubscriptionByLabels(labels []string) ([]c
 		stringVectorContainsAny(obx.Subscription_.SubscribedLabels, labels, true)); err != nil {
 		return nil, err
 	} else {
-		return query.Find()
+		return query.Limit(0).Find()
 	}
 }
 
@@ -465,7 +465,7 @@ func (client *notificationsClient) GetSubscriptionByCategoriesLabels(categories 
 		stringVectorContainsAny(obx.Subscription_.SubscribedLabels, labels, true)); err != nil {
 		return nil, err
 	} else {
-		return query.Find()
+		return query.Limit(0).Find()
 	}
 }
 
@@ -509,7 +509,7 @@ func (client *notificationsClient) GetTransmissionsByNotificationSlug(slug strin
 		return nil, err
 	}
 
-	if ids, err := query.FindIds(); err != nil {
+	if ids, err := query.Limit(0).FindIds(); err != nil {
 		return nil, err
 	} else {
 		return client.getTransmissionsByNotificationIds(resendLimit, ids)
@@ -539,7 +539,7 @@ func (client *notificationsClient) getTransmissionsByNotificationIds(resendLimit
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *notificationsClient) GetTransmissionsByStartEnd(start int64, end int64, resendLimit int) ([]contract.Transmission, error) {
@@ -556,7 +556,7 @@ func (client *notificationsClient) GetTransmissionsByStartEnd(start int64, end i
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *notificationsClient) GetTransmissionsByStart(start int64, resendLimit int) ([]contract.Transmission, error) {
@@ -573,7 +573,7 @@ func (client *notificationsClient) GetTransmissionsByStart(start int64, resendLi
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *notificationsClient) GetTransmissionsByEnd(end int64, resendLimit int) ([]contract.Transmission, error) {
@@ -590,7 +590,7 @@ func (client *notificationsClient) GetTransmissionsByEnd(end int64, resendLimit 
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *notificationsClient) GetTransmissionsByStatus(resendLimit int, status contract.TransmissionStatus) ([]contract.Transmission, error) {
@@ -607,7 +607,7 @@ func (client *notificationsClient) GetTransmissionsByStatus(resendLimit int, sta
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *notificationsClient) AddTransmission(t contract.Transmission) (string, error) {
@@ -647,7 +647,7 @@ func (client *notificationsClient) DeleteTransmission(age int64, status contract
 		return err
 	}
 
-	_, err := query.Remove()
+	_, err := query.Limit(0).Remove()
 	return err
 }
 
@@ -670,7 +670,7 @@ func (client *notificationsClient) deleteTransmissionsByNotificationIds(ids []ui
 		return err
 	}
 
-	_, err := query.Remove()
+	_, err := query.Limit(0).Remove()
 	return err
 }
 
@@ -689,7 +689,7 @@ func (client *notificationsClient) CleanupOld(age int) error {
 	}
 
 	// first remove all notifications (this sets related transmission.NotificationId = 0)
-	if count, err := query.Remove(); err != nil {
+	if count, err := query.Limit(0).Remove(); err != nil {
 		return err
 	} else if count == 0 {
 		return nil // nothing deleted, no need to delete transmissions

@@ -188,7 +188,7 @@ func (client *schedulerClient) IntervalActionsByIntervalName(name string) ([]con
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *schedulerClient) IntervalActionsByTarget(name string) ([]contract.IntervalAction, error) {
@@ -201,7 +201,7 @@ func (client *schedulerClient) IntervalActionsByTarget(name string) ([]contract.
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *schedulerClient) IntervalActionById(id string) (contract.IntervalAction, error) {
@@ -275,7 +275,7 @@ func (client *schedulerClient) ScrubAllIntervalActions() (int, error) {
 	query.Lock()
 	defer query.Unlock()
 
-	if count, err := query.Remove(); err != nil {
+	if count, err := query.Limit(0).Remove(); err != nil {
 		return 0, err
 	} else {
 		return int(count), nil
@@ -288,7 +288,7 @@ func (client *schedulerClient) ScrubAllIntervals() (int, error) {
 	query.Lock()
 	defer query.Unlock()
 
-	if count, err := query.Remove(); err != nil {
+	if count, err := query.Limit(0).Remove(); err != nil {
 		return 0, err
 	} else {
 		return int(count), nil

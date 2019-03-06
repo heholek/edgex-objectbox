@@ -241,7 +241,7 @@ func (client *coreDataClient) EventCountByDeviceId(id string) (int, error) {
 		return 0, err
 	}
 
-	count, err := query.Count()
+	count, err := query.Limit(0).Count()
 	return int(count), err
 }
 
@@ -296,7 +296,7 @@ func (client *coreDataClient) EventsOlderThanAge(age int64) ([]contract.Event, e
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreDataClient) EventsPushed() ([]contract.Event, error) {
@@ -305,7 +305,7 @@ func (client *coreDataClient) EventsPushed() ([]contract.Event, error) {
 	query.Lock()
 	defer query.Unlock()
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreDataClient) ScrubAllEvents() error {
@@ -518,7 +518,7 @@ func (client *coreDataClient) ValueDescriptorsByName(names []string) ([]contract
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreDataClient) ValueDescriptorById(id string) (contract.ValueDescriptor, error) {
@@ -548,7 +548,7 @@ func (client *coreDataClient) ValueDescriptorsByUomLabel(uomLabel string) ([]con
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreDataClient) ValueDescriptorsByLabel(label string) ([]contract.ValueDescriptor, error) {
@@ -561,7 +561,7 @@ func (client *coreDataClient) ValueDescriptorsByLabel(label string) ([]contract.
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreDataClient) ValueDescriptorsByType(t string) ([]contract.ValueDescriptor, error) {
@@ -574,7 +574,7 @@ func (client *coreDataClient) ValueDescriptorsByType(t string) ([]contract.Value
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreDataClient) ScrubAllValueDescriptors() error {

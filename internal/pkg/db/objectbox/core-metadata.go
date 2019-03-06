@@ -405,7 +405,7 @@ func (client *coreMetaDataClient) GetScheduleEventsByScheduleName(se *[]contract
 
 	if err := query.SetStringParams(obx.ScheduleEvent_.Schedule, n); err != nil {
 		return err
-	} else if list, err := query.Find(); err != nil {
+	} else if list, err := query.Limit(0).Find(); err != nil {
 		return err
 	} else {
 		*se = list
@@ -423,7 +423,7 @@ func (client *coreMetaDataClient) GetScheduleEventsByAddressableId(se *[]contrac
 		return err
 	} else if err := query.SetInt64Params(obx.ScheduleEvent_.Addressable, int64(id)); err != nil {
 		return err
-	} else if list, err := query.Find(); err != nil {
+	} else if list, err := query.Limit(0).Find(); err != nil {
 		return err
 	} else {
 		*se = list
@@ -439,7 +439,7 @@ func (client *coreMetaDataClient) GetScheduleEventsByServiceName(se *[]contract.
 
 	if err := query.SetStringParams(obx.ScheduleEvent_.Service, n); err != nil {
 		return err
-	} else if list, err := query.Find(); err != nil {
+	} else if list, err := query.Limit(0).Find(); err != nil {
 		return err
 	} else {
 		*se = list
@@ -543,7 +543,7 @@ func (client *coreMetaDataClient) GetDeviceReportByDeviceName(n string) ([]contr
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceReportByName(n string) (contract.DeviceReport, error) {
@@ -609,7 +609,7 @@ func (client *coreMetaDataClient) GetDeviceReportsByScheduleEventName(n string) 
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) DeleteDeviceReportById(id string) error {
@@ -682,7 +682,7 @@ func (client *coreMetaDataClient) GetDevicesByProfileId(id string) ([]contract.D
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetDevicesByServiceId(id string) ([]contract.Device, error) {
@@ -697,7 +697,7 @@ func (client *coreMetaDataClient) GetDevicesByServiceId(id string) ([]contract.D
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetDevicesWithLabel(l string) ([]contract.Device, error) {
@@ -710,7 +710,7 @@ func (client *coreMetaDataClient) GetDevicesWithLabel(l string) ([]contract.Devi
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) AddDevice(d contract.Device) (string, error) {
@@ -784,7 +784,7 @@ func (client *coreMetaDataClient) GetDeviceProfilesByModel(m string) ([]contract
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceProfilesWithLabel(l string) ([]contract.DeviceProfile, error) {
@@ -797,7 +797,7 @@ func (client *coreMetaDataClient) GetDeviceProfilesWithLabel(l string) ([]contra
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceProfilesByManufacturerModel(man string, mod string) ([]contract.DeviceProfile, error) {
@@ -814,7 +814,7 @@ func (client *coreMetaDataClient) GetDeviceProfilesByManufacturerModel(man strin
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceProfilesByManufacturer(man string) ([]contract.DeviceProfile, error) {
@@ -827,7 +827,7 @@ func (client *coreMetaDataClient) GetDeviceProfilesByManufacturer(man string) ([
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceProfileByName(n string) (contract.DeviceProfile, error) {
@@ -861,7 +861,7 @@ func (client *coreMetaDataClient) GetDeviceProfilesByCommandId(id string) ([]con
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) UpdateAddressable(a contract.Addressable) error {
@@ -927,7 +927,7 @@ func (client *coreMetaDataClient) GetAddressablesByTopic(t string) ([]contract.A
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetAddressablesByPort(p int) ([]contract.Addressable, error) {
@@ -940,7 +940,7 @@ func (client *coreMetaDataClient) GetAddressablesByPort(p int) ([]contract.Addre
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetAddressablesByPublisher(p string) ([]contract.Addressable, error) {
@@ -953,7 +953,7 @@ func (client *coreMetaDataClient) GetAddressablesByPublisher(p string) ([]contra
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetAddressablesByAddress(add string) ([]contract.Addressable, error) {
@@ -966,7 +966,7 @@ func (client *coreMetaDataClient) GetAddressablesByAddress(add string) ([]contra
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetAddressables() ([]contract.Addressable, error) {
@@ -1008,7 +1008,7 @@ func (client *coreMetaDataClient) GetDeviceServicesByAddressableId(id string) ([
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceServicesWithLabel(l string) ([]contract.DeviceService, error) {
@@ -1021,7 +1021,7 @@ func (client *coreMetaDataClient) GetDeviceServicesWithLabel(l string) ([]contra
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetDeviceServiceById(id string) (contract.DeviceService, error) {
@@ -1121,7 +1121,7 @@ func (client *coreMetaDataClient) GetProvisionWatchersByProfileId(id string) ([]
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetProvisionWatchersByServiceId(id string) ([]contract.ProvisionWatcher, error) {
@@ -1136,7 +1136,7 @@ func (client *coreMetaDataClient) GetProvisionWatchersByServiceId(id string) ([]
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) GetProvisionWatchersByIdentifier(k string, v string) ([]contract.ProvisionWatcher, error) {
@@ -1213,7 +1213,7 @@ func (client *coreMetaDataClient) GetCommandByName(name string) ([]contract.Comm
 		return nil, err
 	}
 
-	return query.Find()
+	return query.Limit(0).Find()
 }
 
 func (client *coreMetaDataClient) AddCommand(c contract.Command) (string, error) {

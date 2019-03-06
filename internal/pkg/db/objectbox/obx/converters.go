@@ -2,6 +2,7 @@ package obx
 
 import (
 	"encoding/json"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"strconv"
 )
@@ -9,11 +10,21 @@ import (
 func IdToString(id uint64) string {
 	return strconv.FormatUint(id, 10)
 }
+
 func IdFromString(id string) (uint64, error) {
+	var result uint64
 	if id == "" {
-		return 0, nil
+		result = 0
+	} else if id, err := strconv.ParseUint(id, 10, 64); err != nil {
+		return 0, err
+	} else {
+		result = id
 	}
-	return strconv.ParseUint(id, 10, 64)
+
+	if result == 0 {
+		return 0, db.ErrNotFound
+	}
+	return result, nil
 }
 
 func interfaceJsonToEntityProperty(dbValue []byte) interface{} {

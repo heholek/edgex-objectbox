@@ -385,9 +385,7 @@ func (client *coreMetaDataClient) UpdateScheduleEvent(se contract.ScheduleEvent)
 }
 
 func (client *coreMetaDataClient) GetScheduleEventById(se *contract.ScheduleEvent, id string) error {
-	if id, err := idFromHex(id); err != nil {
-		return err
-	} else if id, err := obx.IdFromString(id); err != nil {
+	if id, err := obx.IdFromString(id); err != nil {
 		return err
 	} else if object, err := client.scheduleEventBox.Get(id); err != nil {
 		return err
@@ -450,9 +448,7 @@ func (client *coreMetaDataClient) GetScheduleEventsByServiceName(se *[]contract.
 }
 
 func (client *coreMetaDataClient) DeleteScheduleEventById(id string) error {
-	if id, err := idFromHex(id); err != nil {
-		return err
-	} else if id, err := obx.IdFromString(id); err != nil {
+	if id, err := obx.IdFromString(id); err != nil {
 		return err
 	} else {
 		return client.scheduleEventBox.Box.Remove(id)
@@ -513,9 +509,7 @@ func (client *coreMetaDataClient) UpdateSchedule(s contract.Schedule) error {
 }
 
 func (client *coreMetaDataClient) GetScheduleById(s *contract.Schedule, id string) error {
-	if id, err := idFromHex(id); err != nil {
-		return err
-	} else if id, err := obx.IdFromString(id); err != nil {
+	if id, err := obx.IdFromString(id); err != nil {
 		return err
 	} else if object, err := client.scheduleBox.Get(id); err != nil {
 		return err
@@ -528,9 +522,7 @@ func (client *coreMetaDataClient) GetScheduleById(s *contract.Schedule, id strin
 }
 
 func (client *coreMetaDataClient) DeleteScheduleById(id string) error {
-	if id, err := idFromHex(id); err != nil {
-		return err
-	} else if id, err := obx.IdFromString(id); err != nil {
+	if id, err := obx.IdFromString(id); err != nil {
 		return err
 	} else {
 		return client.scheduleBox.Box.Remove(id)

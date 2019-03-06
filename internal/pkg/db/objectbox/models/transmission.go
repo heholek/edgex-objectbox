@@ -16,7 +16,7 @@
 package models
 
 import (
-	"github.com/edgexfoundry/edgex-go/pkg/models"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 type Transmission struct {
@@ -27,5 +27,5 @@ type Transmission struct {
 	Channel           models.Channel
 	Status            models.TransmissionStatus
 	ResendCount       int
-	Records           []models.TransmissionRecord `type:"[]byte" converter:"transmissionRecordsJson"`
+		Records           []models.TransmissionRecord `type:"[]byte" converter:"transmissionRecordsJson"`
 }

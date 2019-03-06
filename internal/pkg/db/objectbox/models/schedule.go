@@ -14,16 +14,12 @@
 
 package models
 
-import (
-	"github.com/edgexfoundry/edgex-go/pkg/models"
-
-	"github.com/globalsign/mgo/bson"
-)
-
 type Schedule struct {
-	models.BaseObject
-	Id        bson.ObjectId `id type:"uint64" converter:"bsonId"`
-	Name      string        `unique`
+	Created   int64
+	Modified  int64
+	Origin    int64
+	Id        string
+	Name      string `unique`
 	Start     string
 	End       string
 	Frequency string

@@ -3,8 +3,8 @@
 package obx
 
 import (
-	"github.com/edgexfoundry/edgex-go/pkg/models"
-	. "github.com/edgexfoundry/edgex-go/pkg/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"

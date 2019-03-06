@@ -1,9 +1,4 @@
 
-DB generalization issues:
-
-* IDs are bson.ObjectId or string
-* Configuration: how about a map (string->string)? 
-
 Misc:
 
 * Benchmarking issue: number of elements added

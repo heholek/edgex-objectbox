@@ -18,7 +18,7 @@ package test
 
 import (
 	notifications "github.com/edgexfoundry/edgex-go/internal/support/notifications/interfaces"
-	"github.com/edgexfoundry/edgex-go/pkg/models"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"testing"
 )
 

@@ -15,7 +15,7 @@
 package models
 
 import (
-	"github.com/edgexfoundry/edgex-go/pkg/models"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 type Device struct {
@@ -24,11 +24,12 @@ type Device struct {
 	Name                   string `unique`
 	AdminState             models.AdminState
 	OperatingState         models.OperatingState
-	Addressable            Addressable `link`
+	Protocols              map[string]map[string]string `type:"[]byte" converter:"mapStringMapStringStringJson"`
 	LastConnected          int64
 	LastReported           int64
 	Labels                 []string
 	Location               interface{}   `type:"[]byte" converter:"interfaceJson"`
 	Service                DeviceService `link`
 	Profile                DeviceProfile `link`
+	AutoEvents             []AutoEvent   `type:"[]byte" converter:"autoEventsJson"`
 }

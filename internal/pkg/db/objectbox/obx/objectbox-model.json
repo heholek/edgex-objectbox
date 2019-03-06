@@ -127,7 +127,7 @@
     {
       "id": "3:8277139392933333295",
       "name": "Device",
-      "lastPropertyId": "15:6924709779874779070",
+      "lastPropertyId": "17:4189659983460485645",
       "properties": [
         {
           "id": "1:1426902891719146417",
@@ -163,11 +163,6 @@
           "name": "OperatingState"
         },
         {
-          "id": "9:5293395039385098111",
-          "name": "Addressable",
-          "indexId": "3:8824925290223488279"
-        },
-        {
           "id": "10:783154740742750654",
           "name": "LastConnected"
         },
@@ -192,6 +187,14 @@
           "id": "15:6924709779874779070",
           "name": "Profile",
           "indexId": "5:1047090894033747089"
+        },
+        {
+          "id": "16:7321949473237296210",
+          "name": "Protocols"
+        },
+        {
+          "id": "17:4189659983460485645",
+          "name": "AutoEvents"
         }
       ]
     },
@@ -776,20 +779,8 @@
     {
       "id": "15:8113636778904077059",
       "name": "Schedule",
-      "lastPropertyId": "10:4885808067988887958",
+      "lastPropertyId": "13:4909530333670424347",
       "properties": [
-        {
-          "id": "1:8890029665615436151",
-          "name": "BaseObject_Created"
-        },
-        {
-          "id": "2:3311521908504909318",
-          "name": "BaseObject_Modified"
-        },
-        {
-          "id": "3:3658101186359190718",
-          "name": "BaseObject_Origin"
-        },
         {
           "id": "4:8513390953149415950",
           "name": "Id"
@@ -818,6 +809,18 @@
         {
           "id": "10:4885808067988887958",
           "name": "RunOnce"
+        },
+        {
+          "id": "11:8245748570931001275",
+          "name": "Created"
+        },
+        {
+          "id": "12:5293543374181848187",
+          "name": "Modified"
+        },
+        {
+          "id": "13:4909530333670424347",
+          "name": "Origin"
         }
       ]
     },
@@ -990,7 +993,14 @@
   "lastIndexId": "22:167306759802683932",
   "lastRelationId": "2:5533510483840274449",
   "retiredEntityUids": [],
-  "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredIndexUids": [
+    8824925290223488279
+  ],
+  "retiredPropertyUids": [
+    5293395039385098111,
+    8890029665615436151,
+    3311521908504909318,
+    3658101186359190718
+  ],
   "retiredRelationUids": []
 }

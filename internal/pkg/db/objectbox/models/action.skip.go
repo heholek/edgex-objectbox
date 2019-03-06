@@ -14,7 +14,7 @@
 
 package models
 
-import "github.com/edgexfoundry/edgex-go/pkg/models"
+import "github.com/edgexfoundry/go-mod-core-contracts/models"
 
 type Action struct {
 	Path      string

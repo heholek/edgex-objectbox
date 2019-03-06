@@ -2,9 +2,7 @@ package obx
 
 import (
 	"encoding/json"
-	"github.com/edgexfoundry/edgex-go/pkg/models"
-	"github.com/globalsign/mgo/bson"
-	"github.com/objectbox/objectbox-go/objectbox"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"strconv"
 )
 
@@ -16,14 +14,6 @@ func IdFromString(id string) (uint64, error) {
 		return 0, nil
 	}
 	return strconv.ParseUint(id, 10, 64)
-}
-
-func bsonIdToEntityProperty(dbValue uint64) bson.ObjectId {
-	return bson.ObjectId(objectbox.StringIdConvertToEntityProperty(dbValue))
-}
-
-func bsonIdToDatabaseValue(goValue bson.ObjectId) uint64 {
-	return objectbox.StringIdConvertToDatabaseValue(string(goValue))
 }
 
 func interfaceJsonToEntityProperty(dbValue []byte) interface{} {
@@ -51,20 +41,43 @@ func interfaceJsonToDatabaseValue(goValue interface{}) []byte {
 	}
 }
 
-func mapStringStringJsonToEntityProperty(dbValue []byte) map[string]string {
+func mapStringStringJsonToEntityProperty(dbValue []byte) (result map[string]string) {
 	if dbValue == nil {
 		return nil
 	}
 
-	var value map[string]string
-	if err := json.Unmarshal(dbValue, &value); err != nil {
+	if err := json.Unmarshal(dbValue, &result); err != nil {
 		panic(err)
 	} else {
-		return value
+		return result
 	}
 }
 
 func mapStringStringJsonToDatabaseValue(goValue map[string]string) []byte {
+	if goValue == nil {
+		return nil
+	}
+
+	if bytes, err := json.Marshal(goValue); err != nil {
+		panic(err)
+	} else {
+		return bytes
+	}
+}
+
+func mapStringMapStringStringJsonToEntityProperty(dbValue []byte) (result map[string]map[string]string) {
+	if dbValue == nil {
+		return nil
+	}
+
+	if err := json.Unmarshal(dbValue, &result); err != nil {
+		panic(err)
+	} else {
+		return result
+	}
+}
+
+func mapStringMapStringStringJsonToDatabaseValue(goValue map[string]map[string]string) []byte {
 	if goValue == nil {
 		return nil
 	}
@@ -175,6 +188,26 @@ func deviceResourcesJsonToEntityProperty(dbValue []byte) (result []models.Device
 }
 
 func deviceResourcesJsonToDatabaseValue(goValue []models.DeviceResource) []byte {
+	if goValue == nil {
+		return nil
+	} else if bytes, err := json.Marshal(goValue); err != nil {
+		panic(err)
+	} else {
+		return bytes
+	}
+}
+
+func autoEventsJsonToEntityProperty(dbValue []byte) (result []models.AutoEvent) {
+	if dbValue != nil {
+		if err := json.Unmarshal(dbValue, &result); err != nil {
+			panic(err)
+		}
+	}
+
+	return
+}
+
+func autoEventsJsonToDatabaseValue(goValue []models.AutoEvent) []byte {
 	if goValue == nil {
 		return nil
 	} else if bytes, err := json.Marshal(goValue); err != nil {

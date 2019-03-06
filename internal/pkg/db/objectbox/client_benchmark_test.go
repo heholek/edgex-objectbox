@@ -7,7 +7,7 @@ import (
 	"sync"
 	"testing"
 
-	contract "github.com/edgexfoundry/edgex-go/pkg/models"
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 func BenchmarkObjectBox(b *testing.B) {

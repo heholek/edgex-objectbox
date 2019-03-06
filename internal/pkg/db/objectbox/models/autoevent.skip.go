@@ -14,21 +14,8 @@
 
 package models
 
-import (
-	"github.com/edgexfoundry/go-mod-core-contracts/models"
-)
-
-type Registration struct {
-	ID          string
-	Created     int64
-	Modified    int64
-	Origin      int64
-	Name        string      `unique`
-	Addressable Addressable `link`
-	Format      string
-	Filter      models.Filter
-	Encryption  models.EncryptionDetails
-	Compression string
-	Enable      bool
-	Destination string
+type AutoEvent struct {
+	Frequency int32
+	OnChange  bool
+	Resource  string
 }

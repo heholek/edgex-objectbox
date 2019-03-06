@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
-	contract "github.com/edgexfoundry/edgex-go/pkg/models"
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 type BenchmarkContext struct {

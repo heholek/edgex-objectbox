@@ -14,17 +14,14 @@
 
 package models
 
-import (
-	"github.com/edgexfoundry/edgex-go/pkg/models"
-	"github.com/globalsign/mgo/bson"
-)
-
 type ScheduleEvent struct {
-	models.BaseObject `inline`
-	Id                bson.ObjectId `id type:"uint64" converter:"bsonId"`
-	Name              string        `unique`
-	Schedule          string
-	Addressable       Addressable `link`
-	Parameters        string
-	Service           string
+	Created     int64
+	Modified    int64
+	Origin      int64
+	Id          string
+	Name        string `unique`
+	Schedule    string
+	Addressable Addressable `link`
+	Parameters  string
+	Service     string
 }

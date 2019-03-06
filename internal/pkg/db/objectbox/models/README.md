@@ -1,5 +1,5 @@
 These files are used to generate bindings. 
-They are based on "github.com/edgexfoundry/edgex-go/pkg/models" with a few changes/additions, mostly:
+They are based on "github.com/edgexfoundry/go-mod-core-contracts/models" with a few changes/additions, mostly:
 * indexes
 * converters  
 

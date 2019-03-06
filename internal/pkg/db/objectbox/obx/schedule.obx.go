@@ -3,8 +3,7 @@
 package obx
 
 import (
-	"github.com/edgexfoundry/edgex-go/pkg/models"
-	. "github.com/edgexfoundry/edgex-go/pkg/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -24,32 +23,32 @@ var ScheduleBinding = schedule_EntityInfo{
 
 // Schedule_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var Schedule_ = struct {
-	BaseObject_Created  *objectbox.PropertyInt64
-	BaseObject_Modified *objectbox.PropertyInt64
-	BaseObject_Origin   *objectbox.PropertyInt64
-	Id                  *objectbox.PropertyUint64
-	Name                *objectbox.PropertyString
-	Start               *objectbox.PropertyString
-	End                 *objectbox.PropertyString
-	Frequency           *objectbox.PropertyString
-	Cron                *objectbox.PropertyString
-	RunOnce             *objectbox.PropertyBool
+	Created   *objectbox.PropertyInt64
+	Modified  *objectbox.PropertyInt64
+	Origin    *objectbox.PropertyInt64
+	Id        *objectbox.PropertyUint64
+	Name      *objectbox.PropertyString
+	Start     *objectbox.PropertyString
+	End       *objectbox.PropertyString
+	Frequency *objectbox.PropertyString
+	Cron      *objectbox.PropertyString
+	RunOnce   *objectbox.PropertyBool
 }{
-	BaseObject_Created: &objectbox.PropertyInt64{
+	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     1,
+			Id:     11,
 			Entity: &ScheduleBinding.Entity,
 		},
 	},
-	BaseObject_Modified: &objectbox.PropertyInt64{
+	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     2,
+			Id:     12,
 			Entity: &ScheduleBinding.Entity,
 		},
 	},
-	BaseObject_Origin: &objectbox.PropertyInt64{
+	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     3,
+			Id:     13,
 			Entity: &ScheduleBinding.Entity,
 		},
 	},
@@ -105,9 +104,9 @@ func (schedule_EntityInfo) GeneratorVersion() int {
 // AddToModel is called by ObjectBox during model build
 func (schedule_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Schedule", 15, 8113636778904077059)
-	model.Property("BaseObject_Created", objectbox.PropertyType_Long, 1, 8890029665615436151)
-	model.Property("BaseObject_Modified", objectbox.PropertyType_Long, 2, 3311521908504909318)
-	model.Property("BaseObject_Origin", objectbox.PropertyType_Long, 3, 3658101186359190718)
+	model.Property("Created", objectbox.PropertyType_Long, 11, 8245748570931001275)
+	model.Property("Modified", objectbox.PropertyType_Long, 12, 5293543374181848187)
+	model.Property("Origin", objectbox.PropertyType_Long, 13, 4909530333670424347)
 	model.Property("Id", objectbox.PropertyType_Long, 4, 8513390953149415950)
 	model.PropertyFlags(objectbox.PropertyFlags_ID)
 	model.Property("Name", objectbox.PropertyType_String, 5, 2749270577364459771)
@@ -118,22 +117,22 @@ func (schedule_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Frequency", objectbox.PropertyType_String, 8, 7974489129662594472)
 	model.Property("Cron", objectbox.PropertyType_String, 9, 8672935605683336359)
 	model.Property("RunOnce", objectbox.PropertyType_Bool, 10, 4885808067988887958)
-	model.EntityLastPropertyId(10, 4885808067988887958)
+	model.EntityLastPropertyId(13, 4909530333670424347)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (schedule_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*Schedule); ok {
-		return bsonIdToDatabaseValue(obj.Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
 	} else {
-		return bsonIdToDatabaseValue(object.(Schedule).Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(Schedule).Id), nil
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
 func (schedule_EntityInfo) SetId(object interface{}, id uint64) {
 	if obj, ok := object.(*Schedule); ok {
-		obj.Id = bsonIdToEntityProperty(id)
+		obj.Id = objectbox.StringIdConvertToEntityProperty(id)
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Schedule).Id
@@ -155,10 +154,10 @@ func (schedule_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder,
 	var offsetCron = fbutils.CreateStringOffset(fbb, obj.Cron)
 
 	// build the FlatBuffers object
-	fbb.StartObject(10)
-	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
+	fbb.StartObject(13)
+	fbutils.SetInt64Slot(fbb, 10, obj.Created)
+	fbutils.SetInt64Slot(fbb, 11, obj.Modified)
+	fbutils.SetInt64Slot(fbb, 12, obj.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetStart)
@@ -178,12 +177,10 @@ func (schedule_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (inter
 	var id = table.GetUint64Slot(10, 0)
 
 	return &Schedule{
-		BaseObject: models.BaseObject{
-			Created:  table.GetInt64Slot(4, 0),
-			Modified: table.GetInt64Slot(6, 0),
-			Origin:   table.GetInt64Slot(8, 0),
-		},
-		Id:        bsonIdToEntityProperty(id),
+		Created:   table.GetInt64Slot(24, 0),
+		Modified:  table.GetInt64Slot(26, 0),
+		Origin:    table.GetInt64Slot(28, 0),
+		Id:        objectbox.StringIdConvertToEntityProperty(id),
 		Name:      fbutils.GetStringSlot(table, 12),
 		Start:     fbutils.GetStringSlot(table, 14),
 		End:       fbutils.GetStringSlot(table, 16),
@@ -282,7 +279,7 @@ func (box *ScheduleBox) GetAll() ([]Schedule, error) {
 
 // Remove deletes a single object
 func (box *ScheduleBox) Remove(object *Schedule) (err error) {
-	return box.Box.Remove(bsonIdToDatabaseValue(object.Id))
+	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.Id))
 }
 
 // Creates a query with the given conditions. Use the fields of the Schedule_ struct to create conditions.

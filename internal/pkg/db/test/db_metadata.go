@@ -13,7 +13,6 @@ import (
 	"github.com/edgexfoundry/edgex-go/internal/core/metadata/interfaces"
 	dataBase "github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
-	"github.com/google/uuid"
 )
 
 func TestMetadataDB(t *testing.T, db interfaces.DBClient) {
@@ -626,7 +625,7 @@ func testDBDeviceService(t *testing.T, db interfaces.DBClient) {
 	if len(deviceServices) != 1 {
 		t.Fatalf("There should be 1 deviceServices instead of %d", len(deviceServices))
 	}
-	deviceServices, err = db.GetDeviceServicesByAddressableId(uuid.New().String())
+	deviceServices, err = db.GetDeviceServicesByAddressableId("")
 	if err != dataBase.ErrNotFound {
 		t.Fatalf("Error getting deviceServices by addressable id")
 	}
@@ -901,7 +900,7 @@ func testDBDeviceProfile(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 1 deviceProfiles instead of %d", len(deviceProfiles))
 	}
 
-	deviceProfiles, err = db.GetDeviceProfilesByCommandId(uuid.New().String())
+	deviceProfiles, err = db.GetDeviceProfilesByCommandId("")
 	if err != dataBase.ErrNotFound {
 		t.Fatalf("Error getting deviceProfiles %v", err)
 	}
@@ -996,7 +995,7 @@ func testDBDevice(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 1 devices instead of %d", len(devices))
 	}
 
-	devices, err = db.GetDevicesByProfileId(uuid.New().String())
+	devices, err = db.GetDevicesByProfileId("")
 	if err != dataBase.ErrNotFound {
 		t.Fatalf("Error getting devices %v", err)
 	}
@@ -1012,7 +1011,7 @@ func testDBDevice(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 1 devices instead of %d", len(devices))
 	}
 
-	devices, err = db.GetDevicesByServiceId(uuid.New().String())
+	devices, err = db.GetDevicesByServiceId("")
 	if err != dataBase.ErrNotFound {
 		t.Fatalf("Error getting devices %v", err)
 	}
@@ -1119,7 +1118,7 @@ func testDBProvisionWatcher(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 1 provisionWatchers instead of %d", len(provisionWatchers))
 	}
 
-	provisionWatchers, err = db.GetProvisionWatchersByServiceId(uuid.New().String())
+	provisionWatchers, err = db.GetProvisionWatchersByServiceId("")
 	if err != dataBase.ErrNotFound {
 		t.Fatalf("Error getting provisionWatchers %v", err)
 	}
@@ -1135,7 +1134,7 @@ func testDBProvisionWatcher(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("There should be 1 provisionWatchers instead of %d", len(provisionWatchers))
 	}
 
-	provisionWatchers, err = db.GetProvisionWatchersByProfileId(uuid.New().String())
+	provisionWatchers, err = db.GetProvisionWatchersByProfileId("")
 	if err != dataBase.ErrNotFound {
 		t.Fatalf("Error getting provisionWatchers %v", err)
 	}

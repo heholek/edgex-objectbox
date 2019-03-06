@@ -3,8 +3,7 @@
 package obx
 
 import (
-	"github.com/edgexfoundry/edgex-go/pkg/models"
-	. "github.com/edgexfoundry/edgex-go/pkg/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -118,16 +117,16 @@ func (scheduleEvent_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (scheduleEvent_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*ScheduleEvent); ok {
-		return bsonIdToDatabaseValue(obj.Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
 	} else {
-		return bsonIdToDatabaseValue(object.(ScheduleEvent).Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(ScheduleEvent).Id), nil
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
 func (scheduleEvent_EntityInfo) SetId(object interface{}, id uint64) {
 	if obj, ok := object.(*ScheduleEvent); ok {
-		obj.Id = bsonIdToEntityProperty(id)
+		obj.Id = objectbox.StringIdConvertToEntityProperty(id)
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(ScheduleEvent).Id
@@ -171,9 +170,9 @@ func (scheduleEvent_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 
 	// build the FlatBuffers object
 	fbb.StartObject(9)
-	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetSchedule)
@@ -211,12 +210,10 @@ func (scheduleEvent_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (
 	}
 
 	return &ScheduleEvent{
-		BaseObject: models.BaseObject{
-			Created:  table.GetInt64Slot(4, 0),
-			Modified: table.GetInt64Slot(6, 0),
-			Origin:   table.GetInt64Slot(8, 0),
-		},
-		Id:          bsonIdToEntityProperty(id),
+		Created:     table.GetInt64Slot(4, 0),
+		Modified:    table.GetInt64Slot(6, 0),
+		Origin:      table.GetInt64Slot(8, 0),
+		Id:          objectbox.StringIdConvertToEntityProperty(id),
 		Name:        fbutils.GetStringSlot(table, 12),
 		Schedule:    fbutils.GetStringSlot(table, 14),
 		Addressable: *relAddressable,
@@ -314,7 +311,7 @@ func (box *ScheduleEventBox) GetAll() ([]ScheduleEvent, error) {
 
 // Remove deletes a single object
 func (box *ScheduleEventBox) Remove(object *ScheduleEvent) (err error) {
-	return box.Box.Remove(bsonIdToDatabaseValue(object.Id))
+	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.Id))
 }
 
 // Creates a query with the given conditions. Use the fields of the ScheduleEvent_ struct to create conditions.

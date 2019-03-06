@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
-	contract "github.com/edgexfoundry/edgex-go/pkg/models"
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/pkg/errors"
 	"sync"
@@ -49,7 +49,6 @@ type coreMetaDataQueries struct {
 		name                 deviceProfileQuery
 	}
 	device struct {
-		addressable deviceQuery
 		labels      deviceQuery
 		name        deviceQuery
 		profile     deviceQuery
@@ -178,10 +177,6 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	//endregion
 
 	//region Device
-	if err == nil {
-		client.queries.device.addressable.DeviceQuery, err =
-			client.deviceBox.QueryOrError(obx.Device_.Addressable.Equals(0))
-	}
 	if err == nil {
 		client.queries.device.labels.DeviceQuery, err =
 			client.deviceBox.QueryOrError(obx.Device_.Labels.Contains("", true))
@@ -338,7 +333,9 @@ func (client *coreMetaDataClient) validateScheduleEvent(se *contract.ScheduleEve
 }
 
 func (client *coreMetaDataClient) AddScheduleEvent(se *contract.ScheduleEvent) error {
-	onCreate(&se.BaseObject)
+	if se.Created == 0 {
+		se.Created = db.MakeTimestamp()
+	}
 
 	if err := client.validateScheduleEvent(se); err != nil {
 		return err
@@ -369,7 +366,7 @@ func (client *coreMetaDataClient) GetScheduleEventByName(se *contract.ScheduleEv
 }
 
 func (client *coreMetaDataClient) UpdateScheduleEvent(se contract.ScheduleEvent) error {
-	onUpdate(&se.BaseObject)
+	se.Modified = db.MakeTimestamp()
 
 	if err := client.validateScheduleEvent(&se); err != nil {
 		return err
@@ -472,7 +469,9 @@ func (client *coreMetaDataClient) GetAllSchedules(s *[]contract.Schedule) error 
 }
 
 func (client *coreMetaDataClient) AddSchedule(s *contract.Schedule) error {
-	onCreate(&s.BaseObject)
+	if s.Created == 0 {
+		s.Created = db.MakeTimestamp()
+	}
 
 	_, err := client.scheduleBox.Put(s)
 	return err
@@ -499,7 +498,7 @@ func (client *coreMetaDataClient) GetScheduleByName(s *contract.Schedule, n stri
 }
 
 func (client *coreMetaDataClient) UpdateSchedule(s contract.Schedule) error {
-	onUpdate(&s.BaseObject)
+	s.Modified = db.MakeTimestamp()
 
 	if id, err := obx.IdFromString(string(s.Id)); err != nil {
 		return err
@@ -709,21 +708,6 @@ func (client *coreMetaDataClient) GetDevicesByServiceId(id string) ([]contract.D
 	return query.Find()
 }
 
-func (client *coreMetaDataClient) GetDevicesByAddressableId(id string) ([]contract.Device, error) {
-	var query = &client.queries.device.addressable
-
-	query.Lock()
-	defer query.Unlock()
-
-	if id, err := obx.IdFromString(id); err != nil {
-		return nil, err
-	} else if err := query.SetInt64Params(obx.Device_.Addressable, int64(id)); err != nil {
-		return nil, err
-	}
-
-	return query.Find()
-}
-
 func (client *coreMetaDataClient) GetDevicesWithLabel(l string) ([]contract.Device, error) {
 	var query = &client.queries.device.labels
 
@@ -873,13 +857,13 @@ func (client *coreMetaDataClient) GetDeviceProfileByName(n string) (contract.Dev
 	}
 }
 
-func (client *coreMetaDataClient) GetDeviceProfilesUsingCommand(c contract.Command) ([]contract.DeviceProfile, error) {
+func (client *coreMetaDataClient) GetDeviceProfilesByCommandId(id string) ([]contract.DeviceProfile, error) {
 	var query = &client.queries.deviceProfile.commands
 
 	query.Lock()
 	defer query.Unlock()
 
-	if id, err := obx.IdFromString(c.Id); err != nil {
+	if id, err := obx.IdFromString(id); err != nil {
 		return nil, err
 	} else if err := query.SetInt64Params(obx.Command_.Id, int64(id)); err != nil {
 		return nil, err

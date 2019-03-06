@@ -15,7 +15,7 @@
 package models
 
 import (
-	"github.com/edgexfoundry/edgex-go/pkg/models"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 // this is not an entity, (that's why the file is named .skip.go)

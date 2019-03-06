@@ -3,8 +3,8 @@
 package obx
 
 import (
-	"github.com/edgexfoundry/edgex-go/pkg/models"
-	. "github.com/edgexfoundry/edgex-go/pkg/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -32,13 +32,14 @@ var Device_ = struct {
 	Name                *objectbox.PropertyString
 	AdminState          *objectbox.PropertyString
 	OperatingState      *objectbox.PropertyString
-	Addressable         *objectbox.RelationOneToMany
+	Protocols           *objectbox.PropertyByteVector
 	LastConnected       *objectbox.PropertyInt64
 	LastReported        *objectbox.PropertyInt64
 	Labels              *objectbox.PropertyStringVector
 	Location            *objectbox.PropertyByteVector
 	Service             *objectbox.RelationOneToMany
 	Profile             *objectbox.RelationOneToMany
+	AutoEvents          *objectbox.PropertyByteVector
 }{
 	BaseObject_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
@@ -88,12 +89,11 @@ var Device_ = struct {
 			Entity: &DeviceBinding.Entity,
 		},
 	},
-	Addressable: &objectbox.RelationOneToMany{
-		Property: &objectbox.BaseProperty{
-			Id:     9,
+	Protocols: &objectbox.PropertyByteVector{
+		BaseProperty: &objectbox.BaseProperty{
+			Id:     16,
 			Entity: &DeviceBinding.Entity,
 		},
-		Target: &AddressableBinding.Entity,
 	},
 	LastConnected: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
@@ -133,6 +133,12 @@ var Device_ = struct {
 		},
 		Target: &DeviceProfileBinding.Entity,
 	},
+	AutoEvents: &objectbox.PropertyByteVector{
+		BaseProperty: &objectbox.BaseProperty{
+			Id:     17,
+			Entity: &DeviceBinding.Entity,
+		},
+	},
 }
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
@@ -154,8 +160,7 @@ func (device_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.PropertyIndex(2, 167828898366445354)
 	model.Property("AdminState", objectbox.PropertyType_String, 7, 8163911656701609670)
 	model.Property("OperatingState", objectbox.PropertyType_String, 8, 145868754249953301)
-	model.Property("Addressable", objectbox.PropertyType_Relation, 9, 5293395039385098111)
-	model.PropertyRelation("Addressable", 3, 8824925290223488279)
+	model.Property("Protocols", objectbox.PropertyType_ByteVector, 16, 7321949473237296210)
 	model.Property("LastConnected", objectbox.PropertyType_Long, 10, 783154740742750654)
 	model.Property("LastReported", objectbox.PropertyType_Long, 11, 9043009336819819958)
 	model.Property("Labels", objectbox.PropertyType_StringVector, 12, 1085892164679946752)
@@ -164,7 +169,8 @@ func (device_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.PropertyRelation("DeviceService", 4, 6949046153132189499)
 	model.Property("Profile", objectbox.PropertyType_Relation, 15, 6924709779874779070)
 	model.PropertyRelation("DeviceProfile", 5, 1047090894033747089)
-	model.EntityLastPropertyId(15, 6924709779874779070)
+	model.Property("AutoEvents", objectbox.PropertyType_ByteVector, 17, 4189659983460485645)
+	model.EntityLastPropertyId(17, 4189659983460485645)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -188,19 +194,6 @@ func (device_EntityInfo) SetId(object interface{}, id uint64) {
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
 func (device_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
-	if rel := &object.(*Device).Addressable; rel != nil {
-		rId, err := AddressableBinding.GetId(rel)
-		if err != nil {
-			return err
-		} else if rId == 0 {
-			if err := txn.RunWithCursor(AddressableBinding.Id, func(targetCursor *objectbox.Cursor) error {
-				_, err := targetCursor.Put(rel) // NOTE Put/PutAsync() has a side-effect of setting the rel.ID
-				return err
-			}); err != nil {
-				return err
-			}
-		}
-	}
 	if rel := &object.(*Device).Service; rel != nil {
 		rId, err := DeviceServiceBinding.GetId(rel)
 		if err != nil {
@@ -237,17 +230,10 @@ func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, i
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetAdminState = fbutils.CreateStringOffset(fbb, string(obj.AdminState))
 	var offsetOperatingState = fbutils.CreateStringOffset(fbb, string(obj.OperatingState))
+	var offsetProtocols = fbutils.CreateByteVectorOffset(fbb, mapStringMapStringStringJsonToDatabaseValue(obj.Protocols))
 	var offsetLabels = fbutils.CreateStringVectorOffset(fbb, obj.Labels)
 	var offsetLocation = fbutils.CreateByteVectorOffset(fbb, interfaceJsonToDatabaseValue(obj.Location))
-
-	var rIdAddressable uint64
-	if rel := &obj.Addressable; rel != nil {
-		if rId, err := AddressableBinding.GetId(rel); err != nil {
-			return err
-		} else {
-			rIdAddressable = rId
-		}
-	}
+	var offsetAutoEvents = fbutils.CreateByteVectorOffset(fbb, autoEventsJsonToDatabaseValue(obj.AutoEvents))
 
 	var rIdService uint64
 	if rel := &obj.Service; rel != nil {
@@ -268,7 +254,7 @@ func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, i
 	}
 
 	// build the FlatBuffers object
-	fbb.StartObject(15)
+	fbb.StartObject(17)
 	fbutils.SetInt64Slot(fbb, 0, obj.DescribedObject.BaseObject.Created)
 	fbutils.SetInt64Slot(fbb, 1, obj.DescribedObject.BaseObject.Modified)
 	fbutils.SetInt64Slot(fbb, 2, obj.DescribedObject.BaseObject.Origin)
@@ -277,13 +263,14 @@ func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, i
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetAdminState)
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetOperatingState)
-	fbutils.SetUint64Slot(fbb, 8, rIdAddressable)
+	fbutils.SetUOffsetTSlot(fbb, 15, offsetProtocols)
 	fbutils.SetInt64Slot(fbb, 9, obj.LastConnected)
 	fbutils.SetInt64Slot(fbb, 10, obj.LastReported)
 	fbutils.SetUOffsetTSlot(fbb, 11, offsetLabels)
 	fbutils.SetUOffsetTSlot(fbb, 12, offsetLocation)
 	fbutils.SetUint64Slot(fbb, 13, rIdService)
 	fbutils.SetUint64Slot(fbb, 14, rIdProfile)
+	fbutils.SetUOffsetTSlot(fbb, 16, offsetAutoEvents)
 	return nil
 }
 
@@ -294,25 +281,6 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interfa
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
 	var id = table.GetUint64Slot(12, 0)
-
-	var relAddressable *Addressable
-	if rId := table.GetUint64Slot(20, 0); rId > 0 {
-		if err := txn.RunWithCursor(AddressableBinding.Id, func(targetCursor *objectbox.Cursor) error {
-			if relObject, err := targetCursor.Get(rId); err != nil {
-				return err
-			} else if relObj, ok := relObject.(*Addressable); ok {
-				relAddressable = relObj
-			} else {
-				var relObj = relObject.(Addressable)
-				relAddressable = &relObj
-			}
-			return nil
-		}); err != nil {
-			return nil, err
-		}
-	} else {
-		relAddressable = &Addressable{}
-	}
 
 	var relService *DeviceService
 	if rId := table.GetUint64Slot(30, 0); rId > 0 {
@@ -365,13 +333,14 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interfa
 		Name:           fbutils.GetStringSlot(table, 14),
 		AdminState:     models.AdminState(fbutils.GetStringSlot(table, 16)),
 		OperatingState: models.OperatingState(fbutils.GetStringSlot(table, 18)),
-		Addressable:    *relAddressable,
+		Protocols:      mapStringMapStringStringJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 34)),
 		LastConnected:  table.GetInt64Slot(22, 0),
 		LastReported:   table.GetInt64Slot(24, 0),
 		Labels:         fbutils.GetStringVectorSlot(table, 26),
 		Location:       interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 28)),
 		Service:        *relService,
 		Profile:        *relProfile,
+		AutoEvents:     autoEventsJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 36)),
 	}, nil
 }
 

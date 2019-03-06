@@ -23,5 +23,5 @@ func stringVectorContainsAny(sv *objectbox.PropertyStringVector, items []string,
 		conditions[k] = sv.Contains(str, caseSensitive)
 	}
 
-	return objectbox.MatchAny(conditions...)
+	return objectbox.Any(conditions...)
 }

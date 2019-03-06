@@ -13,13 +13,11 @@ require (
 	github.com/google/uuid v1.1.0
 	github.com/gorilla/context v1.1.1
 	github.com/gorilla/mux v1.7.0
-	github.com/hashicorp/consul v1.4.2
 	github.com/influxdata/influxdb v1.7.4
 	github.com/influxdata/platform v0.0.0-20190117200541-d500d3cf5589 // indirect
 	github.com/magiconair/properties v1.8.0
 	github.com/mattn/go-xmpp v0.0.0-20190124093244-6093f50721ed
-	github.com/mitchellh/consulstructure v0.0.0-20160324233621-b407c521973b
-	github.com/objectbox/objectbox-go v0.0.0
+	github.com/objectbox/objectbox-go v0.9.0-rc
 	github.com/pebbe/zmq4 v1.0.0
 	github.com/pelletier/go-toml v1.2.0
 	github.com/pkg/errors v0.8.1
@@ -28,5 +26,3 @@ require (
 	gopkg.in/eapache/queue.v1 v1.1.0
 	gopkg.in/yaml.v2 v2.2.2
 )
-
-replace github.com/objectbox/objectbox-go => ../objectbox-go

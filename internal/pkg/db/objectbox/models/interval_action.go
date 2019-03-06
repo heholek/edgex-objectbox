@@ -19,7 +19,7 @@ type IntervalAction struct {
 	Created    int64
 	Modified   int64
 	Origin     int64
-	Name       string
+	Name       string `unique`
 	Interval   string
 	Parameters string
 	Target     string

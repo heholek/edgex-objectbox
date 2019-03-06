@@ -31,7 +31,7 @@ func ObjectBoxModel() *objectbox.Model {
 	model.RegisterBinding(TransmissionBinding)
 	model.RegisterBinding(ValueDescriptorBinding)
 	model.LastEntityId(18, 5270674616764717680)
-	model.LastIndexId(22, 167306759802683932)
+	model.LastIndexId(23, 4596954898919109231)
 	model.LastRelationId(2, 5533510483840274449)
 
 	return model

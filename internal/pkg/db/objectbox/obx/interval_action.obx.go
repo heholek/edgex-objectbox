@@ -159,6 +159,8 @@ func (intervalAction_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Modified", objectbox.PropertyType_Long, 3, 8212849254297936236)
 	model.Property("Origin", objectbox.PropertyType_Long, 4, 738028464208107115)
 	model.Property("Name", objectbox.PropertyType_String, 5, 4933633578353384552)
+	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
+	model.PropertyIndex(23, 4596954898919109231)
 	model.Property("Interval", objectbox.PropertyType_String, 6, 5283703314264311266)
 	model.Property("Parameters", objectbox.PropertyType_String, 7, 3543707062021049254)
 	model.Property("Target", objectbox.PropertyType_String, 8, 3745173396511053028)

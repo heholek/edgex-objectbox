@@ -1,5 +1,5 @@
 [Writable]
-Persistence = 'database'
+Persistence = 'file'
 LogLevel = 'INFO'
 
 [Service]
@@ -29,4 +29,4 @@ File = '/edgex/logs/edgex-support-logging.log'
   Port = 27017
   Username = 'logging'
   Timeout = 5000
-  Type = 'objectbox'
+  Type = 'mongodb'

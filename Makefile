@@ -45,7 +45,7 @@ cmd/export-distro/export-distro:
 	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/export-distro
 
 cmd/support-logging/support-logging:
-	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/support-logging
+	$(GO) build $(GOFLAGS) -o $@ ./cmd/support-logging
 
 cmd/support-notifications/support-notifications:
 	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/support-notifications
@@ -126,7 +126,7 @@ docker_export_distro:
 
 docker_support_logging:
 	docker build \
-		-f cmd/Dockerfile --build-arg service=support-logging \
+		-f cmd/support-logging/Dockerfile \
 		--label "git_sha=$(GIT_SHA)" \
 		-t edgexfoundry/docker-support-logging-go:$(GIT_SHA) \
 		-t edgexfoundry/docker-support-logging-go:$(VERSION)-dev \

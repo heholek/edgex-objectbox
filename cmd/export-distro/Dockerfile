@@ -6,8 +6,22 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-ARG git_sha
-FROM edgexfoundry/build-base:${git_sha} AS builder
+FROM golang:1.11-alpine AS builder
+
+ENV GO111MODULE=on
+WORKDIR /go/src/github.com/edgexfoundry/edgex-go
+
+# The main mirrors are giving us timeout issues on builds periodically.
+# So we can try these.
+
+RUN sed -e 's/dl-cdn[.]alpinelinux.org/nl.alpinelinux.org/g' -i~ /etc/apk/repositories
+
+RUN apk update && apk add zeromq-dev libsodium-dev pkgconfig build-base git
+
+COPY go.mod .
+#COPY go.sum .
+
+RUN go mod download
 
 COPY . .
 RUN make cmd/export-distro/export-distro

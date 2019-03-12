@@ -12,17 +12,20 @@ func IdToString(id uint64) string {
 }
 
 func IdFromString(id string) (uint64, error) {
+	// using db.ErrNotFound instead of db.ErrInvalidObjectId for compatibility with EdgeX test definitions (uuid IDs)
+	var errInvalid = db.ErrNotFound
+
 	var result uint64
 	if id == "" {
 		result = 0
 	} else if id, err := strconv.ParseUint(id, 10, 64); err != nil {
-		return 0, err
+		return 0, errInvalid
 	} else {
 		result = id
 	}
 
 	if result == 0 {
-		return 0, db.ErrNotFound
+		return 0, errInvalid
 	}
 	return result, nil
 }

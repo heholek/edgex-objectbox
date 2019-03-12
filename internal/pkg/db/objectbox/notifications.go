@@ -202,7 +202,7 @@ func newNotificationsClient(objectBox *objectbox.ObjectBox) (*notificationsClien
 	if err == nil {
 		return client, nil
 	} else {
-		return nil, err
+		return nil, mapError(err)
 	}
 }
 
@@ -212,11 +212,11 @@ func (client *notificationsClient) GetNotifications() ([]contract.Notification, 
 
 func (client *notificationsClient) GetNotificationById(id string) (contract.Notification, error) {
 	if id, err := obx.IdFromString(id); err != nil {
-		return contract.Notification{}, err
+		return contract.Notification{}, mapError(err)
 	} else if object, err := client.notificationBox.Get(id); err != nil {
-		return contract.Notification{}, err
+		return contract.Notification{}, mapError(err)
 	} else if object == nil {
-		return contract.Notification{}, db.ErrNotFound
+		return contract.Notification{}, mapError(db.ErrNotFound)
 	} else {
 		return *object, nil
 	}
@@ -229,13 +229,13 @@ func (client *notificationsClient) GetNotificationBySlug(slug string) (contract.
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Notification_.Slug, slug); err != nil {
-		return contract.Notification{}, err
+		return contract.Notification{}, mapError(err)
 	}
 
 	if list, err := query.Limit(1).Find(); err != nil {
-		return contract.Notification{}, err
+		return contract.Notification{}, mapError(err)
 	} else if len(list) == 0 {
-		return contract.Notification{}, db.ErrNotFound
+		return contract.Notification{}, mapError(db.ErrNotFound)
 	} else {
 		return list[0], nil
 	}
@@ -248,18 +248,20 @@ func (client *notificationsClient) GetNotificationBySender(sender string, limit 
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Notification_.Sender, sender); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) GetNotificationsByLabels(labels []string, limit int) ([]contract.Notification, error) {
 	if query, err := client.notificationBox.QueryOrError(
 		stringVectorContainsAny(obx.Notification_.Labels, labels, true)); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	} else {
-		return query.Limit(uint64(limit)).Find()
+		result, err := query.Limit(uint64(limit)).Find()
+		return result, mapError(err)
 	}
 }
 
@@ -270,10 +272,11 @@ func (client *notificationsClient) GetNotificationsByStartEnd(start int64, end i
 	defer query.Unlock()
 
 	if err := query.SetInt64Params(obx.Notification_.Created, start, end); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) GetNotificationsByStart(start int64, limit int) ([]contract.Notification, error) {
@@ -283,10 +286,11 @@ func (client *notificationsClient) GetNotificationsByStart(start int64, limit in
 	defer query.Unlock()
 
 	if err := query.SetInt64Params(obx.Notification_.Created, start); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) GetNotificationsByEnd(end int64, limit int) ([]contract.Notification, error) {
@@ -296,9 +300,11 @@ func (client *notificationsClient) GetNotificationsByEnd(end int64, limit int) (
 	defer query.Unlock()
 
 	if err := query.SetInt64Params(obx.Notification_.Created, end); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
-	return query.Limit(uint64(limit)).Find()
+
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) GetNewNotifications(limit int) ([]contract.Notification, error) {
@@ -308,10 +314,11 @@ func (client *notificationsClient) GetNewNotifications(limit int) ([]contract.No
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Notification_.Status, "NEW"); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) GetNewNormalNotifications(limit int) ([]contract.Notification, error) {
@@ -321,56 +328,57 @@ func (client *notificationsClient) GetNewNormalNotifications(limit int) ([]contr
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Notification_.Status, "NEW"); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
 	if err := query.SetStringParams(obx.Notification_.Severity, "NORMAL"); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) AddNotification(n contract.Notification) (string, error) {
 	onCreate(&n.BaseObject)
 
 	id, err := client.notificationBox.Put(&n)
-	return obx.IdToString(id), err
+	return obx.IdToString(id), mapError(err)
 }
 
 func (client *notificationsClient) UpdateNotification(n contract.Notification) error {
 	onUpdate(&n.BaseObject)
 
 	if id, err := obx.IdFromString(n.ID); err != nil {
-		return err
+		return mapError(err)
 	} else if exists, err := client.notificationBox.Contains(id); err != nil {
-		return err
+		return mapError(err)
 	} else if !exists {
-		return db.ErrNotFound
+		return mapError(db.ErrNotFound)
 	}
 
 	_, err := client.notificationBox.Put(&n)
-	return err
+	return mapError(err)
 }
 
 func (client *notificationsClient) MarkNotificationProcessed(n contract.Notification) error {
 	n.Status = contract.NotificationsStatus(contract.Processed)
-	return client.UpdateNotification(n)
+	return mapError(client.UpdateNotification(n))
 }
 
 func (client *notificationsClient) DeleteNotificationById(id string) error {
 	if id, err := obx.IdFromString(id); err != nil {
-		return err
+		return mapError(err)
 	} else {
-		return client.notificationBox.Box.Remove(id)
+		return mapError(client.notificationBox.Box.Remove(id))
 	}
 }
 
 func (client *notificationsClient) DeleteNotificationBySlug(slug string) error {
 	if obj, err := client.GetNotificationBySlug(slug); err != nil {
-		return err
+		return mapError(err)
 	} else {
-		return client.notificationBox.Remove(&obj)
+		return mapError(client.notificationBox.Remove(&obj))
 	}
 }
 
@@ -381,29 +389,30 @@ func (client *notificationsClient) DeleteNotificationsOld(age int) error {
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Notification_.Status, "PROCESSED"); err != nil {
-		return err
+		return mapError(err)
 	}
 
 	var end = db.MakeTimestamp() - int64(age)
 	if err := query.SetInt64Params(obx.Notification_.Modified, end); err != nil {
-		return err
+		return mapError(err)
 	}
 
 	_, err := query.Limit(0).Remove()
-	return err
+	return mapError(err)
 }
 
 func (client *notificationsClient) GetSubscriptions() ([]contract.Subscription, error) {
-	return client.subscriptionBox.GetAll()
+	result, err := client.subscriptionBox.GetAll()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) GetSubscriptionById(id string) (contract.Subscription, error) {
 	if id, err := obx.IdFromString(id); err != nil {
-		return contract.Subscription{}, err
+		return contract.Subscription{}, mapError(err)
 	} else if object, err := client.subscriptionBox.Get(id); err != nil {
-		return contract.Subscription{}, err
+		return contract.Subscription{}, mapError(err)
 	} else if object == nil {
-		return contract.Subscription{}, db.ErrNotFound
+		return contract.Subscription{}, mapError(db.ErrNotFound)
 	} else {
 		return *object, nil
 	}
@@ -416,13 +425,13 @@ func (client *notificationsClient) GetSubscriptionBySlug(slug string) (contract.
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Subscription_.Slug, slug); err != nil {
-		return contract.Subscription{}, err
+		return contract.Subscription{}, mapError(err)
 	}
 
 	if list, err := query.Limit(1).Find(); err != nil {
-		return contract.Subscription{}, err
+		return contract.Subscription{}, mapError(err)
 	} else if len(list) == 0 {
-		return contract.Subscription{}, db.ErrNotFound
+		return contract.Subscription{}, mapError(db.ErrNotFound)
 	} else {
 		return list[0], nil
 	}
@@ -435,27 +444,30 @@ func (client *notificationsClient) GetSubscriptionByReceiver(receiver string) ([
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Subscription_.Receiver, receiver); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) GetSubscriptionByCategories(categories []string) ([]contract.Subscription, error) {
 	if query, err := client.subscriptionBox.QueryOrError(
 		stringVectorContainsAny(obx.Subscription_.SubscribedCategories, categories, true)); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	} else {
-		return query.Limit(0).Find()
+		result, err := query.Limit(0).Find()
+		return result, mapError(err)
 	}
 }
 
 func (client *notificationsClient) GetSubscriptionByLabels(labels []string) ([]contract.Subscription, error) {
 	if query, err := client.subscriptionBox.QueryOrError(
 		stringVectorContainsAny(obx.Subscription_.SubscribedLabels, labels, true)); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	} else {
-		return query.Limit(0).Find()
+		result, err := query.Limit(0).Find()
+		return result, mapError(err)
 	}
 }
 
@@ -463,9 +475,10 @@ func (client *notificationsClient) GetSubscriptionByCategoriesLabels(categories 
 	if query, err := client.subscriptionBox.QueryOrError(
 		stringVectorContainsAny(obx.Subscription_.SubscribedCategories, categories, true),
 		stringVectorContainsAny(obx.Subscription_.SubscribedLabels, labels, true)); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	} else {
-		return query.Limit(0).Find()
+		result, err := query.Limit(0).Find()
+		return result, mapError(err)
 	}
 }
 
@@ -473,29 +486,29 @@ func (client *notificationsClient) AddSubscription(s contract.Subscription) (str
 	onCreate(&s.BaseObject)
 
 	id, err := client.subscriptionBox.Put(&s)
-	return obx.IdToString(id), err
+	return obx.IdToString(id), mapError(err)
 }
 
 func (client *notificationsClient) UpdateSubscription(s contract.Subscription) error {
 	onUpdate(&s.BaseObject)
 
 	if id, err := obx.IdFromString(s.ID); err != nil {
-		return err
+		return mapError(err)
 	} else if exists, err := client.subscriptionBox.Contains(id); err != nil {
-		return err
+		return mapError(err)
 	} else if !exists {
-		return db.ErrNotFound
+		return mapError(db.ErrNotFound)
 	}
 
 	_, err := client.subscriptionBox.Put(&s)
-	return err
+	return mapError(err)
 }
 
 func (client *notificationsClient) DeleteSubscriptionBySlug(slug string) error {
 	if obj, err := client.GetSubscriptionBySlug(slug); err != nil {
-		return err
+		return mapError(err)
 	} else {
-		return client.subscriptionBox.Remove(&obj)
+		return mapError(client.subscriptionBox.Remove(&obj))
 	}
 }
 
@@ -506,13 +519,14 @@ func (client *notificationsClient) GetTransmissionsByNotificationSlug(slug strin
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Notification_.Slug, slug); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
 	if ids, err := query.Limit(0).FindIds(); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	} else {
-		return client.getTransmissionsByNotificationIds(resendLimit, ids)
+		result, err := client.getTransmissionsByNotificationIds(resendLimit, ids)
+		return result, mapError(err)
 	}
 }
 
@@ -532,14 +546,15 @@ func (client *notificationsClient) getTransmissionsByNotificationIds(resendLimit
 	}
 
 	if err := query.SetInt64ParamsIn(obx.Transmission_.Notification, intIds...); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
 	if err := query.SetInt64Params(obx.Transmission_.ResendCount, int64(resendLimit)); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) GetTransmissionsByStartEnd(start int64, end int64, resendLimit int) ([]contract.Transmission, error) {
@@ -549,14 +564,15 @@ func (client *notificationsClient) GetTransmissionsByStartEnd(start int64, end i
 	defer query.Unlock()
 
 	if err := query.SetInt64Params(obx.Transmission_.Created, start, end); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
 	if err := query.SetInt64Params(obx.Transmission_.ResendCount, int64(resendLimit)); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) GetTransmissionsByStart(start int64, resendLimit int) ([]contract.Transmission, error) {
@@ -566,14 +582,15 @@ func (client *notificationsClient) GetTransmissionsByStart(start int64, resendLi
 	defer query.Unlock()
 
 	if err := query.SetInt64Params(obx.Transmission_.Created, start); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
 	if err := query.SetInt64Params(obx.Transmission_.ResendCount, int64(resendLimit)); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) GetTransmissionsByEnd(end int64, resendLimit int) ([]contract.Transmission, error) {
@@ -583,14 +600,15 @@ func (client *notificationsClient) GetTransmissionsByEnd(end int64, resendLimit 
 	defer query.Unlock()
 
 	if err := query.SetInt64Params(obx.Transmission_.Created, end); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
 	if err := query.SetInt64Params(obx.Transmission_.ResendCount, int64(resendLimit)); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) GetTransmissionsByStatus(resendLimit int, status contract.TransmissionStatus) ([]contract.Transmission, error) {
@@ -600,36 +618,37 @@ func (client *notificationsClient) GetTransmissionsByStatus(resendLimit int, sta
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Transmission_.Status, string(status)); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
 	if err := query.SetInt64Params(obx.Transmission_.ResendCount, int64(resendLimit)); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *notificationsClient) AddTransmission(t contract.Transmission) (string, error) {
 	onCreate(&t.BaseObject)
 
 	id, err := client.transmissionBox.Put(&t)
-	return obx.IdToString(id), err
+	return obx.IdToString(id), mapError(err)
 }
 
 func (client *notificationsClient) UpdateTransmission(t contract.Transmission) error {
 	onUpdate(&t.BaseObject)
 
 	if id, err := obx.IdFromString(t.ID); err != nil {
-		return err
+		return mapError(err)
 	} else if exists, err := client.transmissionBox.Contains(id); err != nil {
-		return err
+		return mapError(err)
 	} else if !exists {
-		return db.ErrNotFound
+		return mapError(db.ErrNotFound)
 	}
 
 	_, err := client.transmissionBox.Put(&t)
-	return err
+	return mapError(err)
 }
 
 func (client *notificationsClient) DeleteTransmission(age int64, status contract.TransmissionStatus) error {
@@ -639,16 +658,16 @@ func (client *notificationsClient) DeleteTransmission(age int64, status contract
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Transmission_.Status, string(status)); err != nil {
-		return err
+		return mapError(err)
 	}
 
 	var end = db.MakeTimestamp() - age
 	if err := query.SetInt64Params(obx.Transmission_.Modified, end); err != nil {
-		return err
+		return mapError(err)
 	}
 
 	_, err := query.Limit(0).Remove()
-	return err
+	return mapError(err)
 }
 
 func (client *notificationsClient) deleteTransmissionsByNotificationIds(ids []uint64) error {
@@ -667,14 +686,16 @@ func (client *notificationsClient) deleteTransmissionsByNotificationIds(ids []ui
 	}
 
 	if err := query.SetInt64ParamsIn(obx.Transmission_.Notification, intIds...); err != nil {
-		return err
+		return mapError(err)
 	}
 
 	_, err := query.Limit(0).Remove()
-	return err
+	return mapError(err)
 }
 
-func (client *notificationsClient) Cleanup() error { return client.CleanupOld(client.cleanupDefaultAge) }
+func (client *notificationsClient) Cleanup() error {
+	return mapError(client.CleanupOld(client.cleanupDefaultAge))
+}
 
 func (client *notificationsClient) CleanupOld(age int) error {
 	var query = &client.queries.notification.modifiedLT
@@ -685,15 +706,15 @@ func (client *notificationsClient) CleanupOld(age int) error {
 	currentTime := db.MakeTimestamp()
 	end := int(currentTime) - age
 	if err := query.SetInt64Params(obx.Notification_.Modified, int64(end)); err != nil {
-		return err
+		return mapError(err)
 	}
 
 	// first remove all notifications (this sets related transmission.NotificationId = 0)
 	if count, err := query.Limit(0).Remove(); err != nil {
-		return err
+		return mapError(err)
 	} else if count == 0 {
 		return nil // nothing deleted, no need to delete transmissions
 	} else {
-		return client.deleteTransmissionsByNotificationIds([]uint64{0})
+		return mapError(client.deleteTransmissionsByNotificationIds([]uint64{0}))
 	}
 }

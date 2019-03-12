@@ -4,6 +4,7 @@ import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/objectbox/objectbox-go/objectbox"
+	"strings"
 )
 
 func onCreate(base *models.BaseObject) {
@@ -24,4 +25,17 @@ func stringVectorContainsAny(sv *objectbox.PropertyStringVector, items []string,
 	}
 
 	return objectbox.Any(conditions...)
+}
+
+func mapError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	if strings.HasPrefix(err.Error(), "Unique constraint") &&
+		strings.Contains(err.Error(), "would be violated by putting entity") {
+		return db.ErrNotUnique
+	}
+
+	return err
 }

@@ -83,12 +83,13 @@ func newSchedulerClient(objectBox *objectbox.ObjectBox) (*schedulerClient, error
 	if err == nil {
 		return client, nil
 	} else {
-		return nil, err
+		return nil, mapError(err)
 	}
 }
 
 func (client *schedulerClient) Intervals() ([]contract.Interval, error) {
-	return client.intervalBox.GetAll()
+	result, err := client.intervalBox.GetAll()
+	return result, mapError(err)
 }
 
 func (client *schedulerClient) IntervalsWithLimit(limit int) ([]contract.Interval, error) {
@@ -97,7 +98,8 @@ func (client *schedulerClient) IntervalsWithLimit(limit int) ([]contract.Interva
 	query.Lock()
 	defer query.Unlock()
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *schedulerClient) IntervalByName(name string) (contract.Interval, error) {
@@ -107,13 +109,13 @@ func (client *schedulerClient) IntervalByName(name string) (contract.Interval, e
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Interval_.Name, name); err != nil {
-		return contract.Interval{}, err
+		return contract.Interval{}, mapError(err)
 	}
 
 	if list, err := query.Limit(1).Find(); err != nil {
-		return contract.Interval{}, err
+		return contract.Interval{}, mapError(err)
 	} else if len(list) == 0 {
-		return contract.Interval{}, db.ErrNotFound
+		return contract.Interval{}, mapError(db.ErrNotFound)
 	} else {
 		return list[0], nil
 	}
@@ -121,11 +123,11 @@ func (client *schedulerClient) IntervalByName(name string) (contract.Interval, e
 
 func (client *schedulerClient) IntervalById(id string) (contract.Interval, error) {
 	if id, err := obx.IdFromString(id); err != nil {
-		return contract.Interval{}, err
+		return contract.Interval{}, mapError(err)
 	} else if object, err := client.intervalBox.Get(id); err != nil {
-		return contract.Interval{}, err
+		return contract.Interval{}, mapError(err)
 	} else if object == nil {
-		return contract.Interval{}, db.ErrNotFound
+		return contract.Interval{}, mapError(db.ErrNotFound)
 	} else {
 		return *object, nil
 	}
@@ -138,7 +140,7 @@ func (client *schedulerClient) AddInterval(interval contract.Interval) (string, 
 	}
 
 	id, err := client.intervalBox.Put(&interval)
-	return obx.IdToString(id), err
+	return obx.IdToString(id), mapError(err)
 }
 
 func (client *schedulerClient) UpdateInterval(interval contract.Interval) error {
@@ -146,27 +148,28 @@ func (client *schedulerClient) UpdateInterval(interval contract.Interval) error 
 	interval.Modified = db.MakeTimestamp()
 
 	if id, err := obx.IdFromString(interval.ID); err != nil {
-		return err
+		return mapError(err)
 	} else if exists, err := client.intervalBox.Contains(id); err != nil {
-		return err
+		return mapError(err)
 	} else if !exists {
-		return db.ErrNotFound
+		return mapError(db.ErrNotFound)
 	}
 
 	_, err := client.intervalBox.Put(&interval)
-	return err
+	return mapError(err)
 }
 
 func (client *schedulerClient) DeleteIntervalById(id string) error {
 	if id, err := obx.IdFromString(id); err != nil {
-		return err
+		return mapError(err)
 	} else {
-		return client.intervalBox.Box.Remove(id)
+		return mapError(client.intervalBox.Box.Remove(id))
 	}
 }
 
 func (client *schedulerClient) IntervalActions() ([]contract.IntervalAction, error) {
-	return client.intervalActionBox.GetAll()
+	result, err := client.intervalActionBox.GetAll()
+	return result, mapError(err)
 }
 
 func (client *schedulerClient) IntervalActionsWithLimit(limit int) ([]contract.IntervalAction, error) {
@@ -175,7 +178,8 @@ func (client *schedulerClient) IntervalActionsWithLimit(limit int) ([]contract.I
 	query.Lock()
 	defer query.Unlock()
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *schedulerClient) IntervalActionsByIntervalName(name string) ([]contract.IntervalAction, error) {
@@ -185,10 +189,11 @@ func (client *schedulerClient) IntervalActionsByIntervalName(name string) ([]con
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.IntervalAction_.Interval, name); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *schedulerClient) IntervalActionsByTarget(name string) ([]contract.IntervalAction, error) {
@@ -198,19 +203,20 @@ func (client *schedulerClient) IntervalActionsByTarget(name string) ([]contract.
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.IntervalAction_.Target, name); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *schedulerClient) IntervalActionById(id string) (contract.IntervalAction, error) {
 	if id, err := obx.IdFromString(id); err != nil {
-		return contract.IntervalAction{}, err
+		return contract.IntervalAction{}, mapError(err)
 	} else if object, err := client.intervalActionBox.Get(id); err != nil {
-		return contract.IntervalAction{}, err
+		return contract.IntervalAction{}, mapError(err)
 	} else if object == nil {
-		return contract.IntervalAction{}, db.ErrNotFound
+		return contract.IntervalAction{}, mapError(db.ErrNotFound)
 	} else {
 		return *object, nil
 	}
@@ -223,13 +229,13 @@ func (client *schedulerClient) IntervalActionByName(name string) (contract.Inter
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.IntervalAction_.Name, name); err != nil {
-		return contract.IntervalAction{}, err
+		return contract.IntervalAction{}, mapError(err)
 	}
 
 	if list, err := query.Limit(1).Find(); err != nil {
-		return contract.IntervalAction{}, err
+		return contract.IntervalAction{}, mapError(err)
 	} else if len(list) == 0 {
-		return contract.IntervalAction{}, db.ErrNotFound
+		return contract.IntervalAction{}, mapError(db.ErrNotFound)
 	} else {
 		return list[0], nil
 	}
@@ -242,7 +248,7 @@ func (client *schedulerClient) AddIntervalAction(intervalAction contract.Interva
 	}
 
 	id, err := client.intervalActionBox.Put(&intervalAction)
-	return obx.IdToString(id), err
+	return obx.IdToString(id), mapError(err)
 }
 
 func (client *schedulerClient) UpdateIntervalAction(intervalAction contract.IntervalAction) error {
@@ -250,22 +256,22 @@ func (client *schedulerClient) UpdateIntervalAction(intervalAction contract.Inte
 	intervalAction.Modified = db.MakeTimestamp()
 
 	if id, err := obx.IdFromString(intervalAction.ID); err != nil {
-		return err
+		return mapError(err)
 	} else if exists, err := client.intervalActionBox.Contains(id); err != nil {
-		return err
+		return mapError(err)
 	} else if !exists {
-		return db.ErrNotFound
+		return mapError(db.ErrNotFound)
 	}
 
 	_, err := client.intervalActionBox.Put(&intervalAction)
-	return err
+	return mapError(err)
 }
 
 func (client *schedulerClient) DeleteIntervalActionById(id string) error {
 	if id, err := obx.IdFromString(id); err != nil {
-		return err
+		return mapError(err)
 	} else {
-		return client.intervalActionBox.Box.Remove(id)
+		return mapError(client.intervalActionBox.Box.Remove(id))
 	}
 }
 
@@ -275,11 +281,8 @@ func (client *schedulerClient) ScrubAllIntervalActions() (int, error) {
 	query.Lock()
 	defer query.Unlock()
 
-	if count, err := query.Limit(0).Remove(); err != nil {
-		return 0, err
-	} else {
-		return int(count), nil
-	}
+	count, err := query.Limit(0).Remove()
+	return int(count), mapError(err)
 }
 
 func (client *schedulerClient) ScrubAllIntervals() (int, error) {
@@ -288,9 +291,6 @@ func (client *schedulerClient) ScrubAllIntervals() (int, error) {
 	query.Lock()
 	defer query.Unlock()
 
-	if count, err := query.Limit(0).Remove(); err != nil {
-		return 0, err
-	} else {
-		return int(count), nil
-	}
+	count, err := query.Limit(0).Remove()
+	return int(count), mapError(err)
 }

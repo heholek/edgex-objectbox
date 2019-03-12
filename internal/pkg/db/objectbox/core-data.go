@@ -153,12 +153,13 @@ func newCoreDataClient(objectBox *objectbox.ObjectBox) (*coreDataClient, error) 
 	if err == nil {
 		return client, nil
 	} else {
-		return nil, err
+		return nil, mapError(err)
 	}
 }
 
 func (client *coreDataClient) Events() ([]contract.Event, error) {
-	return client.eventBox.GetAll()
+	result, err := client.eventBox.GetAll()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) EventsWithLimit(limit int) ([]contract.Event, error) {
@@ -168,7 +169,8 @@ func (client *coreDataClient) EventsWithLimit(limit int) ([]contract.Event, erro
 	query.Lock()
 	defer query.Unlock()
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) AddEvent(event contract.Event) (string, error) {
@@ -187,18 +189,18 @@ func (client *coreDataClient) AddEvent(event contract.Event) (string, error) {
 		id, err = client.eventBox.Put(&event)
 	}
 
-	return obx.IdToString(id), err
+	return obx.IdToString(id), mapError(err)
 }
 
 func (client *coreDataClient) UpdateEvent(e contract.Event) error {
 	e.Modified = db.MakeTimestamp()
 
 	if id, err := obx.IdFromString(e.ID); err != nil {
-		return err
+		return mapError(err)
 	} else if exists, err := client.eventBox.Contains(id); err != nil {
-		return err
+		return mapError(err)
 	} else if !exists {
-		return db.ErrNotFound
+		return mapError(db.ErrNotFound)
 	}
 
 	var err error
@@ -208,27 +210,24 @@ func (client *coreDataClient) UpdateEvent(e contract.Event) error {
 		_, err = client.eventBox.Put(&e)
 	}
 
-	return err
+	return mapError(err)
 }
 
 func (client *coreDataClient) EventById(id string) (contract.Event, error) {
 	if id, err := obx.IdFromString(id); err != nil {
-		return contract.Event{}, err
+		return contract.Event{}, mapError(err)
 	} else if object, err := client.eventBox.Get(id); err != nil {
-		return contract.Event{}, err
+		return contract.Event{}, mapError(err)
 	} else if object == nil {
-		return contract.Event{}, db.ErrNotFound
+		return contract.Event{}, mapError(db.ErrNotFound)
 	} else {
 		return *object, nil
 	}
 }
 
-func (client *coreDataClient) EventCount() (count int, err error) {
+func (client *coreDataClient) EventCount() (int, error) {
 	countLong, err := client.eventBox.Count()
-	if err == nil {
-		count = int(countLong)
-	}
-	return
+	return int(countLong), mapError(err)
 }
 
 func (client *coreDataClient) EventCountByDeviceId(id string) (int, error) {
@@ -238,20 +237,20 @@ func (client *coreDataClient) EventCountByDeviceId(id string) (int, error) {
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Event_.Device, id); err != nil {
-		return 0, err
+		return 0, mapError(err)
 	}
 
 	count, err := query.Limit(0).Count()
-	return int(count), err
+	return int(count), mapError(err)
 }
 
 func (client *coreDataClient) DeleteEventById(idString string) error {
 	id, err := obx.IdFromString(idString)
 	if err != nil {
-		return err
+		return mapError(err)
 	}
 
-	return client.eventBox.Box.Remove(id)
+	return mapError(client.eventBox.Box.Remove(id))
 }
 
 func (client *coreDataClient) EventsForDeviceLimit(id string, limit int) ([]contract.Event, error) {
@@ -261,14 +260,16 @@ func (client *coreDataClient) EventsForDeviceLimit(id string, limit int) ([]cont
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Event_.Device, id); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) EventsForDevice(id string) ([]contract.Event, error) {
-	return client.EventsForDeviceLimit(id, 0)
+	result, err := client.EventsForDeviceLimit(id, 0)
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) EventsByCreationTime(start, end int64, limit int) ([]contract.Event, error) {
@@ -278,10 +279,11 @@ func (client *coreDataClient) EventsByCreationTime(start, end int64, limit int) 
 	defer query.Unlock()
 
 	if err := query.SetInt64Params(obx.Event_.Created, start, end); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) EventsOlderThanAge(age int64) ([]contract.Event, error) {
@@ -293,10 +295,11 @@ func (client *coreDataClient) EventsOlderThanAge(age int64) ([]contract.Event, e
 	defer query.Unlock()
 
 	if err := query.SetInt64Params(obx.Event_.Created, time); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) EventsPushed() ([]contract.Event, error) {
@@ -305,18 +308,20 @@ func (client *coreDataClient) EventsPushed() ([]contract.Event, error) {
 	query.Lock()
 	defer query.Unlock()
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) ScrubAllEvents() error {
 	if err := client.eventBox.RemoveAll(); err != nil {
-		return err
+		return mapError(err)
 	}
-	return client.readingBox.RemoveAll()
+	return mapError(client.readingBox.RemoveAll())
 }
 
 func (client *coreDataClient) Readings() ([]contract.Reading, error) {
-	return client.readingBox.GetAll()
+	result, err := client.readingBox.GetAll()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) AddReading(r contract.Reading) (string, error) {
@@ -333,18 +338,18 @@ func (client *coreDataClient) AddReading(r contract.Reading) (string, error) {
 		id, err = client.readingBox.Put(&r)
 	}
 
-	return obx.IdToString(id), err
+	return obx.IdToString(id), mapError(err)
 }
 
 func (client *coreDataClient) UpdateReading(r contract.Reading) error {
 	r.Modified = db.MakeTimestamp()
 
 	if id, err := obx.IdFromString(r.Id); err != nil {
-		return err
+		return mapError(err)
 	} else if exists, err := client.readingBox.Contains(id); err != nil {
-		return err
+		return mapError(err)
 	} else if !exists {
-		return db.ErrNotFound
+		return mapError(db.ErrNotFound)
 	}
 
 	var err error
@@ -354,16 +359,16 @@ func (client *coreDataClient) UpdateReading(r contract.Reading) error {
 		_, err = client.readingBox.Put(&r)
 	}
 
-	return err
+	return mapError(err)
 }
 
 func (client *coreDataClient) ReadingById(id string) (contract.Reading, error) {
 	if id, err := obx.IdFromString(id); err != nil {
-		return contract.Reading{}, err
+		return contract.Reading{}, mapError(err)
 	} else if object, err := client.readingBox.Get(id); err != nil {
-		return contract.Reading{}, err
+		return contract.Reading{}, mapError(err)
 	} else if object == nil {
-		return contract.Reading{}, db.ErrNotFound
+		return contract.Reading{}, mapError(db.ErrNotFound)
 	} else {
 		return *object, nil
 	}
@@ -371,16 +376,16 @@ func (client *coreDataClient) ReadingById(id string) (contract.Reading, error) {
 
 func (client *coreDataClient) ReadingCount() (int, error) {
 	count, err := client.readingBox.Count()
-	return int(count), err
+	return int(count), mapError(err)
 }
 
 func (client *coreDataClient) DeleteReadingById(idString string) error {
 	id, err := obx.IdFromString(idString)
 	if err != nil {
-		return err
+		return mapError(err)
 	}
 
-	return client.readingBox.Box.Remove(id)
+	return mapError(client.readingBox.Box.Remove(id))
 }
 
 func (client *coreDataClient) ReadingsByDevice(deviceId string, limit int) ([]contract.Reading, error) {
@@ -390,10 +395,11 @@ func (client *coreDataClient) ReadingsByDevice(deviceId string, limit int) ([]co
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Reading_.Device, deviceId); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) ReadingsByValueDescriptor(name string, limit int) ([]contract.Reading, error) {
@@ -403,10 +409,11 @@ func (client *coreDataClient) ReadingsByValueDescriptor(name string, limit int) 
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Reading_.Name, name); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) ReadingsByValueDescriptorNames(names []string, limit int) ([]contract.Reading, error) {
@@ -416,10 +423,11 @@ func (client *coreDataClient) ReadingsByValueDescriptorNames(names []string, lim
 	defer query.Unlock()
 
 	if err := query.SetStringParamsIn(obx.Reading_.Name, names...); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) ReadingsByCreationTime(start, end int64, limit int) ([]contract.Reading, error) {
@@ -429,10 +437,11 @@ func (client *coreDataClient) ReadingsByCreationTime(start, end int64, limit int
 	defer query.Unlock()
 
 	if err := query.SetInt64Params(obx.Reading_.Created, start, end); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) ReadingsByDeviceAndValueDescriptor(deviceId, valueDescriptor string, limit int) ([]contract.Reading, error) {
@@ -442,13 +451,14 @@ func (client *coreDataClient) ReadingsByDeviceAndValueDescriptor(deviceId, value
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Reading_.Device, deviceId); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 	if err := query.SetStringParams(obx.Reading_.Name, valueDescriptor); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(uint64(limit)).Find()
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) AddValueDescriptor(v contract.ValueDescriptor) (string, error) {
@@ -459,11 +469,12 @@ func (client *coreDataClient) AddValueDescriptor(v contract.ValueDescriptor) (st
 	// TODO tests don't set Max, Min, Default (interface{})
 
 	id, err := client.valueDescriptorBox.Put(&v)
-	return obx.IdToString(id), err
+	return obx.IdToString(id), mapError(err)
 }
 
 func (client *coreDataClient) ValueDescriptors() ([]contract.ValueDescriptor, error) {
-	return client.valueDescriptorBox.GetAll()
+	result, err := client.valueDescriptorBox.GetAll()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) UpdateValueDescriptor(v contract.ValueDescriptor) error {
@@ -471,22 +482,22 @@ func (client *coreDataClient) UpdateValueDescriptor(v contract.ValueDescriptor) 
 
 	// check whether it exists, otherwise this function must fail
 	if object, err := client.valueDescriptorById(v.Id); err != nil {
-		return err
+		return mapError(err)
 	} else if object == nil {
-		return db.ErrNotFound
+		return mapError(db.ErrNotFound)
 	}
 
 	_, err := client.valueDescriptorBox.Put(&v)
-	return err
+	return mapError(err)
 }
 
 func (client *coreDataClient) DeleteValueDescriptorById(idString string) error {
 	id, err := obx.IdFromString(idString)
 	if err != nil {
-		return err
+		return mapError(err)
 	}
 
-	return client.valueDescriptorBox.Box.Remove(id)
+	return mapError(client.valueDescriptorBox.Box.Remove(id))
 }
 
 func (client *coreDataClient) ValueDescriptorByName(name string) (contract.ValueDescriptor, error) {
@@ -496,13 +507,13 @@ func (client *coreDataClient) ValueDescriptorByName(name string) (contract.Value
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.ValueDescriptor_.Name, name); err != nil {
-		return contract.ValueDescriptor{}, err
+		return contract.ValueDescriptor{}, mapError(err)
 	}
 
 	if list, err := query.Limit(1).Find(); err != nil {
-		return contract.ValueDescriptor{}, err
+		return contract.ValueDescriptor{}, mapError(err)
 	} else if len(list) == 0 {
-		return contract.ValueDescriptor{}, db.ErrNotFound
+		return contract.ValueDescriptor{}, mapError(db.ErrNotFound)
 	} else {
 		return list[0], nil
 	}
@@ -515,16 +526,17 @@ func (client *coreDataClient) ValueDescriptorsByName(names []string) ([]contract
 	defer query.Unlock()
 
 	if err := query.SetStringParamsIn(obx.ValueDescriptor_.Name, names...); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) ValueDescriptorById(id string) (contract.ValueDescriptor, error) {
 	object, err := client.valueDescriptorById(id)
 	if object == nil || err != nil {
-		return contract.ValueDescriptor{}, err
+		return contract.ValueDescriptor{}, mapError(err)
 	}
 	return *object, nil
 }
@@ -532,10 +544,11 @@ func (client *coreDataClient) ValueDescriptorById(id string) (contract.ValueDesc
 func (client *coreDataClient) valueDescriptorById(idString string) (*contract.ValueDescriptor, error) {
 	id, err := obx.IdFromString(idString)
 	if err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return client.valueDescriptorBox.Get(id)
+	result, err := client.valueDescriptorBox.Get(id)
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) ValueDescriptorsByUomLabel(uomLabel string) ([]contract.ValueDescriptor, error) {
@@ -545,10 +558,11 @@ func (client *coreDataClient) ValueDescriptorsByUomLabel(uomLabel string) ([]con
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.ValueDescriptor_.UomLabel, uomLabel); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) ValueDescriptorsByLabel(label string) ([]contract.ValueDescriptor, error) {
@@ -558,10 +572,11 @@ func (client *coreDataClient) ValueDescriptorsByLabel(label string) ([]contract.
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.ValueDescriptor_.Labels, label); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) ValueDescriptorsByType(t string) ([]contract.ValueDescriptor, error) {
@@ -571,10 +586,11 @@ func (client *coreDataClient) ValueDescriptorsByType(t string) ([]contract.Value
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.ValueDescriptor_.Type, t); err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 
-	return query.Limit(0).Find()
+	result, err := query.Limit(0).Find()
+	return result, mapError(err)
 }
 
 func (client *coreDataClient) ScrubAllValueDescriptors() error {

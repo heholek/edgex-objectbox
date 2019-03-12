@@ -16,23 +16,8 @@
 ###############################################################################
 
 # Docker image for building EdgeX Foundry Config Seed
-FROM golang:1.11-alpine AS build-env
-
-# environment variables
-ENV GO111MODULE=on
-ENV GOPATH=/go
-ENV PATH=$GOPATH/bin:$PATH
-
-# set the working directory
-WORKDIR $GOPATH/src/github.com/edgexfoundry/edgex-go
-
-RUN apk update && apk add make git
-
-# copy go source files
-COPY go.mod .
-#COPY go.sum .
-
-RUN go mod download
+ARG git_sha
+FROM edgexfoundry/build-base:${git_sha} AS build-env
 
 COPY . .
 

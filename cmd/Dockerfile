@@ -6,24 +6,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+ARG git_sha
+FROM edgexfoundry/build-base:${git_sha} AS builder
 
-FROM golang:1.11-stretch AS builder
 ARG service
-
-RUN apt-get update && apt-get install -y libzmq3-dev
-
-ENV GO111MODULE=on
-WORKDIR /go/src/github.com/edgexfoundry/edgex-go
-
-COPY go.mod .
-COPY go.sum .
-RUN go mod download
-
-COPY ./objectbox-download.sh .
-RUN ./objectbox-download.sh --install 0.5
-
 COPY . .
-
 RUN make cmd/$service/$service
 
 # find all libraries linked to the service binary & copy them to the /deps folder, used bellow

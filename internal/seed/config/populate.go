@@ -24,8 +24,8 @@ import (
 	"strings"
 
 	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/go-mod-registry"
-	"github.com/edgexfoundry/go-mod-registry/pkg/factory"
+	"github.com/edgexfoundry/go-mod-registry/pkg/types"
+	"github.com/edgexfoundry/go-mod-registry/registry"
 	"github.com/magiconair/properties"
 	"github.com/pelletier/go-toml"
 )
@@ -50,7 +50,7 @@ func ImportProperties(root string) error {
 			return err
 		}
 
-		registryConfig := registry.Config{
+		registryConfig := types.Config{
 			Host:       Configuration.Registry.Host,
 			Port:       Configuration.Registry.Port,
 			Type:       Configuration.Registry.Type,
@@ -58,7 +58,7 @@ func ImportProperties(root string) error {
 			ServiceKey: appKey,
 		}
 
-		Registry, err = factory.NewRegistryClient(registryConfig)
+		Registry, err = registry.NewRegistryClient(registryConfig)
 		for key := range props {
 			if err := Registry.PutConfigurationValue(key, []byte(props[key])); err != nil {
 				return err
@@ -112,14 +112,14 @@ func ImportConfiguration(root string, profile string, overwrite bool) error {
 			return nil
 		}
 
-		registryConfig := registry.Config{
-			Host: Configuration.Registry.Host,
-			Port: Configuration.Registry.Port,
-			Type: Configuration.Registry.Type,
-			Stem: internal.ConfigRegistryStem,
+		registryConfig := types.Config{
+			Host:       Configuration.Registry.Host,
+			Port:       Configuration.Registry.Port,
+			Type:       Configuration.Registry.Type,
+			Stem:       internal.ConfigRegistryStem,
 			ServiceKey: internal.ServiceKeyPrefix + serviceName,
 		}
-		Registry, err = factory.NewRegistryClient(registryConfig)
+		Registry, err = registry.NewRegistryClient(registryConfig)
 		if err != nil {
 			return err
 		}
@@ -131,10 +131,10 @@ func ImportConfiguration(root string, profile string, overwrite bool) error {
 }
 
 // As services are converted to utilize V2 types, add them to this list and remove from the one above.
-func listDirectories() [8]string {
-	var names = [8]string{internal.CoreMetaDataServiceKey, internal.CoreCommandServiceKey, internal.CoreDataServiceKey,
+func listDirectories() [9]string {
+	var names = [9]string{internal.CoreMetaDataServiceKey, internal.CoreCommandServiceKey, internal.CoreDataServiceKey,
 		internal.ExportDistroServiceKey, internal.ExportClientServiceKey, internal.SupportLoggingServiceKey,
-		internal.SupportSchedulerServiceKey, internal.SupportNotificationsServiceKey}
+		internal.SupportSchedulerServiceKey, internal.SupportNotificationsServiceKey, internal.SystemManagementAgentServiceKey}
 
 	for i, name := range names {
 		names[i] = strings.Replace(name, internal.ServiceKeyPrefix, "", 1)

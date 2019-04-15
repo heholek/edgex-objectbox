@@ -27,19 +27,21 @@ type deviceProfileTransform interface {
 }
 
 type PropertyValue struct {
-	Type         string `bson:"type"`         // ValueDescriptor Type of property after transformations
-	ReadWrite    string `bson:"readWrite"`    // Read/Write Permissions set for this property
-	Minimum      string `bson:"minimum"`      // Minimum value that can be get/set from this property
-	Maximum      string `bson:"maximum"`      // Maximum value that can be get/set from this property
-	DefaultValue string `bson:"defaultValue"` // Default value set to this property if no argument is passed
-	Size         string `bson:"size"`         // Size of this property in its type  (i.e. bytes for numeric types, characters for string types)
-	Mask         string `bson:"mask"`         // Mask to be applied prior to get/set of property
-	Shift        string `bson:"shift"`        // Shift to be applied after masking, prior to get/set of property
-	Scale        string `bson:"scale"`        // Multiplicative factor to be applied after shifting, prior to get/set of property
-	Offset       string `bson:"offset"`       // Additive factor to be applied after multiplying, prior to get/set of property
-	Base         string `bson:"base"`         // Base for property to be applied to, leave 0 for no power operation (i.e. base ^ property: 2 ^ 10)
-	Assertion    string `bson:"assertion"`    // Required value of the property, set for checking error state.  Failing an assertion condition will mark the device with an error state
-	Precision    string `bson:"precision"`
+	Type          string `bson:"type"`          // ValueDescriptor Type of property after transformations
+	ReadWrite     string `bson:"readWrite"`     // Read/Write Permissions set for this property
+	Minimum       string `bson:"minimum"`       // Minimum value that can be get/set from this property
+	Maximum       string `bson:"maximum"`       // Maximum value that can be get/set from this property
+	DefaultValue  string `bson:"defaultValue"`  // Default value set to this property if no argument is passed
+	Size          string `bson:"size"`          // Size of this property in its type  (i.e. bytes for numeric types, characters for string types)
+	Mask          string `bson:"mask"`          // Mask to be applied prior to get/set of property
+	Shift         string `bson:"shift"`         // Shift to be applied after masking, prior to get/set of property
+	Scale         string `bson:"scale"`         // Multiplicative factor to be applied after shifting, prior to get/set of property
+	Offset        string `bson:"offset"`        // Additive factor to be applied after multiplying, prior to get/set of property
+	Base          string `bson:"base"`          // Base for property to be applied to, leave 0 for no power operation (i.e. base ^ property: 2 ^ 10)
+	Assertion     string `bson:"assertion"`     // Required value of the property, set for checking error state.  Failing an assertion condition will mark the device with an error state
+	Precision     string `bson:"precision"`
+	FloatEncoding string `bson:"floatEncoding"` // FloatEncoding indicates the representation of floating value of reading.  It should be 'Base64' or 'eNotation'
+	MediaType     string `bson:"mediaType"`
 }
 
 type Units struct {
@@ -89,8 +91,8 @@ type DeviceProfile struct {
 	Model           string            `bson:"model"`
 	Labels          []string          `bson:"labels"`
 	DeviceResources []DeviceResource  `bson:"deviceResources"`
-	Resources       []ProfileResource `bson:"resources"`
-	Commands        []mgo.DBRef       `bson:"commands"`
+	DeviceCommands  []ProfileResource `bson:"resources"`
+	CoreCommands    []mgo.DBRef       `bson:"commands"`
 }
 
 func (dp *DeviceProfile) ToContract(transform commandTransform) (c contract.DeviceProfile, err error) {
@@ -129,6 +131,8 @@ func (dp *DeviceProfile) ToContract(transform commandTransform) (c contract.Devi
 		cdo.Properties.Value.Base = dr.Properties.Value.Base
 		cdo.Properties.Value.Assertion = dr.Properties.Value.Assertion
 		cdo.Properties.Value.Precision = dr.Properties.Value.Precision
+		cdo.Properties.Value.FloatEncoding = dr.Properties.Value.FloatEncoding
+		cdo.Properties.Value.MediaType = dr.Properties.Value.MediaType
 
 		cdo.Properties.Units.Type = dr.Properties.Units.Type
 		cdo.Properties.Units.ReadWrite = dr.Properties.Units.ReadWrite
@@ -139,7 +143,7 @@ func (dp *DeviceProfile) ToContract(transform commandTransform) (c contract.Devi
 		c.DeviceResources = append(c.DeviceResources, cdo)
 	}
 
-	for _, r := range dp.Resources {
+	for _, r := range dp.DeviceCommands {
 		var cpr contract.ProfileResource
 		cpr.Name = r.Name
 		for _, ro := range r.Get {
@@ -166,15 +170,15 @@ func (dp *DeviceProfile) ToContract(transform commandTransform) (c contract.Devi
 			})
 		}
 
-		c.Resources = append(c.Resources, cpr)
+		c.DeviceCommands = append(c.DeviceCommands, cpr)
 	}
 
-	for _, dbRef := range dp.Commands {
+	for _, dbRef := range dp.CoreCommands {
 		command, err := transform.DBRefToCommand(dbRef)
 		if err != nil {
 			return contract.DeviceProfile{}, err
 		}
-		c.Commands = append(c.Commands, command.ToContract())
+		c.CoreCommands = append(c.CoreCommands, command.ToContract())
 	}
 
 	return
@@ -216,6 +220,8 @@ func (dp *DeviceProfile) FromContract(from contract.DeviceProfile, transform com
 		do.Properties.Value.Base = dr.Properties.Value.Base
 		do.Properties.Value.Assertion = dr.Properties.Value.Assertion
 		do.Properties.Value.Precision = dr.Properties.Value.Precision
+		do.Properties.Value.FloatEncoding = dr.Properties.Value.FloatEncoding
+		do.Properties.Value.MediaType = dr.Properties.Value.MediaType
 
 		do.Properties.Units.Type = dr.Properties.Units.Type
 		do.Properties.Units.ReadWrite = dr.Properties.Units.ReadWrite
@@ -226,7 +232,7 @@ func (dp *DeviceProfile) FromContract(from contract.DeviceProfile, transform com
 		dp.DeviceResources = append(dp.DeviceResources, do)
 	}
 
-	for _, r := range from.Resources {
+	for _, r := range from.DeviceCommands {
 		var pr ProfileResource
 		pr.Name = r.Name
 		for _, ro := range r.Get {
@@ -253,10 +259,10 @@ func (dp *DeviceProfile) FromContract(from contract.DeviceProfile, transform com
 			})
 		}
 
-		dp.Resources = append(dp.Resources, pr)
+		dp.DeviceCommands = append(dp.DeviceCommands, pr)
 	}
 
-	for _, command := range from.Commands {
+	for _, command := range from.CoreCommands {
 		var commandModel Command
 		if _, err = commandModel.FromContract(command); err != nil {
 			return
@@ -268,7 +274,7 @@ func (dp *DeviceProfile) FromContract(from contract.DeviceProfile, transform com
 		if err != nil {
 			return
 		}
-		dp.Commands = append(dp.Commands, dbRef)
+		dp.CoreCommands = append(dp.CoreCommands, dbRef)
 	}
 
 	contractId = toContractId(dp.Id, dp.Uuid)

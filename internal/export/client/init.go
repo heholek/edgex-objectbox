@@ -18,16 +18,17 @@ import (
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/export/distro"
-	"github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
+	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
-	"github.com/edgexfoundry/go-mod-registry"
-	"github.com/edgexfoundry/go-mod-registry/pkg/factory"
+	"github.com/edgexfoundry/go-mod-registry/registry"
+	registryTypes "github.com/edgexfoundry/go-mod-registry/pkg/types"
 
 	"github.com/edgexfoundry/edgex-go/internal"
 	"github.com/edgexfoundry/edgex-go/internal/export"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/mongo"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db/redis"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/startup"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/telemetry"
@@ -116,28 +117,35 @@ func Destruct() {
 func connectToDatabase() error {
 	// Create a database client
 	var err error
-	dbConfig := db.Configuration{
-		Host:         Configuration.Databases["Primary"].Host,
-		Port:         Configuration.Databases["Primary"].Port,
-		Timeout:      Configuration.Databases["Primary"].Timeout,
-		DatabaseName: Configuration.Databases["Primary"].Name,
-		Username:     Configuration.Databases["Primary"].Username,
-		Password:     Configuration.Databases["Primary"].Password,
-	}
-	dbClient, err = newDBClient(Configuration.Databases["Primary"].Type, dbConfig)
+
+	dbClient, err = newDBClient(Configuration.Databases["Primary"].Type)
 	if err != nil {
 		dbClient = nil
 		return fmt.Errorf("couldn't create database client: %v", err.Error())
 	}
 
-	return err
+	return nil
 }
 
 // Return the dbClient interface
-func newDBClient(dbType string, config db.Configuration) (export.DBClient, error) {
+func newDBClient(dbType string) (export.DBClient, error) {
 	switch dbType {
 	case db.MongoDB:
-		return mongo.NewClient(config)
+		dbConfig := db.Configuration{
+			Host:         Configuration.Databases["Primary"].Host,
+			Port:         Configuration.Databases["Primary"].Port,
+			Timeout:      Configuration.Databases["Primary"].Timeout,
+			DatabaseName: Configuration.Databases["Primary"].Name,
+			Username:     Configuration.Databases["Primary"].Username,
+			Password:     Configuration.Databases["Primary"].Password,
+		}
+		return mongo.NewClient(dbConfig)
+	case db.RedisDB:
+		dbConfig := db.Configuration{
+			Host: Configuration.Databases["Primary"].Host,
+			Port: Configuration.Databases["Primary"].Port,
+		}
+		return redis.NewClient(dbConfig) //TODO: Verify this also connects to Redis
 	case db.ObjectBox:
 		return objectbox.NewClient(config)
 	default:
@@ -194,7 +202,7 @@ func initializeClients(useRegistry bool) {
 
 func connectToRegistry(conf *ConfigurationStruct) error {
 	var err error
-	registryConfig := registry.Config{
+	registryConfig := registryTypes.Config{
 		Host:            conf.Registry.Host,
 		Port:            conf.Registry.Port,
 		Type:            conf.Registry.Type,
@@ -207,7 +215,7 @@ func connectToRegistry(conf *ConfigurationStruct) error {
 		Stem:            internal.ConfigRegistryStem,
 	}
 
-	registryClient, err = factory.NewRegistryClient(registryConfig)
+	registryClient, err = registry.NewRegistryClient(registryConfig)
 	if err != nil {
 		return fmt.Errorf("connection to Registry could not be made: %v", err.Error())
 	}
@@ -234,7 +242,7 @@ func listenForConfigChanges() {
 	registryClient.WatchForChanges(registryUpdates, registryErrors, &WritableInfo{}, internal.WritableKey)
 
 	signals := make(chan os.Signal)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 
 	for {
 		select {

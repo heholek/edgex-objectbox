@@ -18,10 +18,12 @@ import (
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/coredata"
-	"github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
+	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
-	"github.com/edgexfoundry/go-mod-registry"
-	"github.com/edgexfoundry/go-mod-registry/pkg/factory"
+	"github.com/edgexfoundry/go-mod-messaging/messaging"
+	msgTypes "github.com/edgexfoundry/go-mod-messaging/pkg/types"
+	registryTypes "github.com/edgexfoundry/go-mod-registry/pkg/types"
+	"github.com/edgexfoundry/go-mod-registry/registry"
 
 	"github.com/edgexfoundry/edgex-go/internal"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
@@ -35,6 +37,9 @@ var Configuration *ConfigurationStruct
 var registryClient registry.Client
 var registryErrors chan error        //A channel for "config wait errors" sourced from Registry
 var registryUpdates chan interface{} //A channel for "config updates" sourced from Registry
+var messageClient messaging.MessageClient
+var messageErrors chan error
+var messageEnvelopes chan *msgTypes.MessageEnvelope
 
 func Retry(useRegistry bool, useProfile string, timeout int, wait *sync.WaitGroup, ch chan error) {
 	until := time.Now().Add(time.Millisecond * time.Duration(timeout))
@@ -57,7 +62,7 @@ func Retry(useRegistry bool, useProfile string, timeout int, wait *sync.WaitGrou
 				LoggingClient = logger.NewClient(internal.ExportDistroServiceKey, Configuration.Logging.EnableRemote, logTarget, Configuration.Writable.LogLevel)
 
 				//Initialize service clients
-				initializeClient(useRegistry)
+				initializeClients(useRegistry)
 			}
 		} else {
 			// once config is initialized, stop looping
@@ -82,6 +87,13 @@ func Init(useRegistry bool) bool {
 		go listenForConfigChanges()
 	}
 
+	var err error
+	messageErrors, messageEnvelopes, err = initMessaging(messageClient)
+	if err != nil {
+		LoggingClient.Error(err.Error())
+		return false
+	}
+
 	go telemetry.StartCpuUsageAverage()
 
 	return true
@@ -95,11 +107,19 @@ func Destruct() {
 	if registryUpdates != nil {
 		close(registryUpdates)
 	}
+
+	if messageErrors != nil {
+		close(messageErrors)
+	}
+
+	if messageEnvelopes != nil {
+		close(messageEnvelopes)
+	}
 }
 
 func connectToRegistry(conf *ConfigurationStruct) error {
 	var err error
-	registryConfig := registry.Config{
+	registryConfig := registryTypes.Config{
 		Host:            conf.Registry.Host,
 		Port:            conf.Registry.Port,
 		Type:            conf.Registry.Type,
@@ -112,7 +132,7 @@ func connectToRegistry(conf *ConfigurationStruct) error {
 		Stem:            internal.ConfigRegistryStem,
 	}
 
-	registryClient, err = factory.NewRegistryClient(registryConfig)
+	registryClient, err = registry.NewRegistryClient(registryConfig)
 	if err != nil {
 		return fmt.Errorf("connection to Registry could not be made: %v", err.Error())
 	}
@@ -130,7 +150,7 @@ func connectToRegistry(conf *ConfigurationStruct) error {
 	return nil
 }
 
-func initializeClient(useRegistry bool) {
+func initializeClients(useRegistry bool) {
 	params := types.EndpointParams{
 		ServiceKey:  internal.CoreDataServiceKey,
 		Path:        clients.ApiEventRoute,
@@ -140,6 +160,21 @@ func initializeClient(useRegistry bool) {
 	}
 
 	ec = coredata.NewEventClient(params, startup.Endpoint{RegistryClient: &registryClient})
+
+	// Create the messaging client
+	var err error
+	messageClient, err = messaging.NewMessageClient(msgTypes.MessageBusConfig{
+		SubscribeHost: msgTypes.HostInfo{
+			Host:     Configuration.MessageQueue.Host,
+			Port:     Configuration.MessageQueue.Port,
+			Protocol: Configuration.MessageQueue.Protocol,
+		},
+		Type: Configuration.MessageQueue.Type,
+	})
+
+	if err != nil {
+		LoggingClient.Error("failed to create messaging client: " + err.Error())
+	}
 }
 
 func initializeConfiguration(useRegistry bool, useProfile string) (*ConfigurationStruct, error) {
@@ -185,7 +220,7 @@ func listenForConfigChanges() {
 	registryClient.WatchForChanges(registryUpdates, registryErrors, &WritableInfo{}, internal.WritableKey)
 
 	signals := make(chan os.Signal)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 
 	for {
 		select {

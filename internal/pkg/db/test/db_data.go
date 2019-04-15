@@ -8,6 +8,7 @@ package test
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"testing"
 
@@ -58,7 +59,6 @@ func populateDbEvents(db interfaces.DBClient, count int, pushed int64) (string, 
 		name := fmt.Sprintf("name%d", i)
 		e := contract.Event{}
 		e.Device = name
-		e.Event = name
 		e.Pushed = pushed
 		var err error
 		id, err = db.AddEvent(e)
@@ -114,6 +114,17 @@ func testDBReadings(t *testing.T, db interfaces.DBClient) {
 	if len(readings) != 110 {
 		t.Fatalf("There should be 110 readings instead of %d", len(readings))
 	}
+
+	var lastModified int64 = math.MaxInt64
+
+	for _, r := range readings {
+		if r.Modified > lastModified {
+			t.Fatal("Readings should be sorted in descending order by timestamp")
+		}
+
+		lastModified = r.Modified
+	}
+
 	r3, err := db.ReadingById(id)
 	if err != nil {
 		t.Fatalf("Error getting reading by id %v", err)

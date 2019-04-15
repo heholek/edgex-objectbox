@@ -15,7 +15,6 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
-	"syscall"
 	"time"
 
 	"github.com/edgexfoundry/edgex-go"
@@ -24,7 +23,7 @@ import (
 	"github.com/edgexfoundry/edgex-go/internal/pkg/correlation"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/startup"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/usage"
-	"github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
+	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 )
 
 func main() {
@@ -79,7 +78,7 @@ func listenForInterrupt(errChan chan error) {
 	go func() {
 		correlation.LoggingClient = client.LoggingClient
 		c := make(chan os.Signal)
-		signal.Notify(c, syscall.SIGINT)
+		signal.Notify(c, os.Interrupt)
 		errChan <- fmt.Errorf("%s", <-c)
 	}()
 }

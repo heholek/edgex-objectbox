@@ -24,18 +24,20 @@ import (
 	"time"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
-	"github.com/edgexfoundry/go-mod-core-contracts/clients/logging"
+	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/metadata"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
-	"github.com/edgexfoundry/go-mod-registry"
-	"github.com/edgexfoundry/go-mod-registry/pkg/factory"
+	"github.com/edgexfoundry/go-mod-messaging/messaging"
+	msgTypes "github.com/edgexfoundry/go-mod-messaging/pkg/types"
+	registryTypes "github.com/edgexfoundry/go-mod-registry/pkg/types"
+	"github.com/edgexfoundry/go-mod-registry/registry"
 
 	"github.com/edgexfoundry/edgex-go/internal"
 	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/core/data/messaging"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/mongo"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db/redis"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/startup"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/telemetry"
@@ -46,12 +48,13 @@ var Configuration *ConfigurationStruct
 var dbClient interfaces.DBClient
 var LoggingClient logger.LoggingClient
 var registryClient registry.Client
+
 // TODO: Refactor names in separate PR: See comments on PR #1133
 var chEvents chan interface{}  //A channel for "domain events" sourced from event operations
 var chErrors chan error        //A channel for "config wait error" sourced from Registry
 var chUpdates chan interface{} //A channel for "config updates" sourced from Registry
 
-var ep messaging.EventPublisher
+var msgClient messaging.MessageClient
 var mdc metadata.DeviceClient
 var msc metadata.DeviceServiceClient
 
@@ -136,28 +139,35 @@ func Destruct() {
 func connectToDatabase() error {
 	// Create a database client
 	var err error
-	dbConfig := db.Configuration{
-		Host:         Configuration.Databases["Primary"].Host,
-		Port:         Configuration.Databases["Primary"].Port,
-		Timeout:      Configuration.Databases["Primary"].Timeout,
-		DatabaseName: Configuration.Databases["Primary"].Name,
-		Username:     Configuration.Databases["Primary"].Username,
-		Password:     Configuration.Databases["Primary"].Password,
-	}
-	dbClient, err = newDBClient(Configuration.Databases["Primary"].Type, dbConfig)
+
+	dbClient, err = newDBClient(Configuration.Databases["Primary"].Type)
 	if err != nil {
 		dbClient = nil
 		return fmt.Errorf("couldn't create database client: %v", err.Error())
 	}
 
-	return err
+	return nil
 }
 
 // Return the dbClient interface
-func newDBClient(dbType string, config db.Configuration) (interfaces.DBClient, error) {
+func newDBClient(dbType string) (interfaces.DBClient, error) {
 	switch dbType {
 	case db.MongoDB:
-		return mongo.NewClient(config)
+		dbConfig := db.Configuration{
+			Host:         Configuration.Databases["Primary"].Host,
+			Port:         Configuration.Databases["Primary"].Port,
+			Timeout:      Configuration.Databases["Primary"].Timeout,
+			DatabaseName: Configuration.Databases["Primary"].Name,
+			Username:     Configuration.Databases["Primary"].Username,
+			Password:     Configuration.Databases["Primary"].Password,
+		}
+		return mongo.NewClient(dbConfig)
+	case db.RedisDB:
+		dbConfig := db.Configuration{
+			Host: Configuration.Databases["Primary"].Host,
+			Port: Configuration.Databases["Primary"].Port,
+		}
+		return redis.NewClient(dbConfig) //TODO: Verify this also connects to Redis
 	case db.ObjectBox:
 		return objectbox.NewClient(config)
 	default:
@@ -202,7 +212,7 @@ func initializeConfiguration(useRegistry bool, useProfile string) (*Configuratio
 
 func connectToRegistry(conf *ConfigurationStruct) error {
 	var err error
-	registryConfig := registry.Config{
+	registryConfig := registryTypes.Config{
 		Host:            conf.Registry.Host,
 		Port:            conf.Registry.Port,
 		Type:            conf.Registry.Type,
@@ -215,7 +225,7 @@ func connectToRegistry(conf *ConfigurationStruct) error {
 		Stem:            internal.ConfigRegistryStem,
 	}
 
-	registryClient, err = factory.NewRegistryClient(registryConfig, )
+	registryClient, err = registry.NewRegistryClient(registryConfig)
 	if err != nil {
 		return fmt.Errorf("connection to Registry could not be made: %v", err.Error())
 	}
@@ -244,7 +254,7 @@ func listenForConfigChanges() {
 
 	// TODO: Refactor names in separate PR: See comments on PR #1133
 	chSignals := make(chan os.Signal)
-	signal.Notify(chSignals, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(chSignals, os.Interrupt, syscall.SIGTERM)
 
 	for {
 		select {
@@ -289,10 +299,20 @@ func initializeClients(useRegistry bool) {
 	params.Path = clients.ApiDeviceServiceRoute
 	msc = metadata.NewDeviceServiceClient(params, startup.Endpoint{RegistryClient: &registryClient})
 
-	// Create the event publisher
-	ep = messaging.NewEventPublisher(messaging.PubSubConfiguration{
-		AddressPort: Configuration.MessageQueue.Uri(),
+	// Create the messaging client
+	var err error
+	msgClient, err = messaging.NewMessageClient(msgTypes.MessageBusConfig{
+		PublishHost: msgTypes.HostInfo{
+			Host:     Configuration.MessageQueue.Host,
+			Port:     Configuration.MessageQueue.Port,
+			Protocol: Configuration.MessageQueue.Protocol,
+		},
+		Type: Configuration.MessageQueue.Type,
 	})
+
+	if err != nil {
+		LoggingClient.Error(fmt.Sprintf("failed to create messaging client: %s", err.Error()))
+	}
 }
 
 func setLoggingTarget() string {

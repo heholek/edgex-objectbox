@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Dell Inc.
+ * Copyright 2018 Redis Labs Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,21 +11,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
-package messaging
+package redis
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/correlation/models"
+	"encoding/json"
 )
 
-// Configuration struct for PubSub
-type PubSubConfiguration struct {
-	AddressPort string
+type marshalFunc func(in interface{}) (out []byte, err error)
+type unmarshalFunc func(in []byte, out interface{}) (err error)
+
+func marshalObject(in interface{}) (out []byte, err error) {
+	return json.Marshal(in)
 }
 
-type EventPublisher interface {
-	SendEventMessage(e models.Event) error
-}
-
-func NewEventPublisher(conf PubSubConfiguration) EventPublisher {
-	return newZeroMQEventPublisher(conf)
+func unmarshalObject(in []byte, out interface{}) (err error) {
+	return json.Unmarshal(in, out)
 }

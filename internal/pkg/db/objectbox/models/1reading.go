@@ -15,12 +15,13 @@
 package models
 
 type Reading struct {
-	Id       string
-	Pushed   int64
-	Created  int64
-	Origin   int64
-	Modified int64
-	Device   string
-	Name     string
-	Value    string
+	Id          string
+	Pushed      int64
+	Created     int64
+	Origin      int64
+	Modified    int64
+	Device      string
+	Name        string
+	Value       string
+	BinaryValue []byte
 }

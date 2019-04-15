@@ -20,7 +20,7 @@ var CommandBinding = command_EntityInfo{
 	Entity: objectbox.Entity{
 		Id: 2,
 	},
-	Uid: 5166872351994115756,
+	Uid: 3466110984159220104,
 }
 
 // Command_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -76,37 +76,37 @@ var Command_ = struct {
 	},
 	Get_Responses: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     11,
+			Id:     7,
 			Entity: &CommandBinding.Entity,
 		},
 	},
 	Get_URL: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     7,
+			Id:     8,
 			Entity: &CommandBinding.Entity,
 		},
 	},
 	Put_Path: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     8,
+			Id:     9,
 			Entity: &CommandBinding.Entity,
 		},
 	},
 	Put_Responses: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     12,
+			Id:     10,
 			Entity: &CommandBinding.Entity,
 		},
 	},
 	Put_URL: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     9,
+			Id:     11,
 			Entity: &CommandBinding.Entity,
 		},
 	},
 	Put_ParameterNames: &objectbox.PropertyStringVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     10,
+			Id:     12,
 			Entity: &CommandBinding.Entity,
 		},
 	},
@@ -119,21 +119,21 @@ func (command_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (command_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Command", 2, 5166872351994115756)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 7340228374689340609)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 6573475164262909138)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 6245790261231062808)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 6996954711424781160)
+	model.Entity("Command", 2, 3466110984159220104)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 8976154384675543155)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 4173457774608518837)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 2804731238210135713)
+	model.Property("Id", objectbox.PropertyType_Long, 4, 7187431837387194143)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Name", objectbox.PropertyType_String, 5, 8489958036358772248)
-	model.Property("Get_Path", objectbox.PropertyType_String, 6, 3576257846048649779)
-	model.Property("Get_Responses", objectbox.PropertyType_ByteVector, 11, 1618997572073696618)
-	model.Property("Get_URL", objectbox.PropertyType_String, 7, 1535449917962667631)
-	model.Property("Put_Path", objectbox.PropertyType_String, 8, 6690416255716911859)
-	model.Property("Put_Responses", objectbox.PropertyType_ByteVector, 12, 1278282680397848405)
-	model.Property("Put_URL", objectbox.PropertyType_String, 9, 8905997865059874022)
-	model.Property("Put_ParameterNames", objectbox.PropertyType_StringVector, 10, 5077443716411335668)
-	model.EntityLastPropertyId(12, 1278282680397848405)
+	model.Property("Name", objectbox.PropertyType_String, 5, 1838205786009926106)
+	model.Property("Get_Path", objectbox.PropertyType_String, 6, 4675672987288618325)
+	model.Property("Get_Responses", objectbox.PropertyType_ByteVector, 7, 6760659952611457052)
+	model.Property("Get_URL", objectbox.PropertyType_String, 8, 3771849917208761361)
+	model.Property("Put_Path", objectbox.PropertyType_String, 9, 101551801493008702)
+	model.Property("Put_Responses", objectbox.PropertyType_ByteVector, 10, 7143390721286976146)
+	model.Property("Put_URL", objectbox.PropertyType_String, 11, 5130326444177191018)
+	model.Property("Put_ParameterNames", objectbox.PropertyType_StringVector, 12, 706434787225063093)
+	model.EntityLastPropertyId(12, 706434787225063093)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -181,18 +181,18 @@ func (command_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, 
 
 	// build the FlatBuffers object
 	fbb.StartObject(12)
-	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.Timestamps.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.Timestamps.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.Timestamps.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetGet_Path)
-	fbutils.SetUOffsetTSlot(fbb, 10, offsetGet_Responses)
-	fbutils.SetUOffsetTSlot(fbb, 6, offsetGet_URL)
-	fbutils.SetUOffsetTSlot(fbb, 7, offsetPut_Path)
-	fbutils.SetUOffsetTSlot(fbb, 11, offsetPut_Responses)
-	fbutils.SetUOffsetTSlot(fbb, 8, offsetPut_URL)
-	fbutils.SetUOffsetTSlot(fbb, 9, offsetPut_ParameterNames)
+	fbutils.SetUOffsetTSlot(fbb, 6, offsetGet_Responses)
+	fbutils.SetUOffsetTSlot(fbb, 7, offsetGet_URL)
+	fbutils.SetUOffsetTSlot(fbb, 8, offsetPut_Path)
+	fbutils.SetUOffsetTSlot(fbb, 9, offsetPut_Responses)
+	fbutils.SetUOffsetTSlot(fbb, 10, offsetPut_URL)
+	fbutils.SetUOffsetTSlot(fbb, 11, offsetPut_ParameterNames)
 	return nil
 }
 
@@ -205,7 +205,7 @@ func (command_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interf
 	var id = table.GetUint64Slot(10, 0)
 
 	return &Command{
-		BaseObject: models.BaseObject{
+		Timestamps: models.Timestamps{
 			Created:  table.GetInt64Slot(4, 0),
 			Modified: table.GetInt64Slot(6, 0),
 			Origin:   table.GetInt64Slot(8, 0),
@@ -215,17 +215,17 @@ func (command_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interf
 		Get: &Get{
 			Action: Action{
 				Path:      fbutils.GetStringSlot(table, 14),
-				Responses: responsesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 24)),
-				URL:       fbutils.GetStringSlot(table, 16),
+				Responses: responsesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 16)),
+				URL:       fbutils.GetStringSlot(table, 18),
 			},
 		},
 		Put: &Put{
 			Action: Action{
-				Path:      fbutils.GetStringSlot(table, 18),
-				Responses: responsesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 26)),
-				URL:       fbutils.GetStringSlot(table, 20),
+				Path:      fbutils.GetStringSlot(table, 20),
+				Responses: responsesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 22)),
+				URL:       fbutils.GetStringSlot(table, 24),
 			},
-			ParameterNames: fbutils.GetStringVectorSlot(table, 22),
+			ParameterNames: fbutils.GetStringVectorSlot(table, 26),
 		},
 	}, nil
 }

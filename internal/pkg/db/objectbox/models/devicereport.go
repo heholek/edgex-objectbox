@@ -19,10 +19,10 @@ import (
 )
 
 type DeviceReport struct {
-	models.BaseObject `inline`
+	models.Timestamps `inline`
 	Id                string
 	Name              string `unique`
 	Device            string
-	Event             string
+	Action             string
 	Expected          []string
 }

@@ -18,9 +18,9 @@ type transmission_EntityInfo struct {
 
 var TransmissionBinding = transmission_EntityInfo{
 	Entity: objectbox.Entity{
-		Id: 17,
+		Id: 15,
 	},
-	Uid: 568708924645106899,
+	Uid: 6516899534013799700,
 }
 
 // Transmission_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -120,23 +120,23 @@ func (transmission_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (transmission_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Transmission", 17, 568708924645106899)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 6194874499848524317)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 8335706959230617972)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 340660038000809638)
-	model.Property("ID", objectbox.PropertyType_Long, 4, 328558019935061479)
+	model.Entity("Transmission", 15, 6516899534013799700)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 874268777377311919)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 4563914448884285908)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 6396561716074782386)
+	model.Property("ID", objectbox.PropertyType_Long, 4, 7018017394194855826)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Notification", objectbox.PropertyType_Relation, 5, 8656392927755662017)
+	model.Property("Notification", objectbox.PropertyType_Relation, 5, 2587965071970041075)
 	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
-	model.PropertyRelation("Notification", 21, 267873316193914610)
-	model.Property("Receiver", objectbox.PropertyType_String, 6, 4403412569370574351)
-	model.Property("Channel_Type", objectbox.PropertyType_String, 7, 6785982123671667194)
-	model.Property("Channel_MailAddresses", objectbox.PropertyType_StringVector, 8, 1268731185823466266)
-	model.Property("Channel_Url", objectbox.PropertyType_String, 9, 8618321585324687443)
-	model.Property("Status", objectbox.PropertyType_String, 10, 7086397840993736018)
-	model.Property("ResendCount", objectbox.PropertyType_Long, 11, 2391999354415967429)
-	model.Property("Records", objectbox.PropertyType_ByteVector, 12, 6363449556102732928)
-	model.EntityLastPropertyId(12, 6363449556102732928)
+	model.PropertyRelation("Notification", 18, 4309985151868307894)
+	model.Property("Receiver", objectbox.PropertyType_String, 6, 6970133143502682397)
+	model.Property("Channel_Type", objectbox.PropertyType_String, 7, 8315623827360567320)
+	model.Property("Channel_MailAddresses", objectbox.PropertyType_StringVector, 8, 2372831308292201526)
+	model.Property("Channel_Url", objectbox.PropertyType_String, 9, 7096098715837417906)
+	model.Property("Status", objectbox.PropertyType_String, 10, 161677121815195738)
+	model.Property("ResendCount", objectbox.PropertyType_Long, 11, 1458266355346453588)
+	model.Property("Records", objectbox.PropertyType_ByteVector, 12, 107793340757305390)
+	model.EntityLastPropertyId(12, 107793340757305390)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -204,9 +204,9 @@ func (transmission_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 	// build the FlatBuffers object
 	fbb.StartObject(12)
-	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.Timestamps.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.Timestamps.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.Timestamps.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUint64Slot(fbb, 4, rIdNotification)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetReceiver)
@@ -247,7 +247,7 @@ func (transmission_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 	}
 
 	return &Transmission{
-		BaseObject: models.BaseObject{
+		Timestamps: models.Timestamps{
 			Created:  table.GetInt64Slot(4, 0),
 			Modified: table.GetInt64Slot(6, 0),
 			Origin:   table.GetInt64Slot(8, 0),
@@ -284,7 +284,7 @@ type TransmissionBox struct {
 // BoxForTransmission opens a box of Transmission objects
 func BoxForTransmission(ob *objectbox.ObjectBox) *TransmissionBox {
 	return &TransmissionBox{
-		Box: ob.InternalBox(17),
+		Box: ob.InternalBox(15),
 	}
 }
 

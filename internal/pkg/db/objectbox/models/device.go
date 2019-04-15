@@ -24,7 +24,7 @@ type Device struct {
 	Name                   string `unique`
 	AdminState             models.AdminState
 	OperatingState         models.OperatingState
-	Protocols              map[string]map[string]string `type:"[]byte" converter:"mapStringMapStringStringJson"`
+	Protocols              map[string]models.ProtocolProperties `type:"[]byte" converter:"mapStringProtocolPropertiesJson"`
 	LastConnected          int64
 	LastReported           int64
 	Labels                 []string

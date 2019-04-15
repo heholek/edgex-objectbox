@@ -340,14 +340,14 @@ func (client *notificationsClient) GetNewNormalNotifications(limit int) ([]contr
 }
 
 func (client *notificationsClient) AddNotification(n contract.Notification) (string, error) {
-	onCreate(&n.BaseObject)
+	onCreate(&n.Timestamps)
 
 	id, err := client.notificationBox.Put(&n)
 	return obx.IdToString(id), mapError(err)
 }
 
 func (client *notificationsClient) UpdateNotification(n contract.Notification) error {
-	onUpdate(&n.BaseObject)
+	onUpdate(&n.Timestamps)
 
 	if id, err := obx.IdFromString(n.ID); err != nil {
 		return mapError(err)
@@ -483,14 +483,14 @@ func (client *notificationsClient) GetSubscriptionByCategoriesLabels(categories 
 }
 
 func (client *notificationsClient) AddSubscription(s contract.Subscription) (string, error) {
-	onCreate(&s.BaseObject)
+	onCreate(&s.Timestamps)
 
 	id, err := client.subscriptionBox.Put(&s)
 	return obx.IdToString(id), mapError(err)
 }
 
 func (client *notificationsClient) UpdateSubscription(s contract.Subscription) error {
-	onUpdate(&s.BaseObject)
+	onUpdate(&s.Timestamps)
 
 	if id, err := obx.IdFromString(s.ID); err != nil {
 		return mapError(err)
@@ -630,14 +630,14 @@ func (client *notificationsClient) GetTransmissionsByStatus(resendLimit int, sta
 }
 
 func (client *notificationsClient) AddTransmission(t contract.Transmission) (string, error) {
-	onCreate(&t.BaseObject)
+	onCreate(&t.Timestamps)
 
 	id, err := client.transmissionBox.Put(&t)
 	return obx.IdToString(id), mapError(err)
 }
 
 func (client *notificationsClient) UpdateTransmission(t contract.Transmission) error {
-	onUpdate(&t.BaseObject)
+	onUpdate(&t.Timestamps)
 
 	if id, err := obx.IdFromString(t.ID); err != nil {
 		return mapError(err)

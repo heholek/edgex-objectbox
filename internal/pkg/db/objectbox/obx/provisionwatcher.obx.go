@@ -20,7 +20,7 @@ var ProvisionWatcherBinding = provisionWatcher_EntityInfo{
 	Entity: objectbox.Entity{
 		Id: 12,
 	},
-	Uid: 7116913470590795583,
+	Uid: 678769668479103726,
 }
 
 // ProvisionWatcher_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -100,24 +100,24 @@ func (provisionWatcher_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (provisionWatcher_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("ProvisionWatcher", 12, 7116913470590795583)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 1038690664624318335)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 580560849680174672)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 8778504568219244319)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 5681197862269956959)
+	model.Entity("ProvisionWatcher", 12, 678769668479103726)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 5400688834240787055)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 6936168735950790495)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 7324362782559730584)
+	model.Property("Id", objectbox.PropertyType_Long, 4, 4214810142464261408)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Name", objectbox.PropertyType_String, 5, 4473016749449217532)
+	model.Property("Name", objectbox.PropertyType_String, 5, 1922646737032650250)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(12, 5394211294854382713)
-	model.Property("Identifiers", objectbox.PropertyType_ByteVector, 6, 7746019713902694696)
-	model.Property("Profile", objectbox.PropertyType_Relation, 7, 2681033652138232267)
+	model.PropertyIndex(12, 8347802915601169150)
+	model.Property("Identifiers", objectbox.PropertyType_ByteVector, 6, 6659681934816812940)
+	model.Property("Profile", objectbox.PropertyType_Relation, 7, 4488324877991092491)
 	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
-	model.PropertyRelation("DeviceProfile", 13, 5881067106611825786)
-	model.Property("Service", objectbox.PropertyType_Relation, 8, 788498092666620726)
+	model.PropertyRelation("DeviceProfile", 13, 5329856807707561884)
+	model.Property("Service", objectbox.PropertyType_Relation, 8, 6873740026061739530)
 	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
-	model.PropertyRelation("DeviceService", 14, 3456748412572729670)
-	model.Property("OperatingState", objectbox.PropertyType_String, 9, 4988194061826642670)
-	model.EntityLastPropertyId(9, 4988194061826642670)
+	model.PropertyRelation("DeviceService", 14, 3453358122163741587)
+	model.Property("OperatingState", objectbox.PropertyType_String, 9, 3437982289020393516)
+	model.EntityLastPropertyId(9, 3437982289020393516)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -204,9 +204,9 @@ func (provisionWatcher_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.
 
 	// build the FlatBuffers object
 	fbb.StartObject(9)
-	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.Timestamps.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.Timestamps.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.Timestamps.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetIdentifiers)
@@ -263,7 +263,7 @@ func (provisionWatcher_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte
 	}
 
 	return &ProvisionWatcher{
-		BaseObject: models.BaseObject{
+		Timestamps: models.Timestamps{
 			Created:  table.GetInt64Slot(4, 0),
 			Modified: table.GetInt64Slot(6, 0),
 			Origin:   table.GetInt64Slot(8, 0),

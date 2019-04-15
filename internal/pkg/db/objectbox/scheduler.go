@@ -134,7 +134,7 @@ func (client *schedulerClient) IntervalById(id string) (contract.Interval, error
 }
 
 func (client *schedulerClient) AddInterval(interval contract.Interval) (string, error) {
-	// NOTE this is done instead of onCreate because there is no reg.BaseObject
+	// NOTE this is done instead of onCreate because there is no reg.Timestamps
 	if interval.Created == 0 {
 		interval.Created = db.MakeTimestamp()
 	}
@@ -144,7 +144,7 @@ func (client *schedulerClient) AddInterval(interval contract.Interval) (string, 
 }
 
 func (client *schedulerClient) UpdateInterval(interval contract.Interval) error {
-	// NOTE this is done instead of onUpdate because there is no reg.BaseObject
+	// NOTE this is done instead of onUpdate because there is no reg.Timestamps
 	interval.Modified = db.MakeTimestamp()
 
 	if id, err := obx.IdFromString(interval.ID); err != nil {
@@ -242,7 +242,7 @@ func (client *schedulerClient) IntervalActionByName(name string) (contract.Inter
 }
 
 func (client *schedulerClient) AddIntervalAction(intervalAction contract.IntervalAction) (string, error) {
-	// NOTE this is done instead of onCreate because there is no reg.BaseObject
+	// NOTE this is done instead of onCreate because there is no reg.Timestamps
 	if intervalAction.Created == 0 {
 		intervalAction.Created = db.MakeTimestamp()
 	}
@@ -252,7 +252,7 @@ func (client *schedulerClient) AddIntervalAction(intervalAction contract.Interva
 }
 
 func (client *schedulerClient) UpdateIntervalAction(intervalAction contract.IntervalAction) error {
-	// NOTE this is done instead of onUpdate because there is no reg.BaseObject
+	// NOTE this is done instead of onUpdate because there is no reg.Timestamps
 	intervalAction.Modified = db.MakeTimestamp()
 
 	if id, err := obx.IdFromString(intervalAction.ID); err != nil {

@@ -18,16 +18,16 @@ type device_EntityInfo struct {
 
 var DeviceBinding = device_EntityInfo{
 	Entity: objectbox.Entity{
-		Id: 3,
+		Id: 6,
 	},
-	Uid: 8277139392933333295,
+	Uid: 7791960176883718600,
 }
 
 // Device_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var Device_ = struct {
-	BaseObject_Created  *objectbox.PropertyInt64
-	BaseObject_Modified *objectbox.PropertyInt64
-	BaseObject_Origin   *objectbox.PropertyInt64
+	Timestamps_Created  *objectbox.PropertyInt64
+	Timestamps_Modified *objectbox.PropertyInt64
+	Timestamps_Origin   *objectbox.PropertyInt64
 	Description         *objectbox.PropertyString
 	Id                  *objectbox.PropertyUint64
 	Name                *objectbox.PropertyString
@@ -42,19 +42,19 @@ var Device_ = struct {
 	Profile             *objectbox.RelationToOne
 	AutoEvents          *objectbox.PropertyByteVector
 }{
-	BaseObject_Created: &objectbox.PropertyInt64{
+	Timestamps_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id:     1,
 			Entity: &DeviceBinding.Entity,
 		},
 	},
-	BaseObject_Modified: &objectbox.PropertyInt64{
+	Timestamps_Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id:     2,
 			Entity: &DeviceBinding.Entity,
 		},
 	},
-	BaseObject_Origin: &objectbox.PropertyInt64{
+	Timestamps_Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id:     3,
 			Entity: &DeviceBinding.Entity,
@@ -92,7 +92,7 @@ var Device_ = struct {
 	},
 	Protocols: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     16,
+			Id:     9,
 			Entity: &DeviceBinding.Entity,
 		},
 	},
@@ -136,7 +136,7 @@ var Device_ = struct {
 	},
 	AutoEvents: &objectbox.PropertyByteVector{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     17,
+			Id:     16,
 			Entity: &DeviceBinding.Entity,
 		},
 	},
@@ -149,31 +149,31 @@ func (device_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (device_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Device", 3, 8277139392933333295)
-	model.Property("BaseObject_Created", objectbox.PropertyType_Long, 1, 1426902891719146417)
-	model.Property("BaseObject_Modified", objectbox.PropertyType_Long, 2, 5883868846286861351)
-	model.Property("BaseObject_Origin", objectbox.PropertyType_Long, 3, 4095520008548384869)
-	model.Property("Description", objectbox.PropertyType_String, 4, 8000536243793605912)
-	model.Property("Id", objectbox.PropertyType_Long, 5, 4515089217959618723)
+	model.Entity("Device", 6, 7791960176883718600)
+	model.Property("Timestamps_Created", objectbox.PropertyType_Long, 1, 760884671802584626)
+	model.Property("Timestamps_Modified", objectbox.PropertyType_Long, 2, 7088417073149650316)
+	model.Property("Timestamps_Origin", objectbox.PropertyType_Long, 3, 5920013286322297706)
+	model.Property("Description", objectbox.PropertyType_String, 4, 5975955039079730091)
+	model.Property("Id", objectbox.PropertyType_Long, 5, 307498160650160795)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Name", objectbox.PropertyType_String, 6, 716857237269823862)
+	model.Property("Name", objectbox.PropertyType_String, 6, 2954509445996888024)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(2, 167828898366445354)
-	model.Property("AdminState", objectbox.PropertyType_String, 7, 8163911656701609670)
-	model.Property("OperatingState", objectbox.PropertyType_String, 8, 145868754249953301)
-	model.Property("Protocols", objectbox.PropertyType_ByteVector, 16, 7321949473237296210)
-	model.Property("LastConnected", objectbox.PropertyType_Long, 10, 783154740742750654)
-	model.Property("LastReported", objectbox.PropertyType_Long, 11, 9043009336819819958)
-	model.Property("Labels", objectbox.PropertyType_StringVector, 12, 1085892164679946752)
-	model.Property("Location", objectbox.PropertyType_ByteVector, 13, 6218275966482027583)
-	model.Property("Service", objectbox.PropertyType_Relation, 14, 6082578288181241795)
+	model.PropertyIndex(5, 8962276722579918082)
+	model.Property("AdminState", objectbox.PropertyType_String, 7, 6282469246205283102)
+	model.Property("OperatingState", objectbox.PropertyType_String, 8, 3498097526448157332)
+	model.Property("Protocols", objectbox.PropertyType_ByteVector, 9, 3666750183433369298)
+	model.Property("LastConnected", objectbox.PropertyType_Long, 10, 452571766281036281)
+	model.Property("LastReported", objectbox.PropertyType_Long, 11, 7158543833160973529)
+	model.Property("Labels", objectbox.PropertyType_StringVector, 12, 7169174010297297034)
+	model.Property("Location", objectbox.PropertyType_ByteVector, 13, 4015086596961837356)
+	model.Property("Service", objectbox.PropertyType_Relation, 14, 4088629018495371596)
 	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
-	model.PropertyRelation("DeviceService", 4, 6949046153132189499)
-	model.Property("Profile", objectbox.PropertyType_Relation, 15, 6924709779874779070)
+	model.PropertyRelation("DeviceService", 6, 1605942851186055727)
+	model.Property("Profile", objectbox.PropertyType_Relation, 15, 7161954191428807251)
 	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
-	model.PropertyRelation("DeviceProfile", 5, 1047090894033747089)
-	model.Property("AutoEvents", objectbox.PropertyType_ByteVector, 17, 4189659983460485645)
-	model.EntityLastPropertyId(17, 4189659983460485645)
+	model.PropertyRelation("DeviceProfile", 7, 1592441353906626817)
+	model.Property("AutoEvents", objectbox.PropertyType_ByteVector, 16, 6886776406948515238)
+	model.EntityLastPropertyId(16, 6886776406948515238)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -240,7 +240,7 @@ func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, i
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetAdminState = fbutils.CreateStringOffset(fbb, string(obj.AdminState))
 	var offsetOperatingState = fbutils.CreateStringOffset(fbb, string(obj.OperatingState))
-	var offsetProtocols = fbutils.CreateByteVectorOffset(fbb, mapStringMapStringStringJsonToDatabaseValue(obj.Protocols))
+	var offsetProtocols = fbutils.CreateByteVectorOffset(fbb, mapStringProtocolPropertiesJsonToDatabaseValue(obj.Protocols))
 	var offsetLabels = fbutils.CreateStringVectorOffset(fbb, obj.Labels)
 	var offsetLocation = fbutils.CreateByteVectorOffset(fbb, interfaceJsonToDatabaseValue(obj.Location))
 	var offsetAutoEvents = fbutils.CreateByteVectorOffset(fbb, autoEventsJsonToDatabaseValue(obj.AutoEvents))
@@ -264,23 +264,23 @@ func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, i
 	}
 
 	// build the FlatBuffers object
-	fbb.StartObject(17)
-	fbutils.SetInt64Slot(fbb, 0, obj.DescribedObject.BaseObject.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.DescribedObject.BaseObject.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.DescribedObject.BaseObject.Origin)
+	fbb.StartObject(16)
+	fbutils.SetInt64Slot(fbb, 0, obj.DescribedObject.Timestamps.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.DescribedObject.Timestamps.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.DescribedObject.Timestamps.Origin)
 	fbutils.SetUOffsetTSlot(fbb, 3, offsetDescription)
 	fbutils.SetUint64Slot(fbb, 4, id)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetAdminState)
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetOperatingState)
-	fbutils.SetUOffsetTSlot(fbb, 15, offsetProtocols)
+	fbutils.SetUOffsetTSlot(fbb, 8, offsetProtocols)
 	fbutils.SetInt64Slot(fbb, 9, obj.LastConnected)
 	fbutils.SetInt64Slot(fbb, 10, obj.LastReported)
 	fbutils.SetUOffsetTSlot(fbb, 11, offsetLabels)
 	fbutils.SetUOffsetTSlot(fbb, 12, offsetLocation)
 	fbutils.SetUint64Slot(fbb, 13, rIdService)
 	fbutils.SetUint64Slot(fbb, 14, rIdProfile)
-	fbutils.SetUOffsetTSlot(fbb, 16, offsetAutoEvents)
+	fbutils.SetUOffsetTSlot(fbb, 15, offsetAutoEvents)
 	return nil
 }
 
@@ -332,7 +332,7 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interfa
 
 	return &Device{
 		DescribedObject: models.DescribedObject{
-			BaseObject: BaseObject{
+			Timestamps: Timestamps{
 				Created:  table.GetInt64Slot(4, 0),
 				Modified: table.GetInt64Slot(6, 0),
 				Origin:   table.GetInt64Slot(8, 0),
@@ -343,14 +343,14 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interfa
 		Name:           fbutils.GetStringSlot(table, 14),
 		AdminState:     models.AdminState(fbutils.GetStringSlot(table, 16)),
 		OperatingState: models.OperatingState(fbutils.GetStringSlot(table, 18)),
-		Protocols:      mapStringMapStringStringJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 34)),
+		Protocols:      mapStringProtocolPropertiesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 20)),
 		LastConnected:  table.GetInt64Slot(22, 0),
 		LastReported:   table.GetInt64Slot(24, 0),
 		Labels:         fbutils.GetStringVectorSlot(table, 26),
 		Location:       interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 28)),
 		Service:        *relService,
 		Profile:        *relProfile,
-		AutoEvents:     autoEventsJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 36)),
+		AutoEvents:     autoEventsJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 34)),
 	}, nil
 }
 
@@ -372,7 +372,7 @@ type DeviceBox struct {
 // BoxForDevice opens a box of Device objects
 func BoxForDevice(ob *objectbox.ObjectBox) *DeviceBox {
 	return &DeviceBox{
-		Box: ob.InternalBox(3),
+		Box: ob.InternalBox(6),
 	}
 }
 

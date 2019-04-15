@@ -19,7 +19,7 @@ import (
 )
 
 type ProvisionWatcher struct {
-	models.BaseObject `inline`
+	models.Timestamps `inline`
 	Id                string
 	Name              string            `unique`
 	Identifiers       map[string]string `type:"[]byte" converter:"mapStringStringJson"`

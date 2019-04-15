@@ -20,7 +20,7 @@ var NotificationBinding = notification_EntityInfo{
 	Entity: objectbox.Entity{
 		Id: 11,
 	},
-	Uid: 473217340861383887,
+	Uid: 3035506812026122772,
 }
 
 // Notification_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -126,24 +126,24 @@ func (notification_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (notification_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Notification", 11, 473217340861383887)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 8097807178986063059)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 8972589080235606015)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 7004422487931328765)
-	model.Property("ID", objectbox.PropertyType_Long, 4, 8366513294708486502)
+	model.Entity("Notification", 11, 3035506812026122772)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 4223274968704546949)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 6140168204663194960)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 5119840969146189721)
+	model.Property("ID", objectbox.PropertyType_Long, 4, 1898755377907498256)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Slug", objectbox.PropertyType_String, 5, 9191193423331162482)
+	model.Property("Slug", objectbox.PropertyType_String, 5, 5614391508684015285)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(11, 5929069448268439040)
-	model.Property("Sender", objectbox.PropertyType_String, 6, 3293128717989344156)
-	model.Property("Category", objectbox.PropertyType_String, 7, 6717911931500064874)
-	model.Property("Severity", objectbox.PropertyType_String, 8, 5601160557432732794)
-	model.Property("Content", objectbox.PropertyType_String, 9, 2552815875989069884)
-	model.Property("Description", objectbox.PropertyType_String, 10, 1885790405613350261)
-	model.Property("Status", objectbox.PropertyType_String, 11, 4717815493415963654)
-	model.Property("Labels", objectbox.PropertyType_StringVector, 12, 8144753170650843613)
-	model.Property("ContentType", objectbox.PropertyType_String, 13, 1190301343113188450)
-	model.EntityLastPropertyId(13, 1190301343113188450)
+	model.PropertyIndex(11, 8355138627950004661)
+	model.Property("Sender", objectbox.PropertyType_String, 6, 1698316443180001548)
+	model.Property("Category", objectbox.PropertyType_String, 7, 6130508587898235784)
+	model.Property("Severity", objectbox.PropertyType_String, 8, 7998250136380607007)
+	model.Property("Content", objectbox.PropertyType_String, 9, 3265040071503511803)
+	model.Property("Description", objectbox.PropertyType_String, 10, 3025723844696420299)
+	model.Property("Status", objectbox.PropertyType_String, 11, 8672829707123022794)
+	model.Property("Labels", objectbox.PropertyType_StringVector, 12, 6661777360307054348)
+	model.Property("ContentType", objectbox.PropertyType_String, 13, 3705832325243429372)
+	model.EntityLastPropertyId(13, 3705832325243429372)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -192,9 +192,9 @@ func (notification_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 	// build the FlatBuffers object
 	fbb.StartObject(13)
-	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.Timestamps.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.Timestamps.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.Timestamps.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetSlug)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetSender)
@@ -217,7 +217,7 @@ func (notification_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 	var id = table.GetUint64Slot(10, 0)
 
 	return &Notification{
-		BaseObject: models.BaseObject{
+		Timestamps: models.Timestamps{
 			Created:  table.GetInt64Slot(4, 0),
 			Modified: table.GetInt64Slot(6, 0),
 			Origin:   table.GetInt64Slot(8, 0),

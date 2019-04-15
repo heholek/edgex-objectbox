@@ -21,6 +21,5 @@ type Event struct {
 	Created  int64
 	Modified int64
 	Origin   int64
-	Event    string
 	Readings []Reading
 }

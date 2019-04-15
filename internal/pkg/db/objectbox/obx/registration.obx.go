@@ -20,7 +20,7 @@ var RegistrationBinding = registration_EntityInfo{
 	Entity: objectbox.Entity{
 		Id: 13,
 	},
-	Uid: 7634570582013981061,
+	Uid: 8697442173660558194,
 }
 
 // Registration_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -141,28 +141,28 @@ func (registration_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (registration_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Registration", 13, 7634570582013981061)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 4739600724391841289)
+	model.Entity("Registration", 13, 8697442173660558194)
+	model.Property("ID", objectbox.PropertyType_Long, 1, 123887931587262126)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 1865096029168372524)
-	model.Property("Modified", objectbox.PropertyType_Long, 3, 2482875418636968909)
-	model.Property("Origin", objectbox.PropertyType_Long, 4, 7127382488741398936)
-	model.Property("Name", objectbox.PropertyType_String, 5, 4295782988966448821)
+	model.Property("Created", objectbox.PropertyType_Long, 2, 1402964767567004529)
+	model.Property("Modified", objectbox.PropertyType_Long, 3, 3592048256596347124)
+	model.Property("Origin", objectbox.PropertyType_Long, 4, 6512940430179949006)
+	model.Property("Name", objectbox.PropertyType_String, 5, 471898448094503251)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(15, 1279714968304775307)
-	model.Property("Addressable", objectbox.PropertyType_Relation, 6, 3735895927695370569)
+	model.PropertyIndex(15, 3183733801868506910)
+	model.Property("Addressable", objectbox.PropertyType_Relation, 6, 8935979958445686361)
 	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
-	model.PropertyRelation("Addressable", 16, 473343030382928749)
-	model.Property("Format", objectbox.PropertyType_String, 7, 4078554114893980436)
-	model.Property("Filter_DeviceIDs", objectbox.PropertyType_StringVector, 8, 4590597437897473969)
-	model.Property("Filter_ValueDescriptorIDs", objectbox.PropertyType_StringVector, 9, 2336536679363645756)
-	model.Property("Encryption_Algo", objectbox.PropertyType_String, 10, 2515537038240284280)
-	model.Property("Encryption_Key", objectbox.PropertyType_String, 11, 380896508047194758)
-	model.Property("Encryption_InitVector", objectbox.PropertyType_String, 12, 7862731985842271541)
-	model.Property("Compression", objectbox.PropertyType_String, 13, 7574209528919188724)
-	model.Property("Enable", objectbox.PropertyType_Bool, 14, 5441578513058459009)
-	model.Property("Destination", objectbox.PropertyType_String, 15, 4611276071137162060)
-	model.EntityLastPropertyId(15, 4611276071137162060)
+	model.PropertyRelation("Addressable", 16, 6932752998076836248)
+	model.Property("Format", objectbox.PropertyType_String, 7, 3541213098300435357)
+	model.Property("Filter_DeviceIDs", objectbox.PropertyType_StringVector, 8, 2123523082225229536)
+	model.Property("Filter_ValueDescriptorIDs", objectbox.PropertyType_StringVector, 9, 1568686084581981546)
+	model.Property("Encryption_Algo", objectbox.PropertyType_String, 10, 99228324085287014)
+	model.Property("Encryption_Key", objectbox.PropertyType_String, 11, 46279435191312724)
+	model.Property("Encryption_InitVector", objectbox.PropertyType_String, 12, 5459531335994809378)
+	model.Property("Compression", objectbox.PropertyType_String, 13, 2579287944068867159)
+	model.Property("Enable", objectbox.PropertyType_Bool, 14, 3485720785546906540)
+	model.Property("Destination", objectbox.PropertyType_String, 15, 1837331318685115169)
+	model.EntityLastPropertyId(15, 1837331318685115169)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object

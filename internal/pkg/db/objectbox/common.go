@@ -7,13 +7,13 @@ import (
 	"strings"
 )
 
-func onCreate(base *models.BaseObject) {
+func onCreate(base *models.Timestamps) {
 	if base.Created == 0 {
 		base.Created = db.MakeTimestamp()
 	}
 }
 
-func onUpdate(base *models.BaseObject) {
+func onUpdate(base *models.Timestamps) {
 	base.Modified = db.MakeTimestamp()
 }
 

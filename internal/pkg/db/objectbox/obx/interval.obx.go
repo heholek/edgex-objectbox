@@ -19,7 +19,7 @@ var IntervalBinding = interval_EntityInfo{
 	Entity: objectbox.Entity{
 		Id: 10,
 	},
-	Uid: 5327467992591774453,
+	Uid: 7776691412575067801,
 }
 
 // Interval_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -104,21 +104,21 @@ func (interval_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (interval_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Interval", 10, 5327467992591774453)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 4709446466924896420)
+	model.Entity("Interval", 10, 7776691412575067801)
+	model.Property("ID", objectbox.PropertyType_Long, 1, 6621318798456684065)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 3510773364192773715)
-	model.Property("Modified", objectbox.PropertyType_Long, 3, 2533804090205375173)
-	model.Property("Origin", objectbox.PropertyType_Long, 4, 814056020236256753)
-	model.Property("Name", objectbox.PropertyType_String, 5, 6944180935531709531)
+	model.Property("Created", objectbox.PropertyType_Long, 2, 4844875194390890308)
+	model.Property("Modified", objectbox.PropertyType_Long, 3, 7077503010831821587)
+	model.Property("Origin", objectbox.PropertyType_Long, 4, 1376927553496194605)
+	model.Property("Name", objectbox.PropertyType_String, 5, 5045401852415426063)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(10, 8471938915869008331)
-	model.Property("Start", objectbox.PropertyType_String, 6, 6341369538910341773)
-	model.Property("End", objectbox.PropertyType_String, 7, 7972117540309454636)
-	model.Property("Frequency", objectbox.PropertyType_String, 8, 5146169580259743388)
-	model.Property("Cron", objectbox.PropertyType_String, 9, 6353708099746865083)
-	model.Property("RunOnce", objectbox.PropertyType_Bool, 10, 3551947878891095082)
-	model.EntityLastPropertyId(10, 3551947878891095082)
+	model.PropertyIndex(10, 109793853252723826)
+	model.Property("Start", objectbox.PropertyType_String, 6, 3486349604901008785)
+	model.Property("End", objectbox.PropertyType_String, 7, 5610259662973560311)
+	model.Property("Frequency", objectbox.PropertyType_String, 8, 3713977468053692261)
+	model.Property("Cron", objectbox.PropertyType_String, 9, 3557069308719432604)
+	model.Property("RunOnce", objectbox.PropertyType_Bool, 10, 5010559172680658469)
+	model.EntityLastPropertyId(10, 5010559172680658469)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object

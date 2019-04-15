@@ -18,9 +18,9 @@ type subscription_EntityInfo struct {
 
 var SubscriptionBinding = subscription_EntityInfo{
 	Entity: objectbox.Entity{
-		Id: 16,
+		Id: 14,
 	},
-	Uid: 5707233647009676917,
+	Uid: 4790597517158533267,
 }
 
 // Subscription_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -105,21 +105,21 @@ func (subscription_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (subscription_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Subscription", 16, 5707233647009676917)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 7841505559683522781)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 6380824154972036906)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 1671289463647424712)
-	model.Property("ID", objectbox.PropertyType_Long, 4, 5860378613557429956)
+	model.Entity("Subscription", 14, 4790597517158533267)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 5157679359459246406)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 5632417580518702024)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 1893959681968276612)
+	model.Property("ID", objectbox.PropertyType_Long, 4, 5603884448953927663)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Slug", objectbox.PropertyType_String, 5, 9006847262682447404)
+	model.Property("Slug", objectbox.PropertyType_String, 5, 6040395719468535542)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(20, 3089546788875101383)
-	model.Property("Receiver", objectbox.PropertyType_String, 6, 8543544518008431401)
-	model.Property("Description", objectbox.PropertyType_String, 7, 5464333271186665778)
-	model.Property("SubscribedCategories", objectbox.PropertyType_StringVector, 8, 2832589937380529425)
-	model.Property("SubscribedLabels", objectbox.PropertyType_StringVector, 9, 7156348278107171350)
-	model.Property("Channels", objectbox.PropertyType_ByteVector, 10, 179953748454958900)
-	model.EntityLastPropertyId(10, 179953748454958900)
+	model.PropertyIndex(17, 8716895974642083960)
+	model.Property("Receiver", objectbox.PropertyType_String, 6, 4196336013963337708)
+	model.Property("Description", objectbox.PropertyType_String, 7, 8367424760486272699)
+	model.Property("SubscribedCategories", objectbox.PropertyType_StringVector, 8, 4391170479528597647)
+	model.Property("SubscribedLabels", objectbox.PropertyType_StringVector, 9, 875615126458241331)
+	model.Property("Channels", objectbox.PropertyType_ByteVector, 10, 6568091755753264242)
+	model.EntityLastPropertyId(10, 6568091755753264242)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -165,9 +165,9 @@ func (subscription_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 	// build the FlatBuffers object
 	fbb.StartObject(10)
-	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.Timestamps.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.Timestamps.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.Timestamps.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetSlug)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetReceiver)
@@ -187,7 +187,7 @@ func (subscription_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 	var id = table.GetUint64Slot(10, 0)
 
 	return &Subscription{
-		BaseObject: models.BaseObject{
+		Timestamps: models.Timestamps{
 			Created:  table.GetInt64Slot(4, 0),
 			Modified: table.GetInt64Slot(6, 0),
 			Origin:   table.GetInt64Slot(8, 0),
@@ -220,7 +220,7 @@ type SubscriptionBox struct {
 // BoxForSubscription opens a box of Subscription objects
 func BoxForSubscription(ob *objectbox.ObjectBox) *SubscriptionBox {
 	return &SubscriptionBox{
-		Box: ob.InternalBox(16),
+		Box: ob.InternalBox(14),
 	}
 }
 

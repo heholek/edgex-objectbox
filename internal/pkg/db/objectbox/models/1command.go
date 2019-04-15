@@ -19,7 +19,7 @@ import (
 )
 
 type Command struct {
-	models.BaseObject `inline`
+	models.Timestamps `inline`
 	Id                string
 	Name              string
 	Get               *Get

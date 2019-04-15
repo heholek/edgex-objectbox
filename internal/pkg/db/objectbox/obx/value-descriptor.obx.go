@@ -17,9 +17,9 @@ type valueDescriptor_EntityInfo struct {
 
 var ValueDescriptorBinding = valueDescriptor_EntityInfo{
 	Entity: objectbox.Entity{
-		Id: 18,
+		Id: 16,
 	},
-	Uid: 5270674616764717680,
+	Uid: 2903250960703756959,
 }
 
 // ValueDescriptor_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -125,24 +125,24 @@ func (valueDescriptor_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (valueDescriptor_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("ValueDescriptor", 18, 5270674616764717680)
-	model.Property("Id", objectbox.PropertyType_Long, 1, 4311317278648370440)
+	model.Entity("ValueDescriptor", 16, 2903250960703756959)
+	model.Property("Id", objectbox.PropertyType_Long, 1, 6873011748171964323)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 7190112676589905432)
-	model.Property("Description", objectbox.PropertyType_String, 3, 3734164508160642969)
-	model.Property("Modified", objectbox.PropertyType_Long, 4, 6779033823013881678)
-	model.Property("Origin", objectbox.PropertyType_Long, 5, 1458416511237420680)
-	model.Property("Name", objectbox.PropertyType_String, 6, 7490331365197419914)
+	model.Property("Created", objectbox.PropertyType_Long, 2, 1551957824880721748)
+	model.Property("Description", objectbox.PropertyType_String, 3, 929837542342336953)
+	model.Property("Modified", objectbox.PropertyType_Long, 4, 6532154564935767763)
+	model.Property("Origin", objectbox.PropertyType_Long, 5, 8880716450337486833)
+	model.Property("Name", objectbox.PropertyType_String, 6, 2621696991637966622)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(22, 167306759802683932)
-	model.Property("Min", objectbox.PropertyType_ByteVector, 7, 1028026556096721188)
-	model.Property("Max", objectbox.PropertyType_ByteVector, 8, 5857314100811027575)
-	model.Property("DefaultValue", objectbox.PropertyType_ByteVector, 9, 7078651487541372965)
-	model.Property("Type", objectbox.PropertyType_String, 10, 6831000694820449078)
-	model.Property("UomLabel", objectbox.PropertyType_String, 11, 3012618130977761530)
-	model.Property("Formatting", objectbox.PropertyType_String, 12, 707808711473441838)
-	model.Property("Labels", objectbox.PropertyType_StringVector, 13, 6793276923309349137)
-	model.EntityLastPropertyId(13, 6793276923309349137)
+	model.PropertyIndex(19, 8558604861306073232)
+	model.Property("Min", objectbox.PropertyType_ByteVector, 7, 1578207995766742188)
+	model.Property("Max", objectbox.PropertyType_ByteVector, 8, 1694373352675677816)
+	model.Property("DefaultValue", objectbox.PropertyType_ByteVector, 9, 415476961418490344)
+	model.Property("Type", objectbox.PropertyType_String, 10, 8376260686049225004)
+	model.Property("UomLabel", objectbox.PropertyType_String, 11, 8683875949437263689)
+	model.Property("Formatting", objectbox.PropertyType_String, 12, 6024578626204330523)
+	model.Property("Labels", objectbox.PropertyType_StringVector, 13, 3814172039806064934)
+	model.EntityLastPropertyId(13, 3814172039806064934)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -250,7 +250,7 @@ type ValueDescriptorBox struct {
 // BoxForValueDescriptor opens a box of ValueDescriptor objects
 func BoxForValueDescriptor(ob *objectbox.ObjectBox) *ValueDescriptorBox {
 	return &ValueDescriptorBox{
-		Box: ob.InternalBox(18),
+		Box: ob.InternalBox(16),
 	}
 }
 

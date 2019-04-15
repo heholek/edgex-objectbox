@@ -20,7 +20,7 @@ import (
 )
 
 type Transmission struct {
-	models.BaseObject `inline`
+	models.Timestamps `inline`
 	ID                string
 	Notification      Notification `link`
 	Receiver          string

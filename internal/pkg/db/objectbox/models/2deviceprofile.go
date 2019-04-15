@@ -26,6 +26,6 @@ type DeviceProfile struct {
 	Model                  string
 	Labels                 []string
 	DeviceResources        []models.DeviceResource  `type:"[]byte" converter:"deviceResourcesJson"`
-	Resources              []models.ProfileResource `type:"[]byte" converter:"profileResourcesJson"`
-	Commands               []Command
+	DeviceCommands         []models.ProfileResource `type:"[]byte" converter:"profileResourcesJson"`
+	CoreCommands           []Command
 }

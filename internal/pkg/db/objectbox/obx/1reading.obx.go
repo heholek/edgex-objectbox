@@ -17,21 +17,22 @@ type reading_EntityInfo struct {
 
 var ReadingBinding = reading_EntityInfo{
 	Entity: objectbox.Entity{
-		Id: 7,
+		Id: 4,
 	},
-	Uid: 5153159258527756401,
+	Uid: 8012333558975129213,
 }
 
 // Reading_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var Reading_ = struct {
-	Id       *objectbox.PropertyUint64
-	Pushed   *objectbox.PropertyInt64
-	Created  *objectbox.PropertyInt64
-	Origin   *objectbox.PropertyInt64
-	Modified *objectbox.PropertyInt64
-	Device   *objectbox.PropertyString
-	Name     *objectbox.PropertyString
-	Value    *objectbox.PropertyString
+	Id          *objectbox.PropertyUint64
+	Pushed      *objectbox.PropertyInt64
+	Created     *objectbox.PropertyInt64
+	Origin      *objectbox.PropertyInt64
+	Modified    *objectbox.PropertyInt64
+	Device      *objectbox.PropertyString
+	Name        *objectbox.PropertyString
+	Value       *objectbox.PropertyString
+	BinaryValue *objectbox.PropertyByteVector
 }{
 	Id: &objectbox.PropertyUint64{
 		BaseProperty: &objectbox.BaseProperty{
@@ -81,6 +82,12 @@ var Reading_ = struct {
 			Entity: &ReadingBinding.Entity,
 		},
 	},
+	BinaryValue: &objectbox.PropertyByteVector{
+		BaseProperty: &objectbox.BaseProperty{
+			Id:     9,
+			Entity: &ReadingBinding.Entity,
+		},
+	},
 }
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
@@ -90,17 +97,18 @@ func (reading_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (reading_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Reading", 7, 5153159258527756401)
-	model.Property("Id", objectbox.PropertyType_Long, 1, 720312979085228804)
+	model.Entity("Reading", 4, 8012333558975129213)
+	model.Property("Id", objectbox.PropertyType_Long, 1, 5443847882081660610)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Pushed", objectbox.PropertyType_Long, 2, 3101718553199156407)
-	model.Property("Created", objectbox.PropertyType_Long, 3, 2792441427954297490)
-	model.Property("Origin", objectbox.PropertyType_Long, 4, 758879012114214353)
-	model.Property("Modified", objectbox.PropertyType_Long, 5, 1481663470480543613)
-	model.Property("Device", objectbox.PropertyType_String, 6, 8021760369308509248)
-	model.Property("Name", objectbox.PropertyType_String, 7, 2078933992804594330)
-	model.Property("Value", objectbox.PropertyType_String, 8, 4285345738141491653)
-	model.EntityLastPropertyId(8, 4285345738141491653)
+	model.Property("Pushed", objectbox.PropertyType_Long, 2, 1634534132378761166)
+	model.Property("Created", objectbox.PropertyType_Long, 3, 6022679825524196879)
+	model.Property("Origin", objectbox.PropertyType_Long, 4, 4564442774242088945)
+	model.Property("Modified", objectbox.PropertyType_Long, 5, 3044189181647527381)
+	model.Property("Device", objectbox.PropertyType_String, 6, 960087973838288432)
+	model.Property("Name", objectbox.PropertyType_String, 7, 8155400751319283038)
+	model.Property("Value", objectbox.PropertyType_String, 8, 5963400646570440874)
+	model.Property("BinaryValue", objectbox.PropertyType_ByteVector, 9, 7724532463827666508)
+	model.EntityLastPropertyId(9, 7724532463827666508)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -140,9 +148,10 @@ func (reading_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, 
 	var offsetDevice = fbutils.CreateStringOffset(fbb, obj.Device)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetValue = fbutils.CreateStringOffset(fbb, obj.Value)
+	var offsetBinaryValue = fbutils.CreateByteVectorOffset(fbb, obj.BinaryValue)
 
 	// build the FlatBuffers object
-	fbb.StartObject(8)
+	fbb.StartObject(9)
 	fbutils.SetUint64Slot(fbb, 0, id)
 	fbutils.SetInt64Slot(fbb, 1, obj.Pushed)
 	fbutils.SetInt64Slot(fbb, 2, obj.Created)
@@ -151,6 +160,7 @@ func (reading_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, 
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetDevice)
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetValue)
+	fbutils.SetUOffsetTSlot(fbb, 8, offsetBinaryValue)
 	return nil
 }
 
@@ -163,14 +173,15 @@ func (reading_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interf
 	var id = table.GetUint64Slot(4, 0)
 
 	return &Reading{
-		Id:       objectbox.StringIdConvertToEntityProperty(id),
-		Pushed:   table.GetInt64Slot(6, 0),
-		Created:  table.GetInt64Slot(8, 0),
-		Origin:   table.GetInt64Slot(10, 0),
-		Modified: table.GetInt64Slot(12, 0),
-		Device:   fbutils.GetStringSlot(table, 14),
-		Name:     fbutils.GetStringSlot(table, 16),
-		Value:    fbutils.GetStringSlot(table, 18),
+		Id:          objectbox.StringIdConvertToEntityProperty(id),
+		Pushed:      table.GetInt64Slot(6, 0),
+		Created:     table.GetInt64Slot(8, 0),
+		Origin:      table.GetInt64Slot(10, 0),
+		Modified:    table.GetInt64Slot(12, 0),
+		Device:      fbutils.GetStringSlot(table, 14),
+		Name:        fbutils.GetStringSlot(table, 16),
+		Value:       fbutils.GetStringSlot(table, 18),
+		BinaryValue: fbutils.GetByteVectorSlot(table, 20),
 	}, nil
 }
 
@@ -192,7 +203,7 @@ type ReadingBox struct {
 // BoxForReading opens a box of Reading objects
 func BoxForReading(ob *objectbox.ObjectBox) *ReadingBox {
 	return &ReadingBox{
-		Box: ob.InternalBox(7),
+		Box: ob.InternalBox(4),
 	}
 }
 

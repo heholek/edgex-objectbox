@@ -18,9 +18,9 @@ type deviceReport_EntityInfo struct {
 
 var DeviceReportBinding = deviceReport_EntityInfo{
 	Entity: objectbox.Entity{
-		Id: 5,
+		Id: 7,
 	},
-	Uid: 647510041971772493,
+	Uid: 2987965348377516725,
 }
 
 // DeviceReport_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -31,7 +31,7 @@ var DeviceReport_ = struct {
 	Id       *objectbox.PropertyUint64
 	Name     *objectbox.PropertyString
 	Device   *objectbox.PropertyString
-	Event    *objectbox.PropertyString
+	Action   *objectbox.PropertyString
 	Expected *objectbox.PropertyStringVector
 }{
 	Created: &objectbox.PropertyInt64{
@@ -70,7 +70,7 @@ var DeviceReport_ = struct {
 			Entity: &DeviceReportBinding.Entity,
 		},
 	},
-	Event: &objectbox.PropertyString{
+	Action: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
 			Id:     7,
 			Entity: &DeviceReportBinding.Entity,
@@ -91,19 +91,19 @@ func (deviceReport_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (deviceReport_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("DeviceReport", 5, 647510041971772493)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 5488177921456249775)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 1910341233961500137)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 789497655050910027)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 3326595959808718872)
+	model.Entity("DeviceReport", 7, 2987965348377516725)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 144277113410594238)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 6752056937527638827)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 9138721759452247071)
+	model.Property("Id", objectbox.PropertyType_Long, 4, 8821067739042639817)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Name", objectbox.PropertyType_String, 5, 122729433673421832)
+	model.Property("Name", objectbox.PropertyType_String, 5, 4017589850413680442)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(7, 7460020255773218717)
-	model.Property("Device", objectbox.PropertyType_String, 6, 418723660054952328)
-	model.Property("Event", objectbox.PropertyType_String, 7, 9098980313453070502)
-	model.Property("Expected", objectbox.PropertyType_StringVector, 8, 827335505186667472)
-	model.EntityLastPropertyId(8, 827335505186667472)
+	model.PropertyIndex(8, 6567592991408811323)
+	model.Property("Device", objectbox.PropertyType_String, 6, 4864361410797328287)
+	model.Property("Action", objectbox.PropertyType_String, 7, 7348386595663429576)
+	model.Property("Expected", objectbox.PropertyType_StringVector, 8, 3826804133873897010)
+	model.EntityLastPropertyId(8, 3826804133873897010)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -142,18 +142,18 @@ func (deviceReport_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetDevice = fbutils.CreateStringOffset(fbb, obj.Device)
-	var offsetEvent = fbutils.CreateStringOffset(fbb, obj.Event)
+	var offsetAction = fbutils.CreateStringOffset(fbb, obj.Action)
 	var offsetExpected = fbutils.CreateStringVectorOffset(fbb, obj.Expected)
 
 	// build the FlatBuffers object
 	fbb.StartObject(8)
-	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.Timestamps.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.Timestamps.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.Timestamps.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetDevice)
-	fbutils.SetUOffsetTSlot(fbb, 6, offsetEvent)
+	fbutils.SetUOffsetTSlot(fbb, 6, offsetAction)
 	fbutils.SetUOffsetTSlot(fbb, 7, offsetExpected)
 	return nil
 }
@@ -167,7 +167,7 @@ func (deviceReport_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 	var id = table.GetUint64Slot(10, 0)
 
 	return &DeviceReport{
-		BaseObject: models.BaseObject{
+		Timestamps: models.Timestamps{
 			Created:  table.GetInt64Slot(4, 0),
 			Modified: table.GetInt64Slot(6, 0),
 			Origin:   table.GetInt64Slot(8, 0),
@@ -175,7 +175,7 @@ func (deviceReport_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 		Id:       objectbox.StringIdConvertToEntityProperty(id),
 		Name:     fbutils.GetStringSlot(table, 12),
 		Device:   fbutils.GetStringSlot(table, 14),
-		Event:    fbutils.GetStringSlot(table, 16),
+		Action:   fbutils.GetStringSlot(table, 16),
 		Expected: fbutils.GetStringVectorSlot(table, 18),
 	}, nil
 }
@@ -198,7 +198,7 @@ type DeviceReportBox struct {
 // BoxForDeviceReport opens a box of DeviceReport objects
 func BoxForDeviceReport(ob *objectbox.ObjectBox) *DeviceReportBox {
 	return &DeviceReportBox{
-		Box: ob.InternalBox(5),
+		Box: ob.InternalBox(7),
 	}
 }
 

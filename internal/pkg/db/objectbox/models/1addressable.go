@@ -19,7 +19,7 @@ import (
 )
 
 type Addressable struct {
-	models.BaseObject `inline`
+	models.Timestamps `inline`
 	Id                string
 	Name              string `unique`
 	Protocol          string

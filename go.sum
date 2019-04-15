@@ -69,8 +69,12 @@ github.com/eclipse/paho.mqtt.golang v1.1.1 h1:iPJYXJLaViCshRTW/PSqImSS6HJ2Rf671W
 github.com/eclipse/paho.mqtt.golang v1.1.1/go.mod h1:H9keYFcgq3Qr5OUJm/JZI/i6U7joQ8SYLhZwfeOo6Ts=
 github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190227005352-2d7ec079a728 h1:toMGChj1aaUlOL1k3TvUbBHMaqluFfWOuDwMrNXtgtc=
 github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190227005352-2d7ec079a728/go.mod h1:rVRt6AhRrJnzdVTGZV0sGS7Fb8Pdfwj+/yq4SXBPbV8=
+github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190408185438-838c1e45fef1 h1:GW2ufd9WnUg94ytlOW1wX4tCQgCQur8y6Nie+dqHMi4=
+github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190408185438-838c1e45fef1/go.mod h1:yVAVTeH1lbp+3YG2V7sq3iIerZj94lC0rZX1sryGfTY=
+github.com/edgexfoundry/go-mod-messaging v0.0.0-20190327144236-4222ae1edb0b/go.mod h1:pA8HBYCiLIuqlNjl2zHLLwC6ohl+/okb8Rikfu17TJg=
 github.com/edgexfoundry/go-mod-registry v0.0.0-20190221211212-171439dc16f8 h1:qEv0EudDyNbWAY7vLFBAP9x/coZ7MknThvp/nPRzNgE=
 github.com/edgexfoundry/go-mod-registry v0.0.0-20190221211212-171439dc16f8/go.mod h1:xLVuqoMAviBiS3bzDAl6JhBua0HXBfYmJLn1DBB9Cwo=
+github.com/edgexfoundry/go-mod-registry v0.0.0-20190401195203-552208258719/go.mod h1:3w+ZfrsXXTDbKQ0cKClS2ujQXGoJpcvvB1OzgFNSYDg=
 github.com/elazarl/go-bindata-assetfs v1.0.0/go.mod h1:v+YaWX3bdea5J/mo8dSETolEo7R71Vk1u8bnjau5yw4=
 github.com/emirpasic/gods v1.9.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
@@ -102,6 +106,8 @@ github.com/golang/mock v1.1.1/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfb
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/snappy v0.0.0-20170215233205-553a64147049/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
+github.com/gomodule/redigo v2.0.0+incompatible h1:K/R+8tc58AaqLkqG2Ol3Qk+DR/TlNuhuh457pBFPtt0=
+github.com/gomodule/redigo v2.0.0+incompatible/go.mod h1:B4C85qUVwatsJoIUNIfCRsp7qO0iAmpGFZ4EELWSbC4=
 github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c h1:964Od4U6p2jUkFxvCydnIczKteheJEzHRToSGK3Bnlw=
 github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c/go.mod h1:lNA+9X1NB3Zf8V7Ke586lFgjr2dZNuvo3lPJSGZ5JPQ=
 github.com/google/flatbuffers v1.10.0 h1:wHCM5N1xsJ3VwePcIpVqnmjAqRXlR44gv4hpGi+/LIw=
@@ -171,11 +177,14 @@ github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d/go.mod h1:+NfK9FKe
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
 github.com/huandu/xstrings v1.0.0/go.mod h1:4qWG/gcEcfX4z/mBDHJ++3ReCw9ibxbsNJbcucJdbSo=
 github.com/imdario/mergo v0.3.4/go.mod h1:2EnlNZ0deacrJVfApfmtdGgDfMuh/nq6Ok1EcJh5FfA=
+github.com/imdario/mergo v0.3.6 h1:xTNEAn+kxVO7dTZGu0CegyqKZmoWFI0rF8UxjlB2d28=
 github.com/imdario/mergo v0.3.6/go.mod h1:2EnlNZ0deacrJVfApfmtdGgDfMuh/nq6Ok1EcJh5FfA=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/influxdata/flux v0.13.0/go.mod h1:81jeDcHVn1rN5uj9aQ81S72Q8ol8If7N0zM0G8TnxTE=
 github.com/influxdata/influxdb v1.7.4 h1:Ufqfn5xFixUXXj5Fgmhfa9RSke2R2AOvUOXfxgp9SCA=
 github.com/influxdata/influxdb v1.7.4/go.mod h1:qZna6X/4elxqT3yI9iZYdZrWWdeFOOprn86kgg4+IzY=
+github.com/influxdata/influxdb v1.7.5 h1:qEgSrvIRxsIqNQTTeI1Bv6MPh8sOODEsL3GTi9nqtTk=
+github.com/influxdata/influxdb v1.7.5/go.mod h1:qZna6X/4elxqT3yI9iZYdZrWWdeFOOprn86kgg4+IzY=
 github.com/influxdata/influxql v0.0.0-20180925231337-1cbfca8e56b6/go.mod h1:KpVI7okXjK6PRi3Z5B+mtKZli+R1DnZgb3N+tzevNgo=
 github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e/go.mod h1:4kt73NQhadE3daL3WhR5EJ/J2ocX0PZzwxQ0gXJ7oFE=
 github.com/influxdata/platform v0.0.0-20190117200541-d500d3cf5589 h1:oN2MMxbnMD/XIlyXbSczQqN5vcrCMFuRsiQafSt2c1E=
@@ -223,6 +232,7 @@ github.com/miekg/dns v1.1.1/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nr
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=
 github.com/mitchellh/consulstructure v0.0.0-20160324233621-b407c521973b h1:UX0IFS2CZcqKynUwYM1ndj2Thhqm6TDJgxOWdR24wCc=
 github.com/mitchellh/consulstructure v0.0.0-20160324233621-b407c521973b/go.mod h1:dIfpPVUR+ZfkzkDcKnn+oPW1jKeXe4WlNWc7rIXOVxM=
+github.com/mitchellh/consulstructure v0.0.0-20190329231841-56fdc4d2da54/go.mod h1:dIfpPVUR+ZfkzkDcKnn+oPW1jKeXe4WlNWc7rIXOVxM=
 github.com/mitchellh/copystructure v1.0.0 h1:Laisrj+bAB6b/yJwB5Bt3ITZhGJdqmxquMKeZ+mmkFQ=
 github.com/mitchellh/copystructure v1.0.0/go.mod h1:SNtv71yrdKgLRyLFxmLdkAbkKEFWgYaq1OVrnRcwhnw=
 github.com/mitchellh/go-homedir v1.0.0 h1:vKb8ShqSby24Yrqr/yDYkuFz8d0WUjys40rvnGC8aR0=
@@ -314,6 +324,10 @@ github.com/testcontainers/testcontainer-go v0.0.0-20181115231424-8e868ca12c0f/go
 github.com/tinylib/msgp v1.0.2/go.mod h1:+d+yLhGm8mzTaHzB+wgMYrodPfmZrzkirds8fDWklFE=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/tylerb/graceful v1.2.15/go.mod h1:LPYTbOYmUTdabwRt0TGhLllQ0MUNbs0Y5q1WXJOI9II=
+github.com/ugorji/go v1.1.2 h1:JON3E2/GPW2iDNGoSAusl1KDf5TRQ8k8q7Tp097pZGs=
+github.com/ugorji/go v1.1.2/go.mod h1:hnLbHMwcvSihnDhEfx2/BzKp2xb0Y+ErdfYcrs9tkJQ=
+github.com/ugorji/go/codec v0.0.0-20190316192920-e2bddce071ad h1:Zu1a3eNI3eJefas3yuL6HAKy6eMhRCQFdtZQLC21l6U=
+github.com/ugorji/go/codec v0.0.0-20190316192920-e2bddce071ad/go.mod h1:iT03XoTwV7xq/+UGwKO3UbC1nNNlopQiY61beSdrtOA=
 github.com/willf/bitset v1.1.9/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=
 github.com/xanzy/ssh-agent v0.2.0/go.mod h1:0NyE30eGUDliuLEHJgYte/zncp2zdTStcOnWhgSqHD8=
 github.com/yudai/gojsondiff v1.0.0/go.mod h1:AY32+k2cwILAkW1fbgxQ5mUmMiZFgLIV+FBNExI05xg=

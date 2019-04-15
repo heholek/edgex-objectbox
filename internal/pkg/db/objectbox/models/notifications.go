@@ -20,7 +20,7 @@ import (
 )
 
 type Notification struct {
-	models.BaseObject `inline`
+	models.Timestamps `inline`
 	ID                string
 	Slug              string `unique`
 	Sender            string

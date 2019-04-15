@@ -79,7 +79,7 @@ func mapStringStringJsonToDatabaseValue(goValue map[string]string) []byte {
 	}
 }
 
-func mapStringMapStringStringJsonToEntityProperty(dbValue []byte) (result map[string]map[string]string) {
+func mapStringProtocolPropertiesJsonToEntityProperty(dbValue []byte) (result map[string]models.ProtocolProperties) {
 	if dbValue == nil {
 		return nil
 	}
@@ -91,7 +91,7 @@ func mapStringMapStringStringJsonToEntityProperty(dbValue []byte) (result map[st
 	}
 }
 
-func mapStringMapStringStringJsonToDatabaseValue(goValue map[string]map[string]string) []byte {
+func mapStringProtocolPropertiesJsonToDatabaseValue(goValue map[string]models.ProtocolProperties) []byte {
 	if goValue == nil {
 		return nil
 	}

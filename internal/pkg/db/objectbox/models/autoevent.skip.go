@@ -15,7 +15,7 @@
 package models
 
 type AutoEvent struct {
-	Frequency int32
+	Frequency string
 	OnChange  bool
 	Resource  string
 }

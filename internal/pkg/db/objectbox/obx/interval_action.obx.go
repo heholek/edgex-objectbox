@@ -19,7 +19,7 @@ var IntervalActionBinding = intervalAction_EntityInfo{
 	Entity: objectbox.Entity{
 		Id: 9,
 	},
-	Uid: 2756744796714279591,
+	Uid: 1483985685737893447,
 }
 
 // IntervalAction_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -153,28 +153,28 @@ func (intervalAction_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (intervalAction_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("IntervalAction", 9, 2756744796714279591)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 7420223465596233035)
+	model.Entity("IntervalAction", 9, 1483985685737893447)
+	model.Property("ID", objectbox.PropertyType_Long, 1, 8106501057259745639)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 326969378931318024)
-	model.Property("Modified", objectbox.PropertyType_Long, 3, 8212849254297936236)
-	model.Property("Origin", objectbox.PropertyType_Long, 4, 738028464208107115)
-	model.Property("Name", objectbox.PropertyType_String, 5, 4933633578353384552)
+	model.Property("Created", objectbox.PropertyType_Long, 2, 8606760504517642302)
+	model.Property("Modified", objectbox.PropertyType_Long, 3, 3733003772936789986)
+	model.Property("Origin", objectbox.PropertyType_Long, 4, 3384319087553382585)
+	model.Property("Name", objectbox.PropertyType_String, 5, 2527365102278053113)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(23, 4596954898919109231)
-	model.Property("Interval", objectbox.PropertyType_String, 6, 5283703314264311266)
-	model.Property("Parameters", objectbox.PropertyType_String, 7, 3543707062021049254)
-	model.Property("Target", objectbox.PropertyType_String, 8, 3745173396511053028)
-	model.Property("Protocol", objectbox.PropertyType_String, 9, 133680632503980738)
-	model.Property("HTTPMethod", objectbox.PropertyType_String, 10, 7777723197401595499)
-	model.Property("Address", objectbox.PropertyType_String, 11, 7874742624379905478)
-	model.Property("Port", objectbox.PropertyType_Long, 12, 4919605734646660559)
-	model.Property("Path", objectbox.PropertyType_String, 13, 8245929477933611564)
-	model.Property("Publisher", objectbox.PropertyType_String, 14, 4267442333403608480)
-	model.Property("User", objectbox.PropertyType_String, 15, 1111650812930557467)
-	model.Property("Password", objectbox.PropertyType_String, 16, 72978472924665700)
-	model.Property("Topic", objectbox.PropertyType_String, 17, 8496152850176280729)
-	model.EntityLastPropertyId(17, 8496152850176280729)
+	model.PropertyIndex(9, 2495121518887707707)
+	model.Property("Interval", objectbox.PropertyType_String, 6, 4045769860823082615)
+	model.Property("Parameters", objectbox.PropertyType_String, 7, 5680942227765053540)
+	model.Property("Target", objectbox.PropertyType_String, 8, 2616593658161519544)
+	model.Property("Protocol", objectbox.PropertyType_String, 9, 386210359121663987)
+	model.Property("HTTPMethod", objectbox.PropertyType_String, 10, 8050126696687748350)
+	model.Property("Address", objectbox.PropertyType_String, 11, 622602091182081080)
+	model.Property("Port", objectbox.PropertyType_Long, 12, 6884310575262387856)
+	model.Property("Path", objectbox.PropertyType_String, 13, 2509507802172033733)
+	model.Property("Publisher", objectbox.PropertyType_String, 14, 8761571734782667491)
+	model.Property("User", objectbox.PropertyType_String, 15, 7296768215214404882)
+	model.Property("Password", objectbox.PropertyType_String, 16, 544386887996073797)
+	model.Property("Topic", objectbox.PropertyType_String, 17, 3569001711987596649)
+	model.EntityLastPropertyId(17, 3569001711987596649)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object

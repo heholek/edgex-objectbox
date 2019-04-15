@@ -18,16 +18,16 @@ type deviceService_EntityInfo struct {
 
 var DeviceServiceBinding = deviceService_EntityInfo{
 	Entity: objectbox.Entity{
-		Id: 6,
+		Id: 3,
 	},
-	Uid: 3876971968383894204,
+	Uid: 8592729144137394465,
 }
 
 // DeviceService_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var DeviceService_ = struct {
-	BaseObject_Created  *objectbox.PropertyInt64
-	BaseObject_Modified *objectbox.PropertyInt64
-	BaseObject_Origin   *objectbox.PropertyInt64
+	Timestamps_Created  *objectbox.PropertyInt64
+	Timestamps_Modified *objectbox.PropertyInt64
+	Timestamps_Origin   *objectbox.PropertyInt64
 	Description         *objectbox.PropertyString
 	Id                  *objectbox.PropertyUint64
 	Name                *objectbox.PropertyString
@@ -38,19 +38,19 @@ var DeviceService_ = struct {
 	Addressable         *objectbox.RelationToOne
 	AdminState          *objectbox.PropertyString
 }{
-	BaseObject_Created: &objectbox.PropertyInt64{
+	Timestamps_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id:     1,
 			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
-	BaseObject_Modified: &objectbox.PropertyInt64{
+	Timestamps_Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id:     2,
 			Entity: &DeviceServiceBinding.Entity,
 		},
 	},
-	BaseObject_Origin: &objectbox.PropertyInt64{
+	Timestamps_Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id:     3,
 			Entity: &DeviceServiceBinding.Entity,
@@ -120,25 +120,25 @@ func (deviceService_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (deviceService_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("DeviceService", 6, 3876971968383894204)
-	model.Property("BaseObject_Created", objectbox.PropertyType_Long, 1, 7534116706135258649)
-	model.Property("BaseObject_Modified", objectbox.PropertyType_Long, 2, 6549352117869293834)
-	model.Property("BaseObject_Origin", objectbox.PropertyType_Long, 3, 5372152774908502360)
-	model.Property("Description", objectbox.PropertyType_String, 4, 3874963389270055275)
-	model.Property("Id", objectbox.PropertyType_Long, 5, 8452620401034942300)
+	model.Entity("DeviceService", 3, 8592729144137394465)
+	model.Property("Timestamps_Created", objectbox.PropertyType_Long, 1, 8937887139535500921)
+	model.Property("Timestamps_Modified", objectbox.PropertyType_Long, 2, 3372180570590395340)
+	model.Property("Timestamps_Origin", objectbox.PropertyType_Long, 3, 5493121179345774275)
+	model.Property("Description", objectbox.PropertyType_String, 4, 8372447212547125896)
+	model.Property("Id", objectbox.PropertyType_Long, 5, 1139277417242868914)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Name", objectbox.PropertyType_String, 6, 8352777234647930967)
+	model.Property("Name", objectbox.PropertyType_String, 6, 6755402022460936928)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(8, 6964938437027386171)
-	model.Property("LastConnected", objectbox.PropertyType_Long, 7, 2159682209253399389)
-	model.Property("LastReported", objectbox.PropertyType_Long, 8, 4841913290456990671)
-	model.Property("OperatingState", objectbox.PropertyType_String, 9, 2495166016697651420)
-	model.Property("Labels", objectbox.PropertyType_StringVector, 10, 8893665687124301842)
-	model.Property("Addressable", objectbox.PropertyType_Relation, 11, 9008574691580456328)
+	model.PropertyIndex(2, 5111743529621501669)
+	model.Property("LastConnected", objectbox.PropertyType_Long, 7, 3352512121287165304)
+	model.Property("LastReported", objectbox.PropertyType_Long, 8, 3101703780598732288)
+	model.Property("OperatingState", objectbox.PropertyType_String, 9, 7157873871038944207)
+	model.Property("Labels", objectbox.PropertyType_StringVector, 10, 2994616260915039620)
+	model.Property("Addressable", objectbox.PropertyType_Relation, 11, 2640177732493661289)
 	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
-	model.PropertyRelation("Addressable", 9, 72375762301280824)
-	model.Property("AdminState", objectbox.PropertyType_String, 12, 29342871556659806)
-	model.EntityLastPropertyId(12, 29342871556659806)
+	model.PropertyRelation("Addressable", 3, 4107923026042948129)
+	model.Property("AdminState", objectbox.PropertyType_String, 12, 2249464337832106382)
+	model.EntityLastPropertyId(12, 2249464337832106382)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -205,9 +205,9 @@ func (deviceService_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 
 	// build the FlatBuffers object
 	fbb.StartObject(12)
-	fbutils.SetInt64Slot(fbb, 0, obj.Service.DescribedObject.BaseObject.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Service.DescribedObject.BaseObject.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Service.DescribedObject.BaseObject.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.Service.DescribedObject.Timestamps.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.Service.DescribedObject.Timestamps.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.Service.DescribedObject.Timestamps.Origin)
 	fbutils.SetUOffsetTSlot(fbb, 3, offsetDescription)
 	fbutils.SetUint64Slot(fbb, 4, id)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetName)
@@ -250,7 +250,7 @@ func (deviceService_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (
 	return &DeviceService{
 		Service: Service{
 			DescribedObject: DescribedObject{
-				BaseObject: BaseObject{
+				Timestamps: Timestamps{
 					Created:  table.GetInt64Slot(4, 0),
 					Modified: table.GetInt64Slot(6, 0),
 					Origin:   table.GetInt64Slot(8, 0),
@@ -287,7 +287,7 @@ type DeviceServiceBox struct {
 // BoxForDeviceService opens a box of DeviceService objects
 func BoxForDeviceService(ob *objectbox.ObjectBox) *DeviceServiceBox {
 	return &DeviceServiceBox{
-		Box: ob.InternalBox(6),
+		Box: ob.InternalBox(3),
 	}
 }
 

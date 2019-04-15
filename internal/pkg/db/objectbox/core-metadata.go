@@ -3,7 +3,6 @@ package objectbox
 // implements core-metadata service contract
 
 import (
-	"fmt"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
@@ -21,8 +20,6 @@ type coreMetaDataClient struct {
 	deviceReportBox     *obx.DeviceReportBox
 	deviceServiceBox    *obx.DeviceServiceBox
 	provisionWatcherBox *obx.ProvisionWatcherBox
-	scheduleBox         *obx.ScheduleBox
-	scheduleEventBox    *obx.ScheduleEventBox
 
 	queries coreMetaDataQueries
 }
@@ -69,15 +66,6 @@ type coreMetaDataQueries struct {
 		profile    provisionWatcherQuery
 		service    provisionWatcherQuery
 	}
-	schedule struct {
-		name scheduleQuery
-	}
-	scheduleEvent struct {
-		addressable scheduleEventQuery
-		name        scheduleEventQuery
-		schedule    scheduleEventQuery
-		service     scheduleEventQuery
-	}
 }
 
 type addressableQuery struct {
@@ -115,16 +103,6 @@ type provisionWatcherQuery struct {
 	sync.Mutex
 }
 
-type scheduleQuery struct {
-	*obx.ScheduleQuery
-	sync.Mutex
-}
-
-type scheduleEventQuery struct {
-	*obx.ScheduleEventQuery
-	sync.Mutex
-}
-
 //endregion
 
 func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient, error) {
@@ -138,8 +116,6 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	client.deviceReportBox = obx.BoxForDeviceReport(objectBox)
 	client.deviceServiceBox = obx.BoxForDeviceService(objectBox)
 	client.provisionWatcherBox = obx.BoxForProvisionWatcher(objectBox)
-	client.scheduleBox = obx.BoxForSchedule(objectBox)
-	client.scheduleEventBox = obx.BoxForScheduleEvent(objectBox)
 
 	//region Addressable
 	if err == nil {
@@ -197,7 +173,7 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	//region DeviceProfile
 	if err == nil {
 		client.queries.deviceProfile.commands.DeviceProfileQuery, err =
-			client.deviceProfileBox.QueryOrError(obx.DeviceProfile_.Commands.Link(obx.Command_.Id.Equals(0)))
+			client.deviceProfileBox.QueryOrError(obx.DeviceProfile_.CoreCommands.Link(obx.Command_.Id.Equals(0)))
 	}
 	if err == nil {
 		client.queries.deviceProfile.labels.DeviceProfileQuery, err =
@@ -230,7 +206,7 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	}
 	if err == nil {
 		client.queries.deviceReport.event.DeviceReportQuery, err =
-			client.deviceReportBox.QueryOrError(obx.DeviceReport_.Event.Equals("", true))
+			client.deviceReportBox.QueryOrError(obx.DeviceReport_.Action.Equals("", true))
 	}
 	if err == nil {
 		client.queries.deviceReport.name.DeviceReportQuery, err =
@@ -274,255 +250,10 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	}
 	//endregion
 
-	//region Schedule
-	if err == nil {
-		client.queries.schedule.name.ScheduleQuery, err =
-			client.scheduleBox.QueryOrError(obx.Schedule_.Name.Equals("", true))
-	}
-	//endregion
-
-	//region ScheduleEvent
-	if err == nil {
-		client.queries.scheduleEvent.addressable.ScheduleEventQuery, err =
-			client.scheduleEventBox.QueryOrError(obx.ScheduleEvent_.Addressable.Equals(0))
-	}
-	if err == nil {
-		client.queries.scheduleEvent.name.ScheduleEventQuery, err =
-			client.scheduleEventBox.QueryOrError(obx.ScheduleEvent_.Name.Equals("", true))
-	}
-	if err == nil {
-		client.queries.scheduleEvent.schedule.ScheduleEventQuery, err =
-			client.scheduleEventBox.QueryOrError(obx.ScheduleEvent_.Schedule.Equals("", true))
-	}
-	if err == nil {
-		client.queries.scheduleEvent.service.ScheduleEventQuery, err =
-			client.scheduleEventBox.QueryOrError(obx.ScheduleEvent_.Service.Equals("", true))
-	}
-	//endregion
-
 	if err == nil {
 		return client, nil
 	} else {
 		return nil, mapError(err)
-	}
-}
-
-func (client *coreMetaDataClient) GetAllScheduleEvents(se *[]contract.ScheduleEvent) error {
-	if list, err := client.scheduleEventBox.GetAll(); err != nil {
-		return mapError(err)
-	} else {
-		*se = list
-		return nil
-	}
-}
-
-func (client *coreMetaDataClient) validateScheduleEvent(se *contract.ScheduleEvent) error {
-	// check the addressable is specified, this is required by tests
-	if addId, err := obx.IdFromString(se.Addressable.Id); err != nil {
-		return mapError(err)
-	} else if exists, err := client.addressableBox.Contains(addId); err != nil {
-		return mapError(err)
-	} else if !exists {
-		return mapError(fmt.Errorf("addressable %s not found", se.Addressable.Id))
-	}
-
-	return nil
-}
-
-func (client *coreMetaDataClient) AddScheduleEvent(se *contract.ScheduleEvent) error {
-	if se.Created == 0 {
-		se.Created = db.MakeTimestamp()
-	}
-
-	if err := client.validateScheduleEvent(se); err != nil {
-		return mapError(err)
-	}
-
-	_, err := client.scheduleEventBox.Put(se)
-	return mapError(err)
-}
-
-func (client *coreMetaDataClient) GetScheduleEventByName(se *contract.ScheduleEvent, n string) error {
-	var query = &client.queries.scheduleEvent.name
-
-	query.Lock()
-	defer query.Unlock()
-
-	if err := query.SetStringParams(obx.ScheduleEvent_.Name, n); err != nil {
-		return mapError(err)
-	}
-
-	if list, err := query.Limit(1).Find(); err != nil {
-		return mapError(err)
-	} else if len(list) == 0 {
-		return mapError(db.ErrNotFound)
-	} else {
-		*se = list[0]
-		return nil
-	}
-}
-
-func (client *coreMetaDataClient) UpdateScheduleEvent(se contract.ScheduleEvent) error {
-	se.Modified = db.MakeTimestamp()
-
-	if err := client.validateScheduleEvent(&se); err != nil {
-		return mapError(err)
-	}
-
-	if id, err := obx.IdFromString(string(se.Id)); err != nil {
-		return mapError(err)
-	} else if exists, err := client.scheduleEventBox.Contains(id); err != nil {
-		return mapError(err)
-	} else if !exists {
-		return mapError(db.ErrNotFound)
-	}
-
-	_, err := client.scheduleEventBox.Put(&se)
-	return mapError(err)
-}
-
-func (client *coreMetaDataClient) GetScheduleEventById(se *contract.ScheduleEvent, id string) error {
-	if id, err := obx.IdFromString(id); err != nil {
-		return mapError(err)
-	} else if object, err := client.scheduleEventBox.Get(id); err != nil {
-		return mapError(err)
-	} else if object == nil {
-		return mapError(db.ErrNotFound)
-	} else {
-		*se = *object
-		return nil
-	}
-}
-
-func (client *coreMetaDataClient) GetScheduleEventsByScheduleName(se *[]contract.ScheduleEvent, n string) error {
-	var query = &client.queries.scheduleEvent.schedule
-
-	query.Lock()
-	defer query.Unlock()
-
-	if err := query.SetStringParams(obx.ScheduleEvent_.Schedule, n); err != nil {
-		return mapError(err)
-	} else if list, err := query.Limit(0).Find(); err != nil {
-		return mapError(err)
-	} else {
-		*se = list
-		return nil
-	}
-}
-
-func (client *coreMetaDataClient) GetScheduleEventsByAddressableId(se *[]contract.ScheduleEvent, id string) error {
-	var query = &client.queries.scheduleEvent.addressable
-
-	query.Lock()
-	defer query.Unlock()
-
-	if id, err := obx.IdFromString(id); err != nil {
-		return mapError(err)
-	} else if err := query.SetInt64Params(obx.ScheduleEvent_.Addressable, int64(id)); err != nil {
-		return mapError(err)
-	} else if list, err := query.Limit(0).Find(); err != nil {
-		return mapError(err)
-	} else {
-		*se = list
-		return nil
-	}
-}
-
-func (client *coreMetaDataClient) GetScheduleEventsByServiceName(se *[]contract.ScheduleEvent, n string) error {
-	var query = &client.queries.scheduleEvent.service
-
-	query.Lock()
-	defer query.Unlock()
-
-	if err := query.SetStringParams(obx.ScheduleEvent_.Service, n); err != nil {
-		return mapError(err)
-	} else if list, err := query.Limit(0).Find(); err != nil {
-		return mapError(err)
-	} else {
-		*se = list
-		return nil
-	}
-}
-
-func (client *coreMetaDataClient) DeleteScheduleEventById(id string) error {
-	if id, err := obx.IdFromString(id); err != nil {
-		return mapError(err)
-	} else {
-		return mapError(client.scheduleEventBox.Box.Remove(id))
-	}
-}
-
-func (client *coreMetaDataClient) GetAllSchedules(s *[]contract.Schedule) error {
-	if list, err := client.scheduleBox.GetAll(); err != nil {
-		return mapError(err)
-	} else {
-		*s = list
-		return nil
-	}
-}
-
-func (client *coreMetaDataClient) AddSchedule(s *contract.Schedule) error {
-	if s.Created == 0 {
-		s.Created = db.MakeTimestamp()
-	}
-
-	_, err := client.scheduleBox.Put(s)
-	return mapError(err)
-}
-
-func (client *coreMetaDataClient) GetScheduleByName(s *contract.Schedule, n string) error {
-	var query = &client.queries.schedule.name
-
-	query.Lock()
-	defer query.Unlock()
-
-	if err := query.SetStringParams(obx.Schedule_.Name, n); err != nil {
-		return mapError(err)
-	}
-
-	if list, err := query.Limit(1).Find(); err != nil {
-		return mapError(err)
-	} else if len(list) == 0 {
-		return mapError(db.ErrNotFound)
-	} else {
-		*s = list[0]
-		return nil
-	}
-}
-
-func (client *coreMetaDataClient) UpdateSchedule(s contract.Schedule) error {
-	s.Modified = db.MakeTimestamp()
-
-	if id, err := obx.IdFromString(string(s.Id)); err != nil {
-		return mapError(err)
-	} else if exists, err := client.scheduleBox.Contains(id); err != nil {
-		return mapError(err)
-	} else if !exists {
-		return mapError(db.ErrNotFound)
-	}
-
-	_, err := client.scheduleBox.Put(&s)
-	return mapError(err)
-}
-
-func (client *coreMetaDataClient) GetScheduleById(s *contract.Schedule, id string) error {
-	if id, err := obx.IdFromString(id); err != nil {
-		return mapError(err)
-	} else if object, err := client.scheduleBox.Get(id); err != nil {
-		return mapError(err)
-	} else if object == nil {
-		return mapError(db.ErrNotFound)
-	} else {
-		*s = *object
-		return nil
-	}
-}
-
-func (client *coreMetaDataClient) DeleteScheduleById(id string) error {
-	if id, err := obx.IdFromString(id); err != nil {
-		return mapError(err)
-	} else {
-		return mapError(client.scheduleBox.Box.Remove(id))
 	}
 }
 
@@ -577,14 +308,14 @@ func (client *coreMetaDataClient) GetDeviceReportById(id string) (contract.Devic
 }
 
 func (client *coreMetaDataClient) AddDeviceReport(dr contract.DeviceReport) (string, error) {
-	onCreate(&dr.BaseObject)
+	onCreate(&dr.Timestamps)
 
 	id, err := client.deviceReportBox.Put(&dr)
 	return obx.IdToString(id), mapError(err)
 }
 
 func (client *coreMetaDataClient) UpdateDeviceReport(dr contract.DeviceReport) error {
-	onUpdate(&dr.BaseObject)
+	onUpdate(&dr.Timestamps)
 
 	if id, err := obx.IdFromString(dr.Id); err != nil {
 		return mapError(err)
@@ -598,13 +329,13 @@ func (client *coreMetaDataClient) UpdateDeviceReport(dr contract.DeviceReport) e
 	return mapError(err)
 }
 
-func (client *coreMetaDataClient) GetDeviceReportsByScheduleEventName(n string) ([]contract.DeviceReport, error) {
+func (client *coreMetaDataClient) GetDeviceReportsByAction(n string) ([]contract.DeviceReport, error) {
 	var query = &client.queries.deviceReport.event
 
 	query.Lock()
 	defer query.Unlock()
 
-	if err := query.SetStringParams(obx.DeviceReport_.Event, n); err != nil {
+	if err := query.SetStringParams(obx.DeviceReport_.Action, n); err != nil {
 		return nil, mapError(err)
 	}
 
@@ -621,7 +352,7 @@ func (client *coreMetaDataClient) DeleteDeviceReportById(id string) error {
 }
 
 func (client *coreMetaDataClient) UpdateDevice(d contract.Device) error {
-	onUpdate(&d.BaseObject)
+	onUpdate(&d.Timestamps)
 
 	if id, err := obx.IdFromString(d.Id); err != nil {
 		return mapError(err)
@@ -718,7 +449,7 @@ func (client *coreMetaDataClient) GetDevicesWithLabel(l string) ([]contract.Devi
 }
 
 func (client *coreMetaDataClient) AddDevice(d contract.Device) (string, error) {
-	onCreate(&d.BaseObject)
+	onCreate(&d.Timestamps)
 
 	id, err := client.deviceBox.Put(&d)
 	return obx.IdToString(id), mapError(err)
@@ -733,7 +464,7 @@ func (client *coreMetaDataClient) DeleteDeviceById(id string) error {
 }
 
 func (client *coreMetaDataClient) UpdateDeviceProfile(dp contract.DeviceProfile) error {
-	onUpdate(&dp.BaseObject)
+	onUpdate(&dp.Timestamps)
 
 	if id, err := obx.IdFromString(dp.Id); err != nil {
 		return mapError(err)
@@ -748,7 +479,7 @@ func (client *coreMetaDataClient) UpdateDeviceProfile(dp contract.DeviceProfile)
 }
 
 func (client *coreMetaDataClient) AddDeviceProfile(d contract.DeviceProfile) (string, error) {
-	onCreate(&d.BaseObject)
+	onCreate(&d.Timestamps)
 
 	id, err := client.deviceProfileBox.Put(&d)
 	return obx.IdToString(id), mapError(err)
@@ -875,7 +606,7 @@ func (client *coreMetaDataClient) GetDeviceProfilesByCommandId(id string) ([]con
 }
 
 func (client *coreMetaDataClient) UpdateAddressable(a contract.Addressable) error {
-	onUpdate(&a.BaseObject)
+	onUpdate(&a.Timestamps)
 
 	if id, err := obx.IdFromString(a.Id); err != nil {
 		return mapError(err)
@@ -890,7 +621,7 @@ func (client *coreMetaDataClient) UpdateAddressable(a contract.Addressable) erro
 }
 
 func (client *coreMetaDataClient) AddAddressable(a contract.Addressable) (string, error) {
-	onCreate(&a.BaseObject)
+	onCreate(&a.Timestamps)
 
 	id, err := client.addressableBox.Put(&a)
 	return obx.IdToString(id), mapError(err)
@@ -997,7 +728,7 @@ func (client *coreMetaDataClient) DeleteAddressableById(id string) error {
 }
 
 func (client *coreMetaDataClient) UpdateDeviceService(ds contract.DeviceService) error {
-	onUpdate(&ds.BaseObject)
+	onUpdate(&ds.Timestamps)
 
 	if id, err := obx.IdFromString(ds.Id); err != nil {
 		return mapError(err)
@@ -1078,7 +809,7 @@ func (client *coreMetaDataClient) GetAllDeviceServices() ([]contract.DeviceServi
 }
 
 func (client *coreMetaDataClient) AddDeviceService(ds contract.DeviceService) (string, error) {
-	onCreate(&ds.BaseObject)
+	onCreate(&ds.Timestamps)
 	id, err := client.deviceServiceBox.Put(&ds)
 	return obx.IdToString(id), mapError(err)
 }
@@ -1183,14 +914,14 @@ func (client *coreMetaDataClient) GetProvisionWatchersByIdentifier(k string, v s
 }
 
 func (client *coreMetaDataClient) AddProvisionWatcher(pw contract.ProvisionWatcher) (string, error) {
-	onCreate(&pw.BaseObject)
+	onCreate(&pw.Timestamps)
 
 	id, err := client.provisionWatcherBox.Put(&pw)
 	return obx.IdToString(id), mapError(err)
 }
 
 func (client *coreMetaDataClient) UpdateProvisionWatcher(pw contract.ProvisionWatcher) error {
-	onUpdate(&pw.BaseObject)
+	onUpdate(&pw.Timestamps)
 
 	if id, err := obx.IdFromString(pw.Id); err != nil {
 		return mapError(err)
@@ -1239,7 +970,7 @@ func (client *coreMetaDataClient) GetCommandByName(name string) ([]contract.Comm
 }
 
 func (client *coreMetaDataClient) AddCommand(c contract.Command) (string, error) {
-	onCreate(&c.BaseObject)
+	onCreate(&c.Timestamps)
 
 	var id uint64
 	var err error
@@ -1259,7 +990,7 @@ func (client *coreMetaDataClient) GetAllCommands() ([]contract.Command, error) {
 }
 
 func (client *coreMetaDataClient) UpdateCommand(c contract.Command) error {
-	onUpdate(&c.BaseObject)
+	onUpdate(&c.Timestamps)
 
 	if id, err := obx.IdFromString(c.Id); err != nil {
 		return mapError(err)
@@ -1318,14 +1049,6 @@ func (client *coreMetaDataClient) ScrubMetadata() error {
 
 	if err == nil {
 		err = client.provisionWatcherBox.RemoveAll()
-	}
-
-	if err == nil {
-		err = client.scheduleBox.RemoveAll()
-	}
-
-	if err == nil {
-		err = client.scheduleEventBox.RemoveAll()
 	}
 
 	return mapError(err)

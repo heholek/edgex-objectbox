@@ -19,7 +19,7 @@ var EventBinding = event_EntityInfo{
 	Entity: objectbox.Entity{
 		Id: 8,
 	},
-	Uid: 3479337365075920111,
+	Uid: 5261868944228209948,
 }
 
 // Event_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -30,7 +30,6 @@ var Event_ = struct {
 	Created  *objectbox.PropertyInt64
 	Modified *objectbox.PropertyInt64
 	Origin   *objectbox.PropertyInt64
-	Event    *objectbox.PropertyString
 	Readings *objectbox.RelationToMany
 }{
 	ID: &objectbox.PropertyUint64{
@@ -69,12 +68,6 @@ var Event_ = struct {
 			Entity: &EventBinding.Entity,
 		},
 	},
-	Event: &objectbox.PropertyString{
-		BaseProperty: &objectbox.BaseProperty{
-			Id:     7,
-			Entity: &EventBinding.Entity,
-		},
-	},
 	Readings: &objectbox.RelationToMany{
 		Id:     2,
 		Source: &EventBinding.Entity,
@@ -89,17 +82,16 @@ func (event_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (event_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Event", 8, 3479337365075920111)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 7150544686233801611)
+	model.Entity("Event", 8, 5261868944228209948)
+	model.Property("ID", objectbox.PropertyType_Long, 1, 8408127641507867598)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Pushed", objectbox.PropertyType_Long, 2, 2696612706629694030)
-	model.Property("Device", objectbox.PropertyType_String, 3, 4778307009560157127)
-	model.Property("Created", objectbox.PropertyType_Long, 4, 3583575667727096062)
-	model.Property("Modified", objectbox.PropertyType_Long, 5, 3656471225173119384)
-	model.Property("Origin", objectbox.PropertyType_Long, 6, 3524587915626770103)
-	model.Property("Event", objectbox.PropertyType_String, 7, 9008105006658809123)
-	model.EntityLastPropertyId(7, 9008105006658809123)
-	model.Relation(2, 5533510483840274449, ReadingBinding.Id, ReadingBinding.Uid)
+	model.Property("Pushed", objectbox.PropertyType_Long, 2, 5256971571136440340)
+	model.Property("Device", objectbox.PropertyType_String, 3, 8701916792943957528)
+	model.Property("Created", objectbox.PropertyType_Long, 4, 8617743842335964745)
+	model.Property("Modified", objectbox.PropertyType_Long, 5, 9004481679338464951)
+	model.Property("Origin", objectbox.PropertyType_Long, 6, 536564806295219253)
+	model.EntityLastPropertyId(6, 536564806295219253)
+	model.Relation(2, 6583600503460504451, ReadingBinding.Id, ReadingBinding.Uid)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -142,17 +134,15 @@ func (event_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id
 	}
 
 	var offsetDevice = fbutils.CreateStringOffset(fbb, obj.Device)
-	var offsetEvent = fbutils.CreateStringOffset(fbb, obj.Event)
 
 	// build the FlatBuffers object
-	fbb.StartObject(7)
+	fbb.StartObject(6)
 	fbutils.SetUint64Slot(fbb, 0, id)
 	fbutils.SetInt64Slot(fbb, 1, obj.Pushed)
 	fbutils.SetUOffsetTSlot(fbb, 2, offsetDevice)
 	fbutils.SetInt64Slot(fbb, 3, obj.Created)
 	fbutils.SetInt64Slot(fbb, 4, obj.Modified)
 	fbutils.SetInt64Slot(fbb, 5, obj.Origin)
-	fbutils.SetUOffsetTSlot(fbb, 6, offsetEvent)
 	return nil
 }
 
@@ -183,7 +173,6 @@ func (event_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interfac
 		Created:  table.GetInt64Slot(10, 0),
 		Modified: table.GetInt64Slot(12, 0),
 		Origin:   table.GetInt64Slot(14, 0),
-		Event:    fbutils.GetStringSlot(table, 16),
 		Readings: relReadings,
 	}, nil
 }

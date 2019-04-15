@@ -58,7 +58,7 @@ func (client *exportClient) Registrations() ([]contract.Registration, error) {
 }
 
 func (client *exportClient) AddRegistration(reg contract.Registration) (string, error) {
-	// NOTE this is done instead of onCreate because there is no reg.BaseObject
+	// NOTE this is done instead of onCreate because there is no reg.Timestamps
 	if reg.Created == 0 {
 		reg.Created = db.MakeTimestamp()
 	}
@@ -68,7 +68,7 @@ func (client *exportClient) AddRegistration(reg contract.Registration) (string, 
 }
 
 func (client *exportClient) UpdateRegistration(reg contract.Registration) error {
-	// NOTE this is done instead of onUpdate because there is no reg.BaseObject
+	// NOTE this is done instead of onUpdate because there is no reg.Timestamps
 	reg.Modified = db.MakeTimestamp()
 
 	if id, err := obx.IdFromString(reg.ID); err != nil {

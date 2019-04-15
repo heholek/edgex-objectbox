@@ -20,7 +20,7 @@ var AddressableBinding = addressable_EntityInfo{
 	Entity: objectbox.Entity{
 		Id: 1,
 	},
-	Uid: 1721289809567479575,
+	Uid: 7217845163978143536,
 }
 
 // Addressable_ contains type-based Property helpers to facilitate some common operations such as Queries.
@@ -133,25 +133,25 @@ func (addressable_EntityInfo) GeneratorVersion() int {
 
 // AddToModel is called by ObjectBox during model build
 func (addressable_EntityInfo) AddToModel(model *objectbox.Model) {
-	model.Entity("Addressable", 1, 1721289809567479575)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 875771883601337383)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 4878870936463090195)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 1782294640679775949)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 9152016347464018966)
+	model.Entity("Addressable", 1, 7217845163978143536)
+	model.Property("Created", objectbox.PropertyType_Long, 1, 4199454873679051688)
+	model.Property("Modified", objectbox.PropertyType_Long, 2, 5365490840012501486)
+	model.Property("Origin", objectbox.PropertyType_Long, 3, 3787839535615347154)
+	model.Property("Id", objectbox.PropertyType_Long, 4, 6940330804195679104)
 	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Name", objectbox.PropertyType_String, 5, 3356351134453809885)
+	model.Property("Name", objectbox.PropertyType_String, 5, 3463416070863865605)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(1, 2601673616933745916)
-	model.Property("Protocol", objectbox.PropertyType_String, 6, 5905407311921144745)
-	model.Property("HTTPMethod", objectbox.PropertyType_String, 7, 2502386500171221157)
-	model.Property("Address", objectbox.PropertyType_String, 8, 5557684943772970195)
-	model.Property("Port", objectbox.PropertyType_Long, 9, 4038773839236973132)
-	model.Property("Path", objectbox.PropertyType_String, 10, 6747158428837024338)
-	model.Property("Publisher", objectbox.PropertyType_String, 11, 5593598922665912141)
-	model.Property("User", objectbox.PropertyType_String, 12, 6138402367561233300)
-	model.Property("Password", objectbox.PropertyType_String, 13, 9113318437628853022)
-	model.Property("Topic", objectbox.PropertyType_String, 14, 1693260879868456652)
-	model.EntityLastPropertyId(14, 1693260879868456652)
+	model.PropertyIndex(1, 126768720287782938)
+	model.Property("Protocol", objectbox.PropertyType_String, 6, 9154790070052899448)
+	model.Property("HTTPMethod", objectbox.PropertyType_String, 7, 6202906043726176388)
+	model.Property("Address", objectbox.PropertyType_String, 8, 1600784579810166588)
+	model.Property("Port", objectbox.PropertyType_Long, 9, 447842982687258560)
+	model.Property("Path", objectbox.PropertyType_String, 10, 912313301129217428)
+	model.Property("Publisher", objectbox.PropertyType_String, 11, 7065046818255824027)
+	model.Property("User", objectbox.PropertyType_String, 12, 8846286542776796742)
+	model.Property("Password", objectbox.PropertyType_String, 13, 7000284953614172939)
+	model.Property("Topic", objectbox.PropertyType_String, 14, 7965452998683503188)
+	model.EntityLastPropertyId(14, 7965452998683503188)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -200,9 +200,9 @@ func (addressable_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Build
 
 	// build the FlatBuffers object
 	fbb.StartObject(14)
-	fbutils.SetInt64Slot(fbb, 0, obj.BaseObject.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.BaseObject.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.BaseObject.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.Timestamps.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.Timestamps.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.Timestamps.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetProtocol)
@@ -226,7 +226,7 @@ func (addressable_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (in
 	var id = table.GetUint64Slot(10, 0)
 
 	return &Addressable{
-		BaseObject: models.BaseObject{
+		Timestamps: models.Timestamps{
 			Created:  table.GetInt64Slot(4, 0),
 			Modified: table.GetInt64Slot(6, 0),
 			Origin:   table.GetInt64Slot(8, 0),

@@ -114,7 +114,7 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 	_ = db.ScrubAllEvents()
 	defer db.ScrubAllEvents()
 
-	count := 100000
+	count := 10000
 	countPostfix := "[" + strconv.Itoa(count) + "]"
 	readings := make([]string, count)
 	RunBenchmarkN(db, "AddReading", count, func(ctx *BenchmarkContext) error {

@@ -121,7 +121,7 @@ done
 
 if [[ ${CPU_GOVERNOR:-} ]]
 then
-    echo "Setting CPU clock governor to performance"
+    echo "Setting CPU clock governor to ${CPU_GOVERNOR}"
     SAVED_GOVERNOR="$(cpufreq-info -p |awk '{print $NF}')"
     sudo cpufreq-set -g ${CPU_GOVERNOR}    
     trap "echo Resetting CPU governor $SAVED_GOVERNOR... ; set -x ; sudo cpufreq-set -g $SAVED_GOVERNOR" EXIT
@@ -169,18 +169,6 @@ getResetWrittenSectors() {
 
 OBX_PKG=github.com/objectbox/objectbox-go
 
-if ! [ -d $GOPATH/src/${OBX_PKG} ]; then
-    mkdir -vp $GOPATH/src/$(dirname ${OBX_PKG})
-    git clone  ${OBJECTBOXGO_REPO:-git@${OBX_PKG}} -b ${OBJECTBOXGO_BRANCH:-master} $GOPATH/src/${OBX_PKG}
-fi
-
-EDGEX_PKG=github.com/edgexfoundry/edgex-go
-
-if ! [ -d $GOPATH/src/${EDGEX_PKG} ]; then
-    mkdir -vp $GOPATH/src/$(dirname ${EDGEX_PKG})
-    git clone  ${EDGEX_REPO:-https://${EDGEX_PKG}.git} -b  ${EDGEX_BRANCH:-master} $GOPATH/src/${EDGEX_PKG}
-fi
-
 case ${TMPMODE:-no} in
         on|yes)
             if ! [ -d ${TMPFS_MOUNTPOINT} ] ; then
@@ -220,11 +208,6 @@ fi
 : ${ENABLE_REDIS:=false}
 : ${ENABLE_MONGO:=false}
 
-if ! [ -d $GOPATH/src/${EDGEX_PKG}/internal/pkg/db/redis ] ; then
-    log "Disabling redis - not found in ${EDGEX_PKG}/internal/pkg/db/redis"
-    ENABLE_REDIS=false
-fi
-
 TTY_OR_EMPTY="$(tty >& /dev/null && tty)" || LOG_D "No connected tty."
 
 
@@ -253,6 +236,9 @@ if ${ONLY_PREPARE_ENVIRONMENT:-false}; then
 fi
 
 OBJECTBOX_TESTBIN=$TMPDIR/github_com_edgexfoundry_edgex_go_internal_pkg_db_objectbox
+MONGO_TESTBIN=$TMPDIR/github_com_edgexfoundry_edgex_go_internal_pkg_db_mongo
+REDIS_TESTBIN=$TMPDIR/github_com_edgexfoundry_edgex_go_internal_pkg_db_redis
+REDIS_CONF=$TESTDIR/redis.conf
 
 function addDependencyFile() {
     DEPENDENCIES="${DEPENDENCIES:-} $*"
@@ -264,29 +250,34 @@ if ${ENABLE_OBJECTBOX}; then
 fi
 
 if ${ENABLE_MONGO}; then 
-    addDependencyFile $TMPDIR/___TestBenchmarkFixedNMongo_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_mongo
+    addDependencyFile $MONGO_TESTBIN
 fi
 
 if ${ENABLE_REDIS}; then
-    addDependencyFile $TMPDIR/___TestBenchmarkFixedNRedis_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_redis $TESTDIR/redis.conf
+    addDependencyFile $REDIS_TESTBIN
+    if [[ -f $REDIS_CONF ]]; then
+        addDependencyFile $REDIS_CONF
+    else
+        REDIS_CONF=
+    fi
 fi
 
 if ! ${NO_BUILD:-false} ; then
-    ! ${NO_BUILD:-false} || ! [ -f ${OBJECTBOX_TESTBIN} ] && ${ENABLE_OBJECTBOX} && {
-        log "Building objectbox benchmark, binary = $OBJECTBOX_TESTBIN..."
-        go build -o $OBJECTBOX_TESTBIN $EDGEX_PKG/internal/pkg/db/objectbox/benchmark
+    ${ENABLE_OBJECTBOX} && {
+        log "Building ObjectBox benchmark, binary = $OBJECTBOX_TESTBIN..."
+        go build -o $OBJECTBOX_TESTBIN ./internal/pkg/db/objectbox/benchmark
     }
     ${ENABLE_MONGO} && {
-        log "Building Mongo test..."
+        log "Building Mongo benchmark, binary = $MONGO_TESTBIN..."
         requireBinaries mongod
-        go test -c -tags mongoRunning -o $TMPDIR/___TestBenchmarkFixedNMongo_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_mongo         $EDGEX_PKG/internal/pkg/db/mongo
+        go build -o $MONGO_TESTBIN ./internal/pkg/db/mongo/benchmark
         
     }
     ${ENABLE_REDIS} && {
-        log "Building Redis test..."
+        log "Building Redis benchmark, binary = $REDIS_TESTBIN..."
         requireBinaries redis-server
-        go test -c -tags redisRunning -o $TMPDIR/___TestBenchmarkFixedNRedis_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_redis          $EDGEX_PKG/internal/pkg/db/redis
-        
+        go build -o $REDIS_TESTBIN ./internal/pkg/db/redis/benchmark
+
     }
 fi
 
@@ -434,13 +425,13 @@ function run_redis() {
     fi
     mkdir $DBDIR || true
     cd $DBDIR
-    \time -vao "$DATADIR/redis-server.times" -- redis-server $TESTDIR/redis.conf >& $DATADIR/redis-server.${EXECUTION_SEQ_ID}.log & REDIS_PID=$!    
+    \time -vao "$DATADIR/redis-server.times" -- redis-server $REDIS_CONF >& $DATADIR/redis-server.${EXECUTION_SEQ_ID}.log & REDIS_PID=$!
     cd -
     trap "pgrep -P $REDIS_PID |xargs -r kill " EXIT
-    sleep 1
+    waitForTcpOpen 6379 60
     log "Now starting redis test..."
     WRITTEN_SECTORS=$(sync ; sectorsWrittenInDisk) || log "Disk stats are not available for partition $PART"
-    execute redis ${TMPDIR}/___TestBenchmarkFixedNRedis_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_redis -test.v -test.run '^TestBenchmarkFixedNRedis$'
+    execute redis $REDIS_TESTBIN
     pgrep -P $REDIS_PID |xargs -r kill || log "Redis not there"
     trap EXIT
     wait $REDIS_PID   # We kill the actual process but wait for the "time" process, which is our shell's child
@@ -506,7 +497,7 @@ function run_mongo() {
     done
     sleep 2
     echo Now starting mongo test... >&2
-    execute mongo ${TMPDIR}/___TestBenchmarkFixedNMongo_in_github_com_edgexfoundry_edgex_go_internal_pkg_db_mongo  '^TestBenchmarkFixedNMongo$'
+    execute mongo $MONGO_TESTBIN
     log "Test finished, killing Mongo..."
     pgrep -P $MONGO_PID | xargs -r kill || log "Mongo server not there"
 

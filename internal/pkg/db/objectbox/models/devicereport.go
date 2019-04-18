@@ -23,6 +23,6 @@ type DeviceReport struct {
 	Id                string
 	Name              string `unique`
 	Device            string
-	Action             string
+	Action            string
 	Expected          []string
 }

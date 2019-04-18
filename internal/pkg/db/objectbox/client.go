@@ -18,7 +18,8 @@ type ObjectBoxClient struct {
 	*notificationsClient
 }
 
-const asyncPut = false // TODO true, PutAsync is currently not supported on entities that have relations
+// use PutAsync where possible
+const asyncPut = true
 
 func NewClient(config db.Configuration) (*ObjectBoxClient, error) {
 	println(VersionInfo())

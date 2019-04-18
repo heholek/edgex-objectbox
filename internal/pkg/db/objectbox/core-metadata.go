@@ -972,15 +972,7 @@ func (client *coreMetaDataClient) GetCommandByName(name string) ([]contract.Comm
 func (client *coreMetaDataClient) AddCommand(c contract.Command) (string, error) {
 	onCreate(&c.Timestamps)
 
-	var id uint64
-	var err error
-
-	if asyncPut {
-		id, err = client.commandBox.PutAsync(&c)
-	} else {
-		id, err = client.commandBox.Put(&c)
-	}
-
+	id, err := client.commandBox.Put(&c)
 	return obx.IdToString(id), mapError(err)
 }
 
@@ -1000,13 +992,7 @@ func (client *coreMetaDataClient) UpdateCommand(c contract.Command) error {
 		return mapError(db.ErrNotFound)
 	}
 
-	var err error
-	if asyncPut {
-		_, err = client.commandBox.PutAsync(&c)
-	} else {
-		_, err = client.commandBox.Put(&c)
-	}
-
+	_, err := client.commandBox.Put(&c)
 	return mapError(err)
 
 }

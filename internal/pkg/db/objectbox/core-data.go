@@ -157,6 +157,12 @@ func newCoreDataClient(objectBox *objectbox.ObjectBox) (*coreDataClient, error) 
 	}
 }
 
+func (client *coreDataClient) awaitAsync() {
+	if asyncPut {
+		client.objectBox.AwaitAsyncCompletion()
+	}
+}
+
 func (client *coreDataClient) Events() ([]contract.Event, error) {
 	result, err := client.eventBox.GetAll()
 	return result, mapError(err)
@@ -174,25 +180,23 @@ func (client *coreDataClient) EventsWithLimit(limit int) ([]contract.Event, erro
 }
 
 func (client *coreDataClient) AddEvent(event contract.Event) (string, error) {
+	// synchronize with PutAsync in AddReading manually or we could be dead-locked in PutRelated write-TX
+	client.awaitAsync()
+
 	if event.Created == 0 {
 		event.Created = db.MakeTimestamp()
 	}
 
 	// TODO currently tests don't add any readings to the event
 
-	var id uint64
-	var err error
-
-	if asyncPut {
-		id, err = client.eventBox.PutAsync(&event)
-	} else {
-		id, err = client.eventBox.Put(&event)
-	}
-
+	id, err := client.eventBox.Put(&event)
 	return obx.IdToString(id), mapError(err)
 }
 
 func (client *coreDataClient) UpdateEvent(e contract.Event) error {
+	// synchronize with PutAsync in AddReading manually or we could be dead-locked in PutRelated write-TX
+	client.awaitAsync()
+
 	e.Modified = db.MakeTimestamp()
 
 	if id, err := obx.IdFromString(e.ID); err != nil {
@@ -203,13 +207,7 @@ func (client *coreDataClient) UpdateEvent(e contract.Event) error {
 		return mapError(db.ErrNotFound)
 	}
 
-	var err error
-	if asyncPut {
-		_, err = client.eventBox.PutAsync(&e)
-	} else {
-		_, err = client.eventBox.Put(&e)
-	}
-
+	_, err := client.eventBox.Put(&e)
 	return mapError(err)
 }
 

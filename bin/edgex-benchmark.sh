@@ -6,6 +6,8 @@ function log() { printf "%4d: %s\n" $SECONDS "$*"        >&2 ; }
 function LOG_D() { printf "%4d [DEBUG] %s\n" $SECONDS "$*"        >&2 ; }
 function die() { printf "%4d: ERROR: %s\n" $SECONDS "$*" ; exit 1 ; }
 
+mkdir -p benchmark
+
 TESTDIR=$PWD
 WIPE_DATADIR=false
 OBJECTBOX_DB_DIR=benchmark-test
@@ -13,7 +15,7 @@ OBJECTBOX_DB_DIR=benchmark-test
 
 export GIT_TERMINAL_PROMPT=1
 TMPFS_MOUNTPOINT=/ramtmp
-TMPDIR=/tmp
+TMPDIR=$(realpath benchmark)
 N=1
 export GOPATH=$HOME/go
 
@@ -334,7 +336,7 @@ RUNHASH=$(
 log "RUNHASH = $RUNHASH"
 
 
-DATADIR=$PWD/out/$RUNHASH
+DATADIR=$TMPDIR/$RUNHASH
 if mkdir -vp $DATADIR
 then
     (md5sum ${DEPENDENCIES:-}
@@ -377,7 +379,7 @@ function execute() {
         ;;
     0)
       cat $TIMESTMPFILE >> $DATADIR/$ENGINE.times
-        ( echo -ne "$(date '+%Y-%m-%d %R')\t$(< $TMPF sed -n  's/.*(\([0-9.]\+\) iterations per second.*/\1/p' | tr '.\n' ',\t' )" 
+        ( echo -ne "$ENGINE\t$(date '+%Y-%m-%d %R')\t$(< $TMPF sed -n  's/.*(\([0-9.]\+\) iterations per second.*/\1/p' | tr '.\n' ',\t' )"
             < $TMPF sed -n 's/^Making changes durable: \(.*\)ms$/\t\1/p' | tr '.\n' ',\t'
             echo
         ) | tee  $TTY_OR_EMPTY >> ${DATADIR}/${ENGINE}.csv
@@ -533,11 +535,12 @@ cd $DATADIR
 if [ -f objectbox.csv ]; then 
     logs="$(ls -f {redis,mongo}.csv 2> /dev/null | xargs -r echo)" || log  "not all engines available"
     if [[ $logs ]]; then
-        for col in {1..5}; do            
+        for col in {2..9}; do
             echo "Factors $logs, col $col:  $(tail -qn 1 objectbox.csv $logs |awk -v col=$(( $col  + 2 )) 'NR==1 { ref=$col; next; } $col && NR >1 { printf ref / $col " "; } ' )"|| true
         done
     else
         log "Only objectbox available"
     fi
+    cat *.csv
 fi
 

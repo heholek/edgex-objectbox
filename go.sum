@@ -71,6 +71,8 @@ github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190227005352-2d7ec079a728
 github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190227005352-2d7ec079a728/go.mod h1:rVRt6AhRrJnzdVTGZV0sGS7Fb8Pdfwj+/yq4SXBPbV8=
 github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190408185438-838c1e45fef1 h1:GW2ufd9WnUg94ytlOW1wX4tCQgCQur8y6Nie+dqHMi4=
 github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190408185438-838c1e45fef1/go.mod h1:yVAVTeH1lbp+3YG2V7sq3iIerZj94lC0rZX1sryGfTY=
+github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190418185811-6fa3b1fed53b h1:+AHu/KXjRvTqsFppY2Iue7Bd2qaxf/TXMH6ydptPQpA=
+github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190418185811-6fa3b1fed53b/go.mod h1:yVAVTeH1lbp+3YG2V7sq3iIerZj94lC0rZX1sryGfTY=
 github.com/edgexfoundry/go-mod-messaging v0.0.0-20190327144236-4222ae1edb0b h1:sT4QF/CDDJyTslZd6F7ViZbwphxlOq1zbtDT0xWxsKU=
 github.com/edgexfoundry/go-mod-messaging v0.0.0-20190327144236-4222ae1edb0b/go.mod h1:pA8HBYCiLIuqlNjl2zHLLwC6ohl+/okb8Rikfu17TJg=
 github.com/edgexfoundry/go-mod-registry v0.0.0-20190221211212-171439dc16f8 h1:qEv0EudDyNbWAY7vLFBAP9x/coZ7MknThvp/nPRzNgE=

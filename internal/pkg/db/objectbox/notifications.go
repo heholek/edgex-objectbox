@@ -175,7 +175,7 @@ func newNotificationsClient(objectBox *objectbox.ObjectBox) (*notificationsClien
 
 	if err == nil {
 		client.queries.transmission.createdLTAndResendCount.TransmissionQuery, err = client.transmissionBox.QueryOrError(
-			obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Created.GreaterThan(0))
+			obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Created.LessThan(0))
 	}
 
 	if err == nil {

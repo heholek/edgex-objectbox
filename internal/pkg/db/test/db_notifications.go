@@ -1,236 +1,414 @@
-/*
- * Copyright 2019 ObjectBox Ltd. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+//
+// Copyright (C) 2018 IOTech Ltd
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
 package test
 
 import (
-	notifications "github.com/edgexfoundry/edgex-go/internal/support/notifications/interfaces"
-	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	"fmt"
 	"testing"
+
+	dbp "github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/edgexfoundry/edgex-go/internal/support/notifications/interfaces"
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
-// TODO proper tests
-func TestNotificationsDB(t *testing.T, db notifications.DBClient) {
-	var err error
-
-	err = db.Cleanup()
+func TestNotificationsDB(t *testing.T, db interfaces.DBClient) {
+	// Remove previous notification and transmission
+	err := db.Cleanup()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error clean db: %v\n", err)
+	}
+	cleanUpAllSubscription(db)
+
+	testDBNotification(t, db)
+	testDBSubscription(t, db)
+	testDBTransmission(t, db)
+
+	defer db.CloseSession()
+	// Calling CloseSession twice to test that there is no panic when closing an
+	// already closed db
+	defer db.CloseSession()
+}
+
+func testDBNotification(t *testing.T, db interfaces.DBClient) {
+	// Prepare test data
+	beforeTime := dbp.MakeTimestamp()
+	err := populateNotification(db, 0, 10, contract.New)
+	if err != nil {
+		t.Fatalf("Error populating db: %v\n", err)
+	}
+	err = populateNotification(db, 10, 20, contract.Escalated)
+	if err != nil {
+		t.Fatalf("Error populating db: %v\n", err)
+	}
+	err = populateNotification(db, 20, 30, contract.Processed)
+	if err != nil {
+		t.Fatalf("Error populating db: %v\n", err)
+	}
+	afterTime := dbp.MakeTimestamp()
+
+	// Test GetNotifications
+	notifications, err := db.GetNotifications()
+	if err != nil {
+		t.Fatalf("Error getting notifications %v", err)
+	}
+	if len(notifications) != 30 {
+		t.Fatalf("There should be 30 notifications instead of %d", len(notifications))
 	}
 
-	err = db.CleanupOld(1)
+	// Test GetNotificationById
+	slugName := "slug-test"
+	notification := getNotification(slugName, contract.New)
+	notification.ID, err = db.AddNotification(notification)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to add notification")
+	}
+	n, err := db.GetNotificationById(notification.ID)
+	if err != nil {
+		t.Fatalf("Fail to getting notification by id %v", err)
+	}
+	if n.ID != notification.ID {
+		t.Fatalf("ID does not match %s - %s", n.ID, notification.ID)
 	}
 
-	_, err = db.AddNotification(models.Notification{
-		Status: models.New,
-		Sender: "Foo",
-		Slug:   "bar",
-		Labels: []string{"abc"}})
+	// Test GetNotificationBySlug
+	n, err = db.GetNotificationBySlug(slugName)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error getting notification by slug %v", err)
+	}
+	if n.Slug != slugName {
+		t.Fatalf("Slug does not match %s - %s", n.Slug, slugName)
 	}
 
-	_, err = db.AddSubscription(models.Subscription{
-		Slug:                 "Foo",
-		Receiver:             "BarB",
-		SubscribedCategories: []models.NotificationsCategory{"cat"},
-		SubscribedLabels:     []string{"label"}})
+	// Test GetNotificationBySender
+	sender := "test-sender"
+	notifications, err = db.GetNotificationBySender(sender, 5)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error getting notifications by sender: %v", err)
+	}
+	if len(notifications) == 0 {
+		t.Fatalf("There should be at least one notification")
+	}
+	if notifications[0].Sender != sender {
+		t.Fatalf("Sender does not match %s - %s", n.Sender, sender)
 	}
 
-	nots, err := db.GetNotifications()
+	// Test GetNotificationsByLabels
+	labels := []string{"labelA", "labelB"}
+	notifications, err = db.GetNotificationsByLabels(labels, 5)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error getting notifications %v", err)
+	}
+	if len(notifications) == 0 {
+		t.Fatalf("There should be at least one notification")
 	}
 
-	_, err = db.AddTransmission(models.Transmission{Status: models.New, Notification: nots[0]})
+	// Test GetNotificationsByStartEnd
+	notifications, err = db.GetNotificationsByStartEnd(beforeTime, afterTime, 5)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error getting notifications %v", err)
+	}
+	if len(notifications) != 5 {
+		t.Fatalf("There should be five notifications")
 	}
 
-	nots, err = db.GetNewNormalNotifications(1)
+	// Test GetNotificationsByStart
+	notifications, err = db.GetNotificationsByStart(beforeTime, 5)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error getting notifications %v", err)
+	}
+	if len(notifications) != 5 {
+		t.Fatalf("There should be five notifications")
 	}
 
-	nots, err = db.GetNewNotifications(1)
+	// Test GetNotificationsByEnd
+	notifications, err = db.GetNotificationsByEnd(afterTime, 5)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error getting notifications %v", err)
+	}
+	if len(notifications) != 5 {
+		t.Fatalf("There should be five notifications")
 	}
 
-	nots[0], err = db.GetNotificationById(nots[0].ID)
+	// Test GetNewNotifications
+	notifications, err = db.GetNewNotifications(5)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error getting notifications %v", err)
+	}
+	if len(notifications) != 5 {
+		t.Fatalf("There should be five notifications")
 	}
 
-	nots, err = db.GetNotificationBySender(nots[0].Sender, 1)
+	// Test GetNewNormalNotifications
+	notifications, err = db.GetNewNormalNotifications(5)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error getting notifications %v", err)
+	}
+	if len(notifications) != 5 {
+		t.Fatalf("There should be five notifications")
 	}
 
-	nots[0], err = db.GetNotificationBySlug(nots[0].Slug)
+	// Test MarkNotificationProcessed
+	err = db.MarkNotificationProcessed(notification)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to mark notification to processed status, %v", err)
+	}
+	n, err = db.GetNotificationBySlug(slugName)
+	if err != nil {
+		t.Fatalf("Error getting notification by slug %v", err)
+	}
+	if n.Status != contract.Processed {
+		t.Fatalf("Notification status should be %v ", contract.Processed)
 	}
 
-	nots, err = db.GetNotificationsByEnd(nots[0].Created+1, 1)
+	// Test DeleteNotificationBySlug
+	err = db.DeleteNotificationBySlug(notification.Slug)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to delete notification by slug '%v'", notification.Slug)
 	}
 
-	nots, err = db.GetNotificationsByLabels([]string{nots[0].Labels[0]}, 1)
+	// Test DeleteNotificationsOld
+	err = db.DeleteNotificationsOld(0)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to delete old notifications, '%v'", err)
 	}
 
-	nots, err = db.GetNotificationsByStart(nots[0].Created-1, 1)
+}
+
+func testDBSubscription(t *testing.T, db interfaces.DBClient) {
+	// Prepare test data
+	err := populateSubscription(db, 30)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error populating db: %v\n", err)
 	}
 
-	nots, err = db.GetNotificationsByStartEnd(nots[0].Created, nots[0].Created, 1)
+	// Test GetSubscriptions
+	subscriptions, err := db.GetSubscriptions()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error getting notifications %v", err)
+	}
+	if len(subscriptions) != 30 {
+		t.Fatalf("There should be 30 notifications instead of %d", len(subscriptions))
 	}
 
-	subs, err := db.GetSubscriptions()
+	// Test GetSubscriptionById
+	slugName := "slug-test"
+	subscription := getSubscription(slugName)
+	subscription.ID, err = db.AddSubscription(subscription)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to add subscription, %v", err)
+	}
+	s, err := db.GetSubscriptionById(subscription.ID)
+	if err != nil {
+		t.Fatalf("Fail to get subscription by ID, %v", err)
+	}
+	if s.Slug != slugName {
+		t.Fatalf("Unexpect test result, slug '%v' not match '%v'", s.Slug, slugName)
 	}
 
-	subs, err = db.GetSubscriptionByCategories([]string{string(subs[0].SubscribedCategories[0])})
+	// Test GetSubscriptionBySlug
+	s, err = db.GetSubscriptionBySlug(slugName)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to get subscription by slug, %v", err)
+	}
+	if s.Slug != slugName {
+		t.Fatalf("Unexpect test result, slug '%v' not match '%v'", s.Slug, slugName)
 	}
 
-	subs, err = db.GetSubscriptionByCategoriesLabels([]string{string(subs[0].SubscribedCategories[0])}, []string{subs[0].SubscribedLabels[0]})
+	// Test GetSubscriptionByReceiver
+	receiverName := "test-receiver"
+	subscriptions, err = db.GetSubscriptionByReceiver(receiverName)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to get subscription by receiver, %v", err)
+	}
+	if subscriptions[0].Receiver != receiverName {
+		t.Fatalf("Unexpect test result, receiver '%v' not match '%v'", subscriptions[0].Receiver, receiverName)
 	}
 
-	subs[0], err = db.GetSubscriptionById(subs[0].ID)
+	// Test GetSubscriptionByCategories
+	categories := []string{contract.Security, contract.Hwhealth}
+	_, err = db.GetSubscriptionByCategories(categories)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to get subscription by categories, %v", err)
 	}
 
-	subs, err = db.GetSubscriptionByLabels([]string{subs[0].SubscribedLabels[0]})
+	// Test GetSubscriptionByLabels
+	labels := []string{"labelA", "labelB"}
+	_, err = db.GetSubscriptionByLabels(labels)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to get subscription by labels, %v", err)
 	}
 
-	subs, err = db.GetSubscriptionByReceiver(subs[0].Receiver)
+	// Test GetSubscriptionByCategoriesLabels
+	categories = []string{contract.Hwhealth, contract.Swhealth}
+	labels = []string{"labelA"}
+	_, err = db.GetSubscriptionByCategoriesLabels(categories, labels)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to get subscription by categories and labels, %v", err)
+	}
+}
+
+func testDBTransmission(t *testing.T, db interfaces.DBClient) {
+	// Prepare test data
+	err := populateTransmission(db, 30, 10)
+	if err != nil {
+		t.Fatalf("Error populating db: %v\n", err)
 	}
 
-	subs[0], err = db.GetSubscriptionBySlug(subs[0].Slug)
+	// Test UpdateTransmission
+	slugName := "slug-test"
+	transmission := getTransmission(slugName, 10)
+	transmission.ID, err = db.AddTransmission(transmission)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to add subscription, %v", err)
+	}
+	transmission.Status = contract.Failed
+	err = db.UpdateTransmission(transmission)
+	if err != nil {
+		t.Fatalf("Fail to update transmission, %v", err)
+	}
+	transmissions, err := db.GetTransmissionsByStatus(0, contract.Failed)
+	if transmissions[0].Status != contract.Failed {
+		t.Fatalf("Unexpect test result. Transmission status '%s' not match %s", transmissions[0].Status, contract.Failed)
 	}
 
-	trans, err := db.GetTransmissionsByEnd(0, 1)
+	// Test GetTransmissionsByNotificationSlug
+	transmissions, err = db.GetTransmissionsByNotificationSlug(slugName, 10)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to get transmission by notification slug, %v", err)
 	}
 
-	trans, err = db.GetTransmissionsByNotificationSlug(nots[0].Slug, trans[0].ResendCount+1)
-	if err != nil {
-		t.Fatal(err)
+	if transmissions[0].Notification.Slug != slugName {
+		t.Fatalf("Unexpect test result. Slug '%v' not match '%v'", transmissions[0].Notification.Slug, slugName)
 	}
 
-	trans, err = db.GetTransmissionsByStart(trans[0].Created-1, trans[0].ResendCount+1)
+	// Test GetTransmissionsByStartEnd
+	resendCount := 2
+	amount := 10
+	beforeTime := dbp.MakeTimestamp()
+	err = populateTransmission(db, amount, resendCount)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error populating db: %v\n", err)
+	}
+	afterTime := dbp.MakeTimestamp()
+
+	transmissions, err = db.GetTransmissionsByStartEnd(beforeTime, afterTime, resendCount)
+	if err != nil {
+		t.Fatalf("Fail to get transmission by start time and end time, %v", err)
+	}
+	if len(transmissions) != amount {
+		t.Fatalf("Unexpect result. The amount of transmissions should be %v, but actually is %v", amount, len(transmissions))
 	}
 
-	trans, err = db.GetTransmissionsByStartEnd(trans[0].Created-1, trans[0].Created+1, trans[0].ResendCount+1)
+	// Test GetTransmissionsByStart
+	transmissions, err = db.GetTransmissionsByStart(beforeTime, resendCount)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to get transmission by start time, %v", err)
+	}
+	if len(transmissions) != amount {
+		t.Fatalf("Unexpect result. The amount of transmissions should be %v, but actually is %v", amount, len(transmissions))
 	}
 
-	trans, err = db.GetTransmissionsByStatus(trans[0].ResendCount+1, trans[0].Status)
+	// Test GetTransmissionsByEnd
+	transmissions, err = db.GetTransmissionsByEnd(afterTime, resendCount)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to get transmission by start time, %v", err)
+	}
+	if len(transmissions) != amount {
+		t.Fatalf("Unexpect result. The amount of transmissions should be %v, but actually is %v", amount, len(transmissions))
 	}
 
-	err = db.MarkNotificationProcessed(nots[0])
+	// Test DeleteTransmission
+	beforeTime = dbp.MakeTimestamp()
+	err = populateTransmission(db, 5, 1)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Error populating db: %v\n", err)
 	}
-
-	nots[0].Content = "foo"
-	err = db.UpdateNotification(nots[0])
+	afterTime = dbp.MakeTimestamp()
+	err = db.DeleteTransmission(afterTime-beforeTime, contract.Sent)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Fail to delete old transmission, %v", err)
 	}
+}
 
-	subs[0].Description = "bar"
-	err = db.UpdateSubscription(subs[0])
+func getNotification(slug string, status contract.NotificationsStatus) contract.Notification {
+	n := contract.Notification{}
+	n.Slug = slug
+	n.Sender = "test-sender"
+	n.Category = contract.Hwhealth
+	n.Severity = contract.Normal
+	n.Content = "The machine is running for 25 days."
+	n.Labels = []string{"labelA", "labelB"}
+	n.Status = status
+	n.Description = "Notify running time"
+	return n
+}
+
+func populateNotification(db interfaces.DBClient, from int, to int, status contract.NotificationsStatus) error {
+	for i := from; i < to; i++ {
+		n := getNotification(fmt.Sprintf("slug-%d", i), status)
+		_, err := db.AddNotification(n)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func getSubscription(slug string) contract.Subscription {
+	s := contract.Subscription{}
+	s.Slug = slug
+	s.Receiver = "test-receiver"
+	s.Description = "Subscription test"
+	s.SubscribedCategories = []contract.NotificationsCategory{contract.Security, contract.Hwhealth, contract.Swhealth}
+	s.SubscribedLabels = []string{"labelA", "labelB"}
+	return s
+}
+
+func cleanUpAllSubscription(db interfaces.DBClient) error {
+	subscriptions, err := db.GetSubscriptions()
 	if err != nil {
-		t.Fatal(err)
+		return err
 	}
-
-	trans[0].Notification = nots[0]
-	err = db.UpdateTransmission(trans[0])
-	if err != nil {
-		t.Fatal(err)
+	for _, s := range subscriptions {
+		err = db.DeleteSubscriptionBySlug(s.Slug)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
+}
 
-	err = db.DeleteNotificationById(nots[0].ID)
-	if err != nil {
-		t.Fatal(err)
+func populateSubscription(db interfaces.DBClient, count int) error {
+	for i := 0; i < count; i++ {
+		s := getSubscription(fmt.Sprintf("slug-%d", i))
+		_, err := db.AddSubscription(s)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
+}
 
-	_, err = db.AddNotification(nots[0])
-	if err != nil {
-		t.Fatal(err)
+func getTransmission(slug string, resendCount int) contract.Transmission {
+	t := contract.Transmission{}
+	t.Notification = contract.Notification{Slug: slug}
+	t.Receiver = "test-receiver"
+	t.Status = contract.Sent
+	t.ResendCount = resendCount
+	return t
+}
+
+func populateTransmission(db interfaces.DBClient, count int, resendCount int) error {
+	for i := 0; i < count; i++ {
+		t := getTransmission(fmt.Sprintf("slug-%d", i), resendCount)
+		_, err := db.AddTransmission(t)
+		if err != nil {
+			return err
+		}
 	}
-
-	err = db.DeleteNotificationBySlug(nots[0].Slug)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = db.DeleteNotificationsOld(10)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = db.DeleteSubscriptionBySlug(subs[0].Slug)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = db.DeleteTransmission(10, trans[0].Status)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = db.Cleanup()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = db.CleanupOld(1)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db.CloseSession()
+	return nil
 }

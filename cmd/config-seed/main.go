@@ -19,9 +19,9 @@ import (
 	"os"
 	"sync"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/usage"
-	"github.com/edgexfoundry/edgex-go/internal/seed/config"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/usage"
+	"github.com/objectbox/edgex-objectbox/internal/seed/config"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 )
 

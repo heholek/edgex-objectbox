@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/correlation/models"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation/models"
 	zmq "github.com/pebbe/zmq4"
 )
 

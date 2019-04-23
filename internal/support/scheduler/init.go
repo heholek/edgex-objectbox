@@ -17,8 +17,8 @@ package scheduler
 import (
 	"errors"
 	"fmt"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/redis"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/redis"
 	"os"
 	"os/signal"
 	"sync"
@@ -30,12 +30,12 @@ import (
 	registryTypes "github.com/edgexfoundry/go-mod-registry/pkg/types"
 	"github.com/edgexfoundry/go-mod-registry/registry"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/mongo"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/telemetry"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/mongo"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/interfaces"
 )
 
 var Configuration *ConfigurationStruct

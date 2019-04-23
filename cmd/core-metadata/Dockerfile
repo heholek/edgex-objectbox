@@ -9,7 +9,7 @@
 FROM golang:1.11-alpine AS builder
 
 ENV GO111MODULE=on
-WORKDIR /go/src/github.com/edgexfoundry/edgex-go
+WORKDIR /go/src/github.com/objectbox/edgex-objectbox
 
 # The main mirrors are giving us timeout issues on builds periodically.
 # So we can try these.
@@ -36,7 +36,7 @@ ENV APP_PORT=48082
 EXPOSE $APP_PORT
 
 WORKDIR /
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/core-metadata/Attribution.txt /
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/core-metadata/core-metadata /
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/core-metadata/res/docker/configuration.toml /res/docker/configuration.toml
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/core-metadata/Attribution.txt /
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/core-metadata/core-metadata /
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/core-metadata/res/docker/configuration.toml /res/docker/configuration.toml
 ENTRYPOINT ["/core-metadata","--registry","--profile=docker","--confdir=/res"]

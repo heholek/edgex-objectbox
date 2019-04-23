@@ -35,21 +35,21 @@ Get the code
 
 You will need to download the source code from the EdgeX Go repository.  The EdgeX Go-based microservices, unlike the Java-based services, are all available in a single GitHub repository download. Once the code is pulled, the Go lang microservices are built and packaged as platform dependent executables and then also containerized for end user deployment/use.
 
-The EdgeX Foundry Go lang microservice code is hosted at https://github.com/edgexfoundry/edgex-go.
+The EdgeX Foundry Go lang microservice code is hosted at https://github.com/objectbox/edgex-objectbox.
 
 To download or "pull" the EdgeX Go code, use your git tool and request to clone this repository with the following command:
 
-git clone https://github.com/edgexfoundry/edgex-go.git
+git clone https://github.com/objectbox/edgex-objectbox.git
 
-It is recommended that you clone the edgex-go mono repo to the $GOPATH/src/github.com/edgexfoundry folder.  You will find that the project tools and configuration provided by the EdgeX community will work much better when applied to this structure. 
+It is recommended that you clone the edgex-objectbox mono repo to the $GOPATH/src/github.com/edgexfoundry folder.  You will find that the project tools and configuration provided by the EdgeX community will work much better when applied to this structure.
 
 You can use the build in `go get` command to clone the project into the correct path:
 
-    go get github.com/edgexfoundry/edgex-go
+    go get github.com/objectbox/edgex-objectbox
 
 Then cd into the directory with the EdgeX source code:
 
-    cd ~/go/src/github.com/edgexfoundry/edgex-go
+    cd ~/go/src/github.com/objectbox/edgex-objectbox
 
 
 **Note**, if you plan to make code changes and submit those back to the project, you are going to want to fork the repositories you plan to work with and then pull your fork versus the EdgeX repositories directly.  See https://wiki.edgexfoundry.org/display/FA/Committing+Code+Guidelines for more information on how to commit code to EdgeX.
@@ -123,7 +123,7 @@ The EdgeX Foundry Go mono repo contains the Go Lang source code (and many additi
 
 .. image:: EdgeX_GoLandOpenProject.png
 
-In the "Open File or Project" popup, select the location of the folder containing your cloned edgex-go repo.  If you are following the EdgeX recommended standards, the edgex-go folder should be located under $GOPATH/src/github.com/edgexfoundry/edgex-go.
+In the "Open File or Project" popup, select the location of the folder containing your cloned edgex-objectbox repo.  If you are following the EdgeX recommended standards, the edgex-objectbox folder should be located under $GOPATH/src/github.com/objectbox/edgex-objectbox.
 
 .. image:: EdgeX_GoLandSelectProject.png
 

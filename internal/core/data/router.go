@@ -25,9 +25,9 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gorilla/mux"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/data/errors"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/correlation"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/telemetry"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/errors"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 )
 
 func LoadRestRoutes() *mux.Router {

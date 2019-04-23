@@ -17,7 +17,7 @@
 
 # Docker image for building EdgeX Foundry Config Seed
 ARG git_sha
-FROM edgexfoundry/build-base:${git_sha} AS build-env
+FROM objectboxio/edge-build-base:${git_sha} AS build-env
 
 COPY . .
 
@@ -40,17 +40,17 @@ ENV APP_DIR=/edgex/cmd/config-seed
 WORKDIR $APP_DIR
 
 # copy files
-COPY --from=build-env $GOPATH/src/github.com/edgexfoundry/edgex-go/cmd/config-seed/Attribution.txt  .
-COPY --from=build-env $GOPATH/src/github.com/edgexfoundry/edgex-go/cmd/config-seed/config-seed  .
-COPY --from=build-env $GOPATH/src/github.com/edgexfoundry/edgex-go/cmd/config-seed/res ./res
-COPY --from=build-env $GOPATH/src/github.com/edgexfoundry/edgex-go/cmd/core-command/res /edgex/cmd/core-command/res
-COPY --from=build-env $GOPATH/src/github.com/edgexfoundry/edgex-go/cmd/core-data/res /edgex/cmd/core-data/res
-COPY --from=build-env $GOPATH/src/github.com/edgexfoundry/edgex-go/cmd/core-metadata/res /edgex/cmd/core-metadata/res
-COPY --from=build-env $GOPATH/src/github.com/edgexfoundry/edgex-go/cmd/export-client/res /edgex/cmd/export-client/res
-COPY --from=build-env $GOPATH/src/github.com/edgexfoundry/edgex-go/cmd/export-distro/res /edgex/cmd/export-distro/res
-COPY --from=build-env $GOPATH/src/github.com/edgexfoundry/edgex-go/cmd/support-logging/res /edgex/cmd/support-logging/res
-COPY --from=build-env $GOPATH/src/github.com/edgexfoundry/edgex-go/cmd/support-notifications/res /edgex/cmd/support-notifications/res
-COPY --from=build-env $GOPATH/src/github.com/edgexfoundry/edgex-go/cmd/support-scheduler/res /edgex/cmd/support-scheduler/res
-COPY --from=build-env $GOPATH/src/github.com/edgexfoundry/edgex-go/cmd/sys-mgmt-agent/res /edgex/cmd/sys-mgmt-agent/res
+COPY --from=build-env $GOPATH/src/github.com/objectbox/edgex-objectbox/cmd/config-seed/Attribution.txt  .
+COPY --from=build-env $GOPATH/src/github.com/objectbox/edgex-objectbox/cmd/config-seed/config-seed  .
+COPY --from=build-env $GOPATH/src/github.com/objectbox/edgex-objectbox/cmd/config-seed/res ./res
+COPY --from=build-env $GOPATH/src/github.com/objectbox/edgex-objectbox/cmd/core-command/res /edgex/cmd/core-command/res
+COPY --from=build-env $GOPATH/src/github.com/objectbox/edgex-objectbox/cmd/core-data/res /edgex/cmd/core-data/res
+COPY --from=build-env $GOPATH/src/github.com/objectbox/edgex-objectbox/cmd/core-metadata/res /edgex/cmd/core-metadata/res
+COPY --from=build-env $GOPATH/src/github.com/objectbox/edgex-objectbox/cmd/export-client/res /edgex/cmd/export-client/res
+COPY --from=build-env $GOPATH/src/github.com/objectbox/edgex-objectbox/cmd/export-distro/res /edgex/cmd/export-distro/res
+COPY --from=build-env $GOPATH/src/github.com/objectbox/edgex-objectbox/cmd/support-logging/res /edgex/cmd/support-logging/res
+COPY --from=build-env $GOPATH/src/github.com/objectbox/edgex-objectbox/cmd/support-notifications/res /edgex/cmd/support-notifications/res
+COPY --from=build-env $GOPATH/src/github.com/objectbox/edgex-objectbox/cmd/support-scheduler/res /edgex/cmd/support-scheduler/res
+COPY --from=build-env $GOPATH/src/github.com/objectbox/edgex-objectbox/cmd/sys-mgmt-agent/res /edgex/cmd/sys-mgmt-agent/res
 
 ENTRYPOINT /edgex/cmd/config-seed/config-seed --profile=docker --cmd=/edgex/cmd

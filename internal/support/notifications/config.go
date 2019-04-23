@@ -14,7 +14,7 @@
  *******************************************************************************/
 package notifications
 
-import "github.com/edgexfoundry/edgex-go/internal/pkg/config"
+import "github.com/objectbox/edgex-objectbox/internal/pkg/config"
 
 type ConfigurationStruct struct {
 	Writable    WritableInfo

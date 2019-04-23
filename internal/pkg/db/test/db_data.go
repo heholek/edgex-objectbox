@@ -12,8 +12,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
-	dbp "github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/interfaces"
+	dbp "github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 

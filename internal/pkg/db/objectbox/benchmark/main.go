@@ -4,9 +4,9 @@ package main
 import (
 	"log"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/test"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/test"
 )
 
 func main() {

@@ -2,7 +2,7 @@ package obx
 
 import (
 	"encoding/json"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"strconv"
 )

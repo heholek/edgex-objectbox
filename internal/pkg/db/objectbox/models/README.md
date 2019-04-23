@@ -5,7 +5,7 @@ They are based on "github.com/edgexfoundry/go-mod-core-contracts/models" with a 
 
 ### How to generate bindings
 ```bash
-cd edgex-go
+cd edgex-objectbox
 internal/pkg/db/objectbox/models/generate.sh
 ```
 

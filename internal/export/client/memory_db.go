@@ -18,7 +18,7 @@ package client
 import (
 	"time"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/uuid"
 )

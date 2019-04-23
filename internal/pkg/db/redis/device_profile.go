@@ -16,7 +16,7 @@ package redis
 import (
 	"fmt"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/gomodule/redigo/redis"
 
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"

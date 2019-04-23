@@ -15,7 +15,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"

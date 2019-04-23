@@ -17,7 +17,7 @@ package config
 import (
 	"flag"
 	"fmt"
-	"github.com/edgexfoundry/edgex-go/internal"
+	"github.com/objectbox/edgex-objectbox/internal"
 	"io/ioutil"
 	"os"
 	"path/filepath"

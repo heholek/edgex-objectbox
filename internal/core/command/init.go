@@ -30,10 +30,10 @@ import (
 	registryTypes "github.com/edgexfoundry/go-mod-registry/pkg/types"
 	"github.com/edgexfoundry/go-mod-registry/registry"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/startup"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/telemetry"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 )
 
 var Configuration *ConfigurationStruct

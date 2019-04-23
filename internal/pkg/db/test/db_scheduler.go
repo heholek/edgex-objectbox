@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/interfaces"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 

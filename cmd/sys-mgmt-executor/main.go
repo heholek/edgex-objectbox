@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/system/agent"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/system/agent"
 )
 
 // Global variables

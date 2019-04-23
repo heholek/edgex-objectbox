@@ -7,7 +7,7 @@ A Device Profile can be thought of as a template or as a type or classification 
 Adding a Device Profile
 -----------------------
 
-.. _`APIs Core Services Metadata`: https://github.com/edgexfoundry/edgex-go/blob/master/api/raml/core-metadata.raml
+.. _`APIs Core Services Metadata`: https://github.com/objectbox/edgex-objectbox/blob/master/api/raml/core-metadata.raml
 
 See Core Metadata API RAML at `APIs Core Services Metadata`_ 
 

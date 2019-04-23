@@ -17,8 +17,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/correlation/models"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )

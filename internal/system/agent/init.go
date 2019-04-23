@@ -22,9 +22,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/startup"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/general"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"

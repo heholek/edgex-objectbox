@@ -16,7 +16,7 @@
 package mongo
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/globalsign/mgo/bson"
 	"github.com/google/uuid"
 )

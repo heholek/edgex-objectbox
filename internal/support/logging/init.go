@@ -21,9 +21,9 @@ import (
 	"github.com/edgexfoundry/go-mod-registry/registry"
 	registryTypes "github.com/edgexfoundry/go-mod-registry/pkg/types"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/telemetry"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 )
 
 var Configuration *ConfigurationStruct

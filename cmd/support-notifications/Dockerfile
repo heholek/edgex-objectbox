@@ -8,7 +8,7 @@
 FROM golang:1.11-alpine AS builder
 
 ENV GO111MODULE=on
-WORKDIR /go/src/github.com/edgexfoundry/edgex-go
+WORKDIR /go/src/github.com/objectbox/edgex-objectbox
 
 # The main mirrors are giving us timeout issues on builds periodically.
 # So we can try these.
@@ -31,8 +31,8 @@ LABEL license='SPDX-License-Identifier: Apache-2.0' \
       copyright='Copyright (c) 2018: Cavium'
 
 COPY --from=builder /bin/bash /bin/bash
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/support-notifications/Attribution.txt /
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/support-notifications/support-notifications /
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/support-notifications/res/docker/configuration.toml /res/docker/configuration.toml
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/support-notifications/Attribution.txt /
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/support-notifications/support-notifications /
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/support-notifications/res/docker/configuration.toml /res/docker/configuration.toml
 ENTRYPOINT ["/support-notifications","--registry","--profile=docker","--confdir=/res"]
 

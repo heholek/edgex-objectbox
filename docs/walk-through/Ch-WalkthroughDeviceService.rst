@@ -16,7 +16,7 @@ Part of that registration process of the Device Service, indeed any EdgeX micro 
 Create the Device Service
 -------------------------
 
-.. _`APIs Core Services Metadata`: https://github.com/edgexfoundry/edgex-go/blob/master/api/raml/core-metadata.raml
+.. _`APIs Core Services Metadata`: https://github.com/objectbox/edgex-objectbox/blob/master/api/raml/core-metadata.raml
 
 See `APIs Core Services Metadata`_ 
 

@@ -3,8 +3,8 @@ package objectbox
 // implements export-client service contract
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox/obx"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"sync"

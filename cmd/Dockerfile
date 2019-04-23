@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 ARG git_sha
-FROM edgexfoundry/build-base:${git_sha} AS builder
+FROM objectboxio/edge-build-base:${git_sha} AS builder
 
 ARG service
 COPY . .
@@ -24,9 +24,9 @@ LABEL license='SPDX-License-Identifier: Apache-2.0' \
       copyright='Copyright (c) 2017-2019: Mainflux, Cavium, Dell, ObjectBox'
 
 # service
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/$service/Attribution.txt /
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/$service/$service /service
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/$service/res/docker/configuration.toml /res/docker/configuration.toml
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/$service/Attribution.txt /
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/$service/$service /service
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/$service/res/docker/configuration.toml /res/docker/configuration.toml
 
 # all service binary dependencies (shared objects)
 COPY --from=builder /deps /

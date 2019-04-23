@@ -20,9 +20,9 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gorilla/mux"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/correlation"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/telemetry"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 )
 
 // Test if the service is working

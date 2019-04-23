@@ -16,7 +16,7 @@ Configuration
 Local Configuration
 """""""""""""""""""
 
-Because EdgeX Foundry may be deployed and run in several different ways, it is important to understand how configuration is loaded and from where it is sourced. Referring to the cmd directory within the `edgex-go repository <https://github.com/edgexfoundry/edgex-go>`_
+Because EdgeX Foundry may be deployed and run in several different ways, it is important to understand how configuration is loaded and from where it is sourced. Referring to the cmd directory within the `edgex-objectbox repository <https://github.com/objectbox/edgex-objectbox>`_
 , each service has its own folder. Inside each service folder there is a ``res`` directory (short for "resource"). There you will find the configuration files in `TOML format <https://github.com/toml-lang/toml>`_
 that defines each service's configuration. A service may support several different configuration profiles, such as a "docker" profile. In this case, the configuration file located directly in the ``res`` directory should be considered the default configuration profile. Sub-directories will contain configurations appropriate to the respective profile.
 

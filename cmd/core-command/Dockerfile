@@ -7,7 +7,7 @@
 #
 
 ARG git_sha
-FROM edgexfoundry/build-base:${git_sha} AS builder
+FROM objectboxio/edge-build-base:${git_sha} AS builder
 
 COPY . .
 
@@ -23,7 +23,7 @@ ENV APP_PORT=48082
 EXPOSE $APP_PORT
 
 WORKDIR /
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/core-command/Attribution.txt /
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/core-command/core-command /
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/core-command/res/docker/configuration.toml /res/docker/configuration.toml
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/core-command/Attribution.txt /
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/core-command/core-command /
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/core-command/res/docker/configuration.toml /res/docker/configuration.toml
 ENTRYPOINT ["/core-command","--registry","--profile=docker","--confdir=/res"]

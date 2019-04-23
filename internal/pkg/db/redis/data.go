@@ -14,7 +14,7 @@
 package redis
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"

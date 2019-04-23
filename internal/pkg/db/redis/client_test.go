@@ -28,8 +28,8 @@ package redis
 import (
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/test"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/test"
 )
 
 const (

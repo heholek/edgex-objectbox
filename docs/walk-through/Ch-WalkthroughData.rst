@@ -24,7 +24,7 @@ By the way, the order in which these calls are shown may not be the exact order 
 Addressables
 ------------
 
-.. _`APIs Core Services Metadata`: https://github.com/edgexfoundry/edgex-go/blob/master/api/raml/core-metadata.raml
+.. _`APIs Core Services Metadata`: https://github.com/objectbox/edgex-objectbox/blob/master/api/raml/core-metadata.raml
 
 See Core Metadata API RAML at `APIs Core Services Metadata`_ 
 
@@ -70,7 +70,7 @@ If your API call was successful, you will get a generated ID for your new Addres
 Value Descriptors
 -----------------
 
-.. _`APIs Core Services Core Data`: https://github.com/edgexfoundry/edgex-go/blob/master/api/raml/core-data.raml
+.. _`APIs Core Services Core Data`: https://github.com/objectbox/edgex-objectbox/blob/master/api/raml/core-data.raml
 
 See Core Data API RAML at `APIs Core Services Core Data`_
 

@@ -7,7 +7,7 @@ In the real world, the human/dog counting camera would start to take pictures, c
 Send an Event/Reading
 ---------------------
 
-.. _`APIs Core Services Core Data`: https://github.com/edgexfoundry/edgex-go/blob/master/api/raml/core-data.raml
+.. _`APIs Core Services Core Data`: https://github.com/objectbox/edgex-objectbox/blob/master/api/raml/core-data.raml
 
 See `APIs Core Services Core Data`_
 

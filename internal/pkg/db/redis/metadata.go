@@ -17,8 +17,8 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	dataBase "github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	dataBase "github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"

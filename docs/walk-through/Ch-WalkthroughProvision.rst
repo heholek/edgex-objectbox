@@ -7,7 +7,7 @@ In the last act of setup, a Device Service often discovers and provisions new De
 Adding your device
 ------------------
 
-.. _`APIs Core Services Metadata`: https://github.com/edgexfoundry/edgex-go/blob/master/api/raml/core-metadata.raml
+.. _`APIs Core Services Metadata`: https://github.com/objectbox/edgex-objectbox/blob/master/api/raml/core-metadata.raml
 
 See `APIs Core Services Metadata`_ 
 

@@ -19,7 +19,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/gomodule/redigo/redis"
 )
 

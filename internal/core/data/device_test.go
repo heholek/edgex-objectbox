@@ -22,7 +22,7 @@ import (
 	"github.com/edgexfoundry/go-mod-messaging/messaging"
 	msgTypes "github.com/edgexfoundry/go-mod-messaging/pkg/types"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 )
 
 var testEvent contract.Event

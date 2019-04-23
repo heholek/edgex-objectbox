@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/data/errors"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/errors"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 

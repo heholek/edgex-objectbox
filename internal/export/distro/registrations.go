@@ -24,7 +24,7 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/correlation/models"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation/models"
 )
 
 const (

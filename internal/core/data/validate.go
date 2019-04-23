@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/data/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/errors"
 	models "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 

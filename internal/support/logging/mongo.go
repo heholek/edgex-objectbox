@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 
 	mgo "github.com/globalsign/mgo"

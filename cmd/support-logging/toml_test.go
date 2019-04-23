@@ -10,8 +10,8 @@ package main
 import (
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/support/logging"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/support/logging"
 )
 
 func TestToml(t *testing.T) {

@@ -7,7 +7,7 @@ Recall that the Device Profile (the camera monitor profile) included a number of
 List the Commands
 ------------------
 
-.. _`APIs Core Services Command`: https://github.com/edgexfoundry/edgex-go/blob/master/core/command/raml/core-command.raml
+.. _`APIs Core Services Command`: https://github.com/objectbox/edgex-objectbox/blob/master/core/command/raml/core-command.raml
 
 See `APIs Core Services Command`_
 
@@ -22,7 +22,7 @@ Note all of the URLs returned as part of this response!  These are the URLs that
 Check the Value Descriptors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. _`APIs Core Services Core Data`: https://github.com/edgexfoundry/edgex-go/blob/master/api/raml/core-data.raml
+.. _`APIs Core Services Core Data`: https://github.com/objectbox/edgex-objectbox/blob/master/api/raml/core-data.raml
 
 See `APIs Core Services Core Data`_
 

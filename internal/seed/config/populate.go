@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/edgexfoundry/edgex-go/internal"
+	"github.com/objectbox/edgex-objectbox/internal"
 	"github.com/edgexfoundry/go-mod-registry/pkg/types"
 	"github.com/edgexfoundry/go-mod-registry/registry"
 	"github.com/magiconair/properties"

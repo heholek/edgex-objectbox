@@ -9,7 +9,7 @@
 FROM golang:1.11-alpine AS builder
 
 ENV GO111MODULE=on
-WORKDIR /go/src/github.com/edgexfoundry/edgex-go
+WORKDIR /go/src/github.com/objectbox/edgex-objectbox
 
 # The main mirrors are giving us timeout issues on builds periodically.
 # So we can try these.
@@ -35,7 +35,7 @@ ENV APP_PORT=48085
 #expose support scheduler port
 EXPOSE $APP_PORT
 
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/support-scheduler/Attribution.txt /
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/support-scheduler/support-scheduler /
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/support-scheduler/res/docker/configuration.toml /res/docker/configuration.toml
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/support-scheduler/Attribution.txt /
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/support-scheduler/support-scheduler /
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/support-scheduler/res/docker/configuration.toml /res/docker/configuration.toml
 ENTRYPOINT ["/support-scheduler","--registry","--profile=docker","--confdir=/res"]

@@ -14,7 +14,7 @@ Introduction
 
 The following API RESTful Web Services for EdgeX Foundry at this time shows the older development name of "fuse."  The EdgeX Foundry name in the software will be updated soon to "edgexfoundry." 
 
-https://github.com/edgexfoundry/edgex-go/blob/master/api/raml/support-scheduling.raml
+https://github.com/objectbox/edgex-objectbox/blob/master/api/raml/support-scheduling.raml
 
 .. _`Scheduling API HTML Documentation`: support-scheduler.html
 ..

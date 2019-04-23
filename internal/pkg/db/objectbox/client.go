@@ -1,8 +1,8 @@
 package objectbox
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox/obx"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox/obx"
 	. "github.com/objectbox/objectbox-go/objectbox"
 )
 

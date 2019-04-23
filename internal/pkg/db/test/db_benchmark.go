@@ -24,7 +24,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/interfaces"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 

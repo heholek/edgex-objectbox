@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"testing"
 
-	dbp "github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/support/notifications/interfaces"
+	dbp "github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/support/notifications/interfaces"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 

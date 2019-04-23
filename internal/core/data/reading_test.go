@@ -6,10 +6,10 @@ import (
 	"math"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/data/errors"
-	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
-	dbMock "github.com/edgexfoundry/edgex-go/internal/core/data/interfaces/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/interfaces"
+	dbMock "github.com/objectbox/edgex-objectbox/internal/core/data/interfaces/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 

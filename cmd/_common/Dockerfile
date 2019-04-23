@@ -7,7 +7,7 @@ ARG service
 RUN apt-get update && apt-get install -y libzmq3-dev
 
 ENV GO111MODULE=on
-WORKDIR /go/src/github.com/edgexfoundry/edgex-go
+WORKDIR /go/src/github.com/objectbox/edgex-objectbox
 
 COPY go.mod .
 COPY go.sum .

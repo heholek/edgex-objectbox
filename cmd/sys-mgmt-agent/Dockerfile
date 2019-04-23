@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 ARG git_sha
-FROM edgexfoundry/build-base:${git_sha} AS builder
+FROM objectboxio/edge-build-base:${git_sha} AS builder
 
 COPY . .
 
@@ -23,12 +23,12 @@ LABEL license='SPDX-License-Identifier: Apache-2.0' \
 
 # Copy over the SMA executable bits.
 COPY --from=builder /bin/bash /bin/bash
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/sys-mgmt-agent/sys-mgmt-agent /
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/sys-mgmt-agent/res/docker/configuration.toml /res/docker/configuration.toml
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/sys-mgmt-agent/res/docker/configuration.toml /res/configuration.toml
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/sys-mgmt-agent/sys-mgmt-agent /
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/sys-mgmt-agent/res/docker/configuration.toml /res/docker/configuration.toml
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/sys-mgmt-agent/res/docker/configuration.toml /res/configuration.toml
 
 # Copy over the golang "executor" executable.
-COPY --from=builder /go/src/github.com/edgexfoundry/edgex-go/cmd/sys-mgmt-executor/sys-mgmt-executor /
+COPY --from=builder /go/src/github.com/objectbox/edgex-objectbox/cmd/sys-mgmt-executor/sys-mgmt-executor /
 
 RUN apk --no-cache add py-pip
 RUN pip install docker-compose==1.23.2

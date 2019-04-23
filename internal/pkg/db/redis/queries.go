@@ -17,8 +17,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/redis/models"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/redis/models"
 	"github.com/gomodule/redigo/redis"
 )
 

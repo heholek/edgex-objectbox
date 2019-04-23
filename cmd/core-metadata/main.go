@@ -22,12 +22,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/edgexfoundry/edgex-go"
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/correlation"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/startup"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/usage"
+	"github.com/objectbox/edgex-objectbox"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/usage"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/gorilla/context"
 )

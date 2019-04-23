@@ -5,12 +5,12 @@
 EdgeX Foundry is a vendor-neutral open source project hosted by The Linux Foundation building a common open framework for IoT edge computing.  At the heart of the project is an interoperability framework hosted within a full hardware- and OS-agnostic reference software platform to enable an ecosystem of plug-and-play components that unifies the marketplace and accelerates the deployment of IoT solutions.  This repository contains the Go implementation of EdgeX Foundry microservices.  It also includes files for building the services, containerizing the services, and initializing (bootstrapping) the services.
 
 # Get Started
-EdgeX provides docker images in our organization's [DockerHub page](https://hub.docker.com/u/edgexfoundry/).
+ObjectBox provides docker images in our organization's [DockerHub repository](https://hub.docker.com/u/objectboxio/).
 They can be launched easily with **docker-compose**.
 
 The simplest way to get started is to fetch the latest docker-compose.yml and start the EdgeX containers:
 ```
-wget https://raw.githubusercontent.com/edgexfoundry/developer-scripts/master/compose-files/docker-compose.yml
+wget https://raw.githubusercontent.com/objectbox/edgex-objectbox/master/bin/docker-compose.yml
 docker-compose up -d
 ```
 You can check the status of your running EdgeX services by going to http://localhost:8500/

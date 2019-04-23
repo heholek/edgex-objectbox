@@ -33,7 +33,7 @@ File = '/edgex/logs/edgex-core-metadata.log'
 
 [Databases]
   [Databases.Primary]
-  Name = 'metadata'
+  Name = '/data/db/metadata'
   Type = 'objectbox'
 
 [Notifications]

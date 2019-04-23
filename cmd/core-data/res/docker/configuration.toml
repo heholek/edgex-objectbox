@@ -39,7 +39,7 @@ File = '/edgex/logs/edgex-core-data.log'
 
 [Databases]
   [Databases.Primary]
-  Name = 'coredata'
+  Name = '/data/db/coredata'
   Type = 'objectbox'
 
 [MessageQueue]

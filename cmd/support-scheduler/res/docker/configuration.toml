@@ -30,7 +30,7 @@ File = '/edgex/logs/edgex-support-scheduler.log'
 
 [Databases]
   [Databases.Primary]
-  Name = 'scheduler'
+  Name = '/data/db/scheduler'
   Type = 'objectbox'
 
 [Intervals]

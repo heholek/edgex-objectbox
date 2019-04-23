@@ -30,7 +30,7 @@ File = '/edgex/logs/edgex-support-notifications.log'
 
 [Databases]
   [Databases.Primary]
-  Name = 'notifications'
+  Name = '/data/db/notifications'
   Type = 'objectbox'
 
 [Smtp]

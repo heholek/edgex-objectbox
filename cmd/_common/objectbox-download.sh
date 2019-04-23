@@ -92,7 +92,7 @@ if ${UNINSTALL_LIBRARY:-false}; then
         echo "${LIBRARY_SYSTEM_PATH}/libobjectbox.${SO_SUFFIX} not present"
         exit 1
     fi
-    
+
     if [[ "$os" = "Macos" ]]; then
         LINK_FIXUP_CMD=""
     else
@@ -142,7 +142,7 @@ baseName=libobjectbox-${version}-${hash}
 targetDir="${downloadDir}/${repoType}/${baseName}"
 archiveFile="${targetDir}.tgz"
 remoteRepo="https://dl.bintray.com/objectbox/conan/objectbox/objectbox-c"
-downloadUrl="${remoteRepo}/${version}/${repoType}/package/${hash}/conan_package.tgz"
+downloadUrl="${remoteRepo}/${version}/${repoType}/0/package/${hash}/0/conan_package.tgz"
 
 echo "Downloading ObjectBox library version ${version} ${repoType} (${hash})..."
 mkdir -p $(dirname ${archiveFile})
@@ -151,7 +151,8 @@ mkdir -p $(dirname ${archiveFile})
 if [ -x "$(command -v curl)" ]; then
     curl -L -o "${archiveFile}" "${downloadUrl}"
 else
-    wget -q -O "${archiveFile}" "${downloadUrl}"
+    #wget too verbose with redirects, pipe and grep only errors
+    wget -O "${archiveFile}" "${downloadUrl}" 2>&1 | grep -i "HTTP request sent\|failed\|error"
 fi
 
 if [[ ! -s ${archiveFile} ]]; then

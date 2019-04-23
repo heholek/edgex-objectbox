@@ -20,13 +20,3 @@ Type = 'consul'
 
 [Logging]
 File = '/edgex/logs/edgex-support-logging.log'
-
-[Databases]
-  [Databases.Primary]
-  Host = 'edgex-mongo'
-  Name = 'logging'
-  Password = 'password'
-  Port = 27017
-  Username = 'logging'
-  Timeout = 5000
-  Type = 'mongodb'

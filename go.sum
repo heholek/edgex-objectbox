@@ -71,9 +71,11 @@ github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190227005352-2d7ec079a728
 github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190227005352-2d7ec079a728/go.mod h1:rVRt6AhRrJnzdVTGZV0sGS7Fb8Pdfwj+/yq4SXBPbV8=
 github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190408185438-838c1e45fef1 h1:GW2ufd9WnUg94ytlOW1wX4tCQgCQur8y6Nie+dqHMi4=
 github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190408185438-838c1e45fef1/go.mod h1:yVAVTeH1lbp+3YG2V7sq3iIerZj94lC0rZX1sryGfTY=
+github.com/edgexfoundry/go-mod-messaging v0.0.0-20190327144236-4222ae1edb0b h1:sT4QF/CDDJyTslZd6F7ViZbwphxlOq1zbtDT0xWxsKU=
 github.com/edgexfoundry/go-mod-messaging v0.0.0-20190327144236-4222ae1edb0b/go.mod h1:pA8HBYCiLIuqlNjl2zHLLwC6ohl+/okb8Rikfu17TJg=
 github.com/edgexfoundry/go-mod-registry v0.0.0-20190221211212-171439dc16f8 h1:qEv0EudDyNbWAY7vLFBAP9x/coZ7MknThvp/nPRzNgE=
 github.com/edgexfoundry/go-mod-registry v0.0.0-20190221211212-171439dc16f8/go.mod h1:xLVuqoMAviBiS3bzDAl6JhBua0HXBfYmJLn1DBB9Cwo=
+github.com/edgexfoundry/go-mod-registry v0.0.0-20190401195203-552208258719 h1:5ycQ5Hm83LFZOqI+8PpDBGC2tBdq62GQX4YPRPzxS9c=
 github.com/edgexfoundry/go-mod-registry v0.0.0-20190401195203-552208258719/go.mod h1:3w+ZfrsXXTDbKQ0cKClS2ujQXGoJpcvvB1OzgFNSYDg=
 github.com/elazarl/go-bindata-assetfs v1.0.0/go.mod h1:v+YaWX3bdea5J/mo8dSETolEo7R71Vk1u8bnjau5yw4=
 github.com/emirpasic/gods v1.9.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
@@ -232,6 +234,7 @@ github.com/miekg/dns v1.1.1/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nr
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=
 github.com/mitchellh/consulstructure v0.0.0-20160324233621-b407c521973b h1:UX0IFS2CZcqKynUwYM1ndj2Thhqm6TDJgxOWdR24wCc=
 github.com/mitchellh/consulstructure v0.0.0-20160324233621-b407c521973b/go.mod h1:dIfpPVUR+ZfkzkDcKnn+oPW1jKeXe4WlNWc7rIXOVxM=
+github.com/mitchellh/consulstructure v0.0.0-20190329231841-56fdc4d2da54 h1:DcITQwl3ymmg7i1XfwpZFs/TPv2PuTwxE8bnuKVtKlk=
 github.com/mitchellh/consulstructure v0.0.0-20190329231841-56fdc4d2da54/go.mod h1:dIfpPVUR+ZfkzkDcKnn+oPW1jKeXe4WlNWc7rIXOVxM=
 github.com/mitchellh/copystructure v1.0.0 h1:Laisrj+bAB6b/yJwB5Bt3ITZhGJdqmxquMKeZ+mmkFQ=
 github.com/mitchellh/copystructure v1.0.0/go.mod h1:SNtv71yrdKgLRyLFxmLdkAbkKEFWgYaq1OVrnRcwhnw=

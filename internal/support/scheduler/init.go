@@ -17,6 +17,7 @@ package scheduler
 import (
 	"errors"
 	"fmt"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/redis"
 	"os"
 	"os/signal"
@@ -26,14 +27,13 @@ import (
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
-	"github.com/edgexfoundry/go-mod-registry/registry"
 	registryTypes "github.com/edgexfoundry/go-mod-registry/pkg/types"
+	"github.com/edgexfoundry/go-mod-registry/registry"
 
 	"github.com/edgexfoundry/edgex-go/internal"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/db/mongo"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/objectbox"
 	"github.com/edgexfoundry/edgex-go/internal/pkg/telemetry"
 	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/interfaces"
 )
@@ -270,6 +270,11 @@ func newDBClient(dbType string) (interfaces.DBClient, error) {
 			Port: Configuration.Databases["Primary"].Port,
 		}
 		return redis.NewClient(dbConfig) //TODO: Verify this also connects to Redis
+	case db.ObjectBox:
+		dbConfig := db.Configuration{
+			DatabaseName: Configuration.Databases["Primary"].Name,
+		}
+		return objectbox.NewClient(dbConfig)
 	default:
 		return nil, db.ErrUnsupportedDatabase
 	}
@@ -286,18 +291,6 @@ func connectToSchedulerQueue() error {
 }
 func newScheduleQueueClient() (interfaces.SchedulerQueueClient, error) {
 	return NewSchedulerQueueClient(), nil
-}
-
-// Return the dbClient interface
-func newDBClient(dbType string, config db.Configuration) (interfaces.DBClient, error) {
-	switch dbType {
-	case db.MongoDB:
-		return mongo.NewClient(config)
-	case db.ObjectBox:
-		return objectbox.NewClient(config)
-	default:
-		return nil, db.ErrUnsupportedDatabase
-	}
 }
 
 func setLoggingTarget() string {

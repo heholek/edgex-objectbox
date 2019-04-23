@@ -34,11 +34,6 @@ File = '/edgex/logs/edgex-export-client.log'
 
 [Databases]
   [Databases.Primary]
-  Host = 'edgex-mongo'
   Name = 'exportclient'
-  Password = ''
-  Port = 27017
-  Username = ''
-  Timeout = 5000
   Type = 'objectbox'
 

@@ -169,7 +169,10 @@ func newDBClient(dbType string) (interfaces.DBClient, error) {
 		}
 		return redis.NewClient(dbConfig) //TODO: Verify this also connects to Redis
 	case db.ObjectBox:
-		return objectbox.NewClient(config)
+		dbConfig := db.Configuration{
+			DatabaseName: Configuration.Databases["Primary"].Name,
+		}
+		return objectbox.NewClient(dbConfig)
 	default:
 		return nil, db.ErrUnsupportedDatabase
 	}

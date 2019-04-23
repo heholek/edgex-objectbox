@@ -34,11 +34,6 @@ File = './logs/edgex-export-client.log'
 
 [Databases]
   [Databases.Primary]
-  Host = 'localhost'
   Name = 'exportclient'
-  Password = ''
-  Port = 27017
-  Username = ''
-  Timeout = 5000
   Type = 'objectbox'
 

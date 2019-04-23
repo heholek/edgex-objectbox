@@ -30,12 +30,7 @@ File = '/edgex/logs/edgex-support-notifications.log'
 
 [Databases]
   [Databases.Primary]
-  Host = 'edgex-mongo'
   Name = 'notifications'
-  Password = ''
-  Port = 27017
-  Username = ''
-  Timeout = 5000
   Type = 'objectbox'
 
 [Smtp]

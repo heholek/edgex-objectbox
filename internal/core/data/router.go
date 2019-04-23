@@ -1162,9 +1162,6 @@ func valueDescriptorHandler(w http.ResponseWriter, r *http.Request) {
 		id, err := addValueDescriptor(v)
 		if err != nil {
 			switch err.(type) {
-			case *errors.ErrDuplicateValueDescriptorName:
-				http.Error(w, err.Error(), http.StatusConflict)
-				return
 			case *errors.ErrValueDescriptorInUse:
 				http.Error(w, err.Error(), http.StatusConflict)
 				return

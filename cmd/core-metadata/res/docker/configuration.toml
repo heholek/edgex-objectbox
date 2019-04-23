@@ -33,12 +33,7 @@ File = '/edgex/logs/edgex-core-metadata.log'
 
 [Databases]
   [Databases.Primary]
-  Host = 'edgex-mongo'
   Name = 'metadata'
-  Password = 'password'
-  Port = 27017
-  Username = 'meta'
-  Timeout = 5000
   Type = 'objectbox'
 
 [Notifications]

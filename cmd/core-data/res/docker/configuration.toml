@@ -39,12 +39,7 @@ File = '/edgex/logs/edgex-core-data.log'
 
 [Databases]
   [Databases.Primary]
-  Host = 'edgex-mongo'
   Name = 'coredata'
-  Password = 'password'
-  Port = 27017
-  Username = 'core'
-  Timeout = 5000
   Type = 'objectbox'
 
 [MessageQueue]

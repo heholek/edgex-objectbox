@@ -33,12 +33,7 @@ File = './logs/edgex-core-metadata.log'
 
 [Databases]
   [Databases.Primary]
-  Host = 'localhost'
   Name = 'metadata'
-  Password = ''
-  Port = 27017
-  Username = ''
-  Timeout = 5000
   Type = 'objectbox'
 
 [Notifications]

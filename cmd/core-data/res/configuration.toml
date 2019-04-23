@@ -39,12 +39,7 @@ File = './logs/edgex-core-data.log'
 
 [Databases]
   [Databases.Primary]
-  Host = 'localhost'
   Name = 'coredata'
-  Password = ''
-  Port = 27017
-  Username = ''
-  Timeout = 5000
   Type = 'objectbox'
 
 [MessageQueue]

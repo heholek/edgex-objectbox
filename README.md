@@ -29,6 +29,17 @@ on the snap, including how to install it, please refer to [EdgeX snap](https://g
 #### Go
 The current targeted version of the Go language runtime is v1.11.5
 
+#### ObjectBox
+
+To use ObjectBox as the persistance provider, you need the ObjectBox binary library (.so, .dylib, .dll depending on your platform).
+In the [ObjectBox C repository](https://github.com/objectbox/objectbox-c), you should find a download.sh script you can run to install the library. 
+ 
+For Linux and macOS, install the library using the download.sh script:
+```bash
+bash <(curl -s https://raw.githubusercontent.com/objectbox/objectbox-c/master/download.sh)
+
+```
+
 #### pkg-config
 `go get github.com/rjeczalik/pkgconfig/cmd/pkg-config`
 

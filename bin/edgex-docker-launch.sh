@@ -19,12 +19,8 @@
 # bin/edgex-docker-launch.sh
 
 if [ -z $EDGEX_COMPOSE_FILE ]; then
-  COMPOSE_FILENAME=docker-compose-delhi-0.7.1.yml
-  COMPOSE_FILE=/tmp/${COMPOSE_FILENAME}
-  COMPOSE_URL=https://raw.githubusercontent.com/edgexfoundry/developer-scripts/master/compose-files/${COMPOSE_FILENAME}
-  
-  echo "Pulling latest compose file..."
-  curl -o $COMPOSE_FILE $COMPOSE_URL
+  SCRIPT_DIR="$( dirname "$0" )"
+  COMPOSE_FILE=${SCRIPT_DIR}/docker-compose.yml
 else
   COMPOSE_FILE=$EDGEX_COMPOSE_FILE
 fi

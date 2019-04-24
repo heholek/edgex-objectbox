@@ -1,6 +1,12 @@
-# EdgeX Foundry Services
+# EdgeX ObjectBox Edition
 [![Go Report Card](https://goreportcard.com/badge/github.com/objectbox/edgex-objectbox)](https://goreportcard.com/report/github.com/objectbox/edgex-objectbox)
 [![license](https://img.shields.io/badge/license-Apache%20v2.0-blue.svg)](LICENSE)
+
+[EdgeX](https://www.edgexfoundry.org/) is the open source edge computing platform, and this repo contains a EdgeX version running on the [ObjectBox](https://objectbox.io/) database.
+ObjectBox is a resource-efficient and fast embedded database and thus is particular well suited for constrained edge devices.
+This repo is provided and maintained by ObjectBox. 
+
+*Original text for EdgeX:*
 
 EdgeX Foundry is a vendor-neutral open source project hosted by The Linux Foundation building a common open framework for IoT edge computing.  At the heart of the project is an interoperability framework hosted within a full hardware- and OS-agnostic reference software platform to enable an ecosystem of plug-and-play components that unifies the marketplace and accelerates the deployment of IoT solutions.  This repository contains the Go implementation of EdgeX Foundry microservices.  It also includes files for building the services, containerizing the services, and initializing (bootstrapping) the services.
 
@@ -28,13 +34,14 @@ The current targeted version of the Go language runtime is v1.11.5
 #### ObjectBox
 
 To use ObjectBox as the persistance provider, you need the ObjectBox binary library (.so, .dylib, .dll depending on your platform).
-In the [ObjectBox C repository](https://github.com/objectbox/objectbox-c), you should find a download.sh script you can run to install the library. 
  
 For Linux and macOS, install the library using the download.sh script:
 ```bash
 bash <(curl -s https://raw.githubusercontent.com/objectbox/objectbox-c/master/download.sh)
 
 ```
+
+Alternatively, in the [ObjectBox C repository](https://github.com/objectbox/objectbox-c), you should find a download.sh script you can run to install the library. 
 
 #### pkg-config
 `go get github.com/rjeczalik/pkgconfig/cmd/pkg-config`

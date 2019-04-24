@@ -33,7 +33,7 @@ The current targeted version of the Go language runtime is v1.11.5
 
 #### ObjectBox
 
-To use ObjectBox as the persistance provider, you need the ObjectBox binary library (.so, .dylib, .dll depending on your platform).
+To use ObjectBox as the persistence provider, you need the ObjectBox binary library (.so, .dylib, .dll depending on your platform).
  
 For Linux and macOS, install the library using the download.sh script:
 ```bash

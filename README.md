@@ -33,15 +33,14 @@ The current targeted version of the Go language runtime is v1.11.5
 
 #### ObjectBox
 
-To use ObjectBox as the persistence provider, you need the ObjectBox binary library (.so, .dylib, .dll depending on your platform).
+To install the ObjectBox dynamic library (.so, .dylib, .dll), run this in your terminal (Windows users, please use something like Git Bash):
  
-For Linux and macOS, install the library using the download.sh script:
 ```bash
 bash <(curl -s https://raw.githubusercontent.com/objectbox/objectbox-c/master/download.sh)
 
 ```
 
-Alternatively, in the [ObjectBox C repository](https://github.com/objectbox/objectbox-c), you should find a download.sh script you can run to install the library. 
+Alternatively, the [ObjectBox C repository](https://github.com/objectbox/objectbox-c) comes with additional options and details on this procedure. 
 
 #### pkg-config
 `go get github.com/rjeczalik/pkgconfig/cmd/pkg-config`

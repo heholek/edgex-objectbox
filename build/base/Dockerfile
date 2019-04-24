@@ -13,5 +13,5 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 
-COPY ./cmd/_common/objectbox-download.sh .
+COPY ./build/base/objectbox-download.sh .
 RUN ./objectbox-download.sh --install 0.5

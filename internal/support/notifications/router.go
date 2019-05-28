@@ -41,8 +41,7 @@ func LoadRestRoutes() *mux.Router {
 
 	// Notifications
 	b.HandleFunc("/notification", notificationHandler).Methods(http.MethodPost)
-	b.HandleFunc("/notification/{id}", notificationByIDHandler).Methods(http.MethodGet)
-	b.HandleFunc("/notification/id/{id}", notificationByIDHandler).Methods(http.MethodDelete)
+	b.HandleFunc("/notification/{id}", notificationByIDHandler).Methods(http.MethodGet, http.MethodDelete)
 	b.HandleFunc("/notification/slug/{slug}", notificationBySlugHandler).Methods(http.MethodGet, http.MethodDelete)
 	b.HandleFunc("/notification/age/{age:[0-9]+}", notificationOldHandler).Methods(http.MethodDelete)
 	b.HandleFunc("/notification/sender/{sender}/{limit:[0-9]+}", notificationBySenderHandler).Methods(http.MethodGet)
@@ -54,7 +53,7 @@ func LoadRestRoutes() *mux.Router {
 
 	// GetSubscriptions
 	b.HandleFunc("/subscription", subscriptionHandler).Methods(http.MethodGet, http.MethodPut, http.MethodPost)
-	b.HandleFunc("/subscription/{id}", subscriptionByIDHandler).Methods(http.MethodGet)
+	b.HandleFunc("/subscription/{id}", subscriptionByIDHandler).Methods(http.MethodGet, http.MethodDelete)
 	b.HandleFunc("/subscription/slug/{slug}", subscriptionsBySlugHandler).Methods(http.MethodGet, http.MethodDelete)
 	b.HandleFunc("/subscription/categories/{categories}/labels/{labels}", subscriptionsByCategoriesLabelsHandler).Methods(http.MethodGet)
 	b.HandleFunc("/subscription/categories/{categories}", subscriptionsByCategoriesHandler).Methods(http.MethodGet)
@@ -64,6 +63,7 @@ func LoadRestRoutes() *mux.Router {
 	// Transmissions
 	b.HandleFunc("/transmission", transmissionHandler).Methods(http.MethodPost)
 	b.HandleFunc("/transmission/slug/{slug}/{limit:[0-9]+}", transmissionBySlugHandler).Methods(http.MethodGet)
+	b.HandleFunc("/transmission/slug/{slug}/start/{start}/end/{end}/{limit:[0-9]+}", transmissionBySlugAndStartEndHandler).Methods(http.MethodGet)
 	b.HandleFunc("/transmission/start/{start}/end/{end}/{limit:[0-9]+}", transmissionByStartEndHandler).Methods(http.MethodGet)
 	b.HandleFunc("/transmission/start/{start}/{limit:[0-9]+}", transmissionByStartHandler).Methods(http.MethodGet)
 	b.HandleFunc("/transmission/end/{end}/{limit:[0-9]+}", transmissionByEndHandler).Methods(http.MethodGet)

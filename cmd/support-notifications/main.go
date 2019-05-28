@@ -33,7 +33,9 @@ import (
 	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/usage"
 	"github.com/objectbox/edgex-objectbox/internal/support/notifications"
+	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 func main() {
@@ -53,12 +55,12 @@ func main() {
 
 	ok := notifications.Init(useRegistry)
 	if !ok {
-		logBeforeInit(fmt.Errorf("%s: Service bootstrap failed!", internal.SupportNotificationsServiceKey))
+		logBeforeInit(fmt.Errorf("%s: Service bootstrap failed!", clients.SupportNotificationsServiceKey))
 		os.Exit(1)
 	}
 
 	notifications.LoggingClient.Info("Service dependencies resolved...")
-	notifications.LoggingClient.Info(fmt.Sprintf("Starting %s %s ", internal.SupportNotificationsServiceKey, edgex.Version))
+	notifications.LoggingClient.Info(fmt.Sprintf("Starting %s %s ", clients.SupportNotificationsServiceKey, edgex.Version))
 
 	http.TimeoutHandler(nil, time.Millisecond*time.Duration(notifications.Configuration.Service.Timeout), "Request timed out")
 	notifications.LoggingClient.Info(notifications.Configuration.Service.StartupMsg)
@@ -78,7 +80,7 @@ func main() {
 }
 
 func logBeforeInit(err error) {
-	l := logger.NewClient(internal.SupportNotificationsServiceKey, false, "", logger.InfoLog)
+	l := logger.NewClient(clients.SupportNotificationsServiceKey, false, "", models.InfoLog)
 	l.Error(err.Error())
 }
 

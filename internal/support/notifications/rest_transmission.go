@@ -17,6 +17,7 @@ package notifications
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -65,7 +66,7 @@ func transmissionBySlugHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	resendLimit, err := strconv.Atoi(vars["limit"])
+	limitNum, err := strconv.Atoi(vars["limit"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		LoggingClient.Error("Error converting limit to integer: " + err.Error())
@@ -75,7 +76,52 @@ func transmissionBySlugHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		t, err := dbClient.GetTransmissionsByNotificationSlug(vars["slug"], resendLimit)
+		t, err := dbClient.GetTransmissionsByNotificationSlug(vars["slug"], limitNum)
+		if err != nil {
+			if err == db.ErrNotFound {
+				http.Error(w, "Transmission not found", http.StatusNotFound)
+			} else {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			LoggingClient.Error(err.Error())
+			return
+		}
+
+		encode(t, w)
+	}
+}
+
+func transmissionBySlugAndStartEndHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Body != nil {
+		defer r.Body.Close()
+	}
+
+	vars := mux.Vars(r)
+	slug := vars["slug"]
+	start, err := strconv.ParseInt(vars["start"], 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		LoggingClient.Error(fmt.Sprintf("failed to parse start %s %s", vars["start"], err.Error()))
+		return
+	}
+	end, err := strconv.ParseInt(vars["end"], 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		LoggingClient.Error(fmt.Sprintf("failed to parse end %s %s", vars["end"], err.Error()))
+		return
+	}
+	limitNum, err := strconv.Atoi(vars["limit"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		LoggingClient.Error(fmt.Sprintf("failed to parse limit %s %s", vars["limit"], err.Error()))
+		return
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+
+		t, err := dbClient.GetTransmissionsByNotificationSlugAndStartEnd(slug, start, end, limitNum)
 		if err != nil {
 			if err == db.ErrNotFound {
 				http.Error(w, "Transmission not found", http.StatusNotFound)
@@ -110,7 +156,7 @@ func transmissionByStartEndHandler(w http.ResponseWriter, r *http.Request) {
 		LoggingClient.Error("Error converting the end to an integer")
 		return
 	}
-	resendLimit, err := strconv.Atoi(vars["limit"])
+	limitNum, err := strconv.Atoi(vars["limit"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		LoggingClient.Error("Error converting limit to integer: " + err.Error())
@@ -120,7 +166,7 @@ func transmissionByStartEndHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		t, err := dbClient.GetTransmissionsByStartEnd(start, end, resendLimit)
+		t, err := dbClient.GetTransmissionsByStartEnd(start, end, limitNum)
 		if err != nil {
 			if err == db.ErrNotFound {
 				http.Error(w, "Transmission not found", http.StatusNotFound)
@@ -147,7 +193,7 @@ func transmissionByStartHandler(w http.ResponseWriter, r *http.Request) {
 		LoggingClient.Error("Error converting the start to an integer")
 		return
 	}
-	resendLimit, err := strconv.Atoi(vars["limit"])
+	limitNum, err := strconv.Atoi(vars["limit"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		LoggingClient.Error("Error converting limit to integer: " + err.Error())
@@ -156,7 +202,7 @@ func transmissionByStartHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		t, err := dbClient.GetTransmissionsByStart(start, resendLimit)
+		t, err := dbClient.GetTransmissionsByStart(start, limitNum)
 		if err != nil {
 			if err == db.ErrNotFound {
 				http.Error(w, "Transmission not found", http.StatusNotFound)
@@ -185,7 +231,7 @@ func transmissionByEndHandler(w http.ResponseWriter, r *http.Request) {
 		LoggingClient.Error("Error converting the end to an integer")
 		return
 	}
-	resendLimit, err := strconv.Atoi(vars["limit"])
+	limitNum, err := strconv.Atoi(vars["limit"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		LoggingClient.Error("Error converting limit to integer: " + err.Error())
@@ -195,7 +241,7 @@ func transmissionByEndHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		t, err := dbClient.GetTransmissionsByEnd(end, resendLimit)
+		t, err := dbClient.GetTransmissionsByEnd(end, limitNum)
 		if err != nil {
 			if err == db.ErrNotFound {
 				http.Error(w, "Transmission not found", http.StatusNotFound)
@@ -225,7 +271,7 @@ func transmissionByStatusHandler(w http.ResponseWriter, r *http.Request, status 
 	}
 
 	vars := mux.Vars(r)
-	resendLimit, err := strconv.Atoi(vars["limit"])
+	limitNum, err := strconv.Atoi(vars["limit"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		LoggingClient.Error("Error converting limit to integer: " + err.Error())
@@ -235,7 +281,7 @@ func transmissionByStatusHandler(w http.ResponseWriter, r *http.Request, status 
 	switch r.Method {
 	case http.MethodGet:
 
-		t, err := dbClient.GetTransmissionsByStatus(resendLimit, status)
+		t, err := dbClient.GetTransmissionsByStatus(limitNum, status)
 		if err != nil {
 			if err == db.ErrNotFound {
 				http.Error(w, "Transmission not found", http.StatusNotFound)

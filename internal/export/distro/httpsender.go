@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/objectbox/edgex-objectbox/internal"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation/models"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
@@ -41,28 +41,30 @@ func newHTTPSender(addr contract.Addressable) sender {
 }
 
 // Send will send the optionally filtered, compressed, encypted contract.Event via HTTP POST
-// The model.Event is provided in order to obtain the necessary correlation-id.
-func (sender httpSender) Send(data []byte, event *models.Event) bool {
+// The context is provided in order to obtain the necessary correlation-id.
+func (sender httpSender) Send(data []byte, ctx context.Context) bool {
 
 	switch sender.method {
 	case http.MethodPost:
-		ctx := context.WithValue(context.Background(), clients.CorrelationHeader, event.CorrelationId)
 		req, err := http.NewRequest(http.MethodPost, sender.url, bytes.NewReader(data))
 		if err != nil {
 			return false
 		}
-		req.Header.Set("Content-Type", mimeTypeJSON)
+		req.Header.Set(clients.ContentType, ctx.Value(clients.ContentType).(string))
 
 		c := clients.NewCorrelatedRequest(req, ctx)
 		client := &http.Client{}
 		begin := time.Now()
 		response, err := client.Do(c.Request)
 		if err != nil {
-			LoggingClient.Error(err.Error(), clients.CorrelationHeader, event.CorrelationId, internal.LogDurationKey, time.Since(begin).String())
+			LoggingClient.Error(err.Error(), clients.CorrelationHeader, correlation.FromContext(ctx), internal.LogDurationKey, time.Since(begin).String())
 			return false
 		}
+		if response.StatusCode != http.StatusOK {
+			LoggingClient.Warn(fmt.Sprintf("unexpected http response %v POST %s", response.StatusCode, c.Request.URL.String()), clients.CorrelationHeader, correlation.FromContext(ctx), internal.LogDurationKey, time.Since(begin).String())
+		}
 		defer response.Body.Close()
-		LoggingClient.Info(fmt.Sprintf("Response: %s", response.Status), clients.CorrelationHeader, event.CorrelationId, internal.LogDurationKey, time.Since(begin).String())
+		LoggingClient.Info(fmt.Sprintf("Response: %s", response.Status), clients.CorrelationHeader, correlation.FromContext(ctx), internal.LogDurationKey, time.Since(begin).String())
 	default:
 		LoggingClient.Info(fmt.Sprintf("Unsupported method: %s", sender.method))
 		return false

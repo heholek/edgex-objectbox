@@ -16,13 +16,13 @@ package data
 import "github.com/objectbox/edgex-objectbox/internal/pkg/config"
 
 type ConfigurationStruct struct {
-	Writable                   WritableInfo
-	MessageQueue               config.MessageQueueInfo
-	Clients                    map[string]config.ClientInfo
-	Databases                  map[string]config.DatabaseInfo
-	Logging                    config.LoggingInfo
-	Registry                   config.RegistryInfo
-	Service                    config.ServiceInfo
+	Writable     WritableInfo
+	MessageQueue config.MessageQueueInfo
+	Clients      map[string]config.ClientInfo
+	Databases    map[string]config.DatabaseInfo
+	Logging      config.LoggingInfo
+	Registry     config.RegistryInfo
+	Service      config.ServiceInfo
 }
 
 type WritableInfo struct {
@@ -32,4 +32,5 @@ type WritableInfo struct {
 	ServiceUpdateLastConnected bool
 	ValidateCheck              bool
 	LogLevel                   string
+	ChecksumAlgo               string
 }

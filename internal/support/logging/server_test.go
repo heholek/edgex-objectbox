@@ -17,7 +17,6 @@ import (
 
 	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
-	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
@@ -115,12 +114,12 @@ func TestAddLog(t *testing.T) {
 func TestGetLogs(t *testing.T) {
 	maxLimit := 100
 	Configuration = &ConfigurationStruct{Service: config.ServiceInfo{}}
-	Configuration.Service.ReadMaxLimit = maxLimit
+	Configuration.Service.MaxResultCount = maxLimit
 
 	var services = []string{"service1", "service2"}
 	var keywords = []string{"keyword1", "keyword2"}
-	var logLevels = []string{logger.TraceLog, logger.DebugLog, logger.WarnLog,
-		logger.InfoLog, logger.ErrorLog}
+	var logLevels = []string{models.TraceLog, models.DebugLog, models.WarnLog,
+		models.InfoLog, models.ErrorLog}
 	var tests = []struct {
 		name       string
 		url        string
@@ -238,12 +237,12 @@ func TestGetLogs(t *testing.T) {
 func TestRemoveLogs(t *testing.T) {
 	maxLimit := 100
 	Configuration = &ConfigurationStruct{Service: config.ServiceInfo{}}
-	Configuration.Service.ReadMaxLimit = maxLimit
+	Configuration.Service.MaxResultCount = maxLimit
 
 	var services = []string{"service1", "service2"}
 	var keywords = []string{"keyword1", "keyword2"}
-	var logLevels = []string{logger.TraceLog, logger.DebugLog, logger.WarnLog,
-		logger.InfoLog, logger.ErrorLog}
+	var logLevels = []string{models.TraceLog, models.DebugLog, models.WarnLog,
+		models.InfoLog, models.ErrorLog}
 	var tests = []struct {
 		name     string
 		url      string

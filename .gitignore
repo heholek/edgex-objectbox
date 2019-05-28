@@ -6,6 +6,8 @@ glide.lock
 docker/docker-compose.yml
 .project
 .vscode/
+go.sum
+coverage.out
 
 # binary files
 cmd/config-seed/config-seed
@@ -39,6 +41,3 @@ lock.mdb
 
 # Benchmark working directory
 benchmark
-
-# go.sum caused some trouble, especially with older Go version - so ignore it for now
-go.sum

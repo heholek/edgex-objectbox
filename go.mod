@@ -3,10 +3,11 @@ module github.com/objectbox/edgex-objectbox
 require (
 	bitbucket.org/bertimus9/systemstat v0.0.0-20180207000608-0eeff89b0690
 	github.com/BurntSushi/toml v0.3.1
+	github.com/OneOfOne/xxhash v1.2.5
 	github.com/eclipse/paho.mqtt.golang v1.1.1
-	github.com/edgexfoundry/go-mod-core-contracts v0.0.0-20190418185811-6fa3b1fed53b
-	github.com/edgexfoundry/go-mod-messaging v0.0.0-20190327144236-4222ae1edb0b
-	github.com/edgexfoundry/go-mod-registry v0.0.0-20190401195203-552208258719
+	github.com/edgexfoundry/go-mod-core-contracts v0.0.1
+	github.com/edgexfoundry/go-mod-messaging v0.0.0
+	github.com/edgexfoundry/go-mod-registry v0.0.0
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-kit/kit v0.8.0
 	github.com/go-stack/stack v1.8.0 // indirect
@@ -27,6 +28,8 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/stretchr/testify v1.3.0
+	github.com/ugorji/go v1.1.4
+	github.com/vektra/mockery v0.0.0-20181123154057-e78b021dcbb5 // indirect
 	gopkg.in/eapache/queue.v1 v1.1.0
 	gopkg.in/yaml.v2 v2.2.2
 )

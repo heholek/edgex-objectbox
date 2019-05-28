@@ -18,6 +18,7 @@ package agent
 import (
 	"context"
 	"fmt"
+
 	"github.com/objectbox/edgex-objectbox/internal"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
@@ -39,7 +40,7 @@ func InvokeOperation(action string, services []string) error {
 	for _, service := range services {
 		LoggingClient.Info("invoking operation")
 
-		if !isKnownServiceKey(service) {
+		if !IsKnownServiceKey(service) {
 			LoggingClient.Warn(fmt.Sprintf("unknown service %s during invocation", service))
 		}
 
@@ -97,7 +98,7 @@ func getConfig(services []string, ctx context.Context) (ConfigRespMap, error) {
 	for _, service := range services {
 
 		// Check whether SMA does _not_ know of ServiceKey ("service") as being one for one of its ready-made list of clients.
-		if !isKnownServiceKey(service) {
+		if !IsKnownServiceKey(service) {
 			LoggingClient.Info(fmt.Sprintf("service %s not known to SMA as being in the ready-made list of clients", service))
 
 			// Service unknown to SMA, so ask the Registry whether `service` is available.
@@ -180,7 +181,7 @@ func getMetrics(services []string, ctx context.Context) (MetricsRespMap, error) 
 	for _, service := range services {
 
 		// Check whether SMA does _not_ know of ServiceKey ("service") as being one for one of its ready-made list of clients.
-		if !isKnownServiceKey(service) {
+		if !IsKnownServiceKey(service) {
 			LoggingClient.Info(fmt.Sprintf("service %s not known to SMA as being in the ready-made list of clients", service))
 
 			// Service unknown to SMA, so ask the Registry whether `service` is available.
@@ -259,7 +260,7 @@ func getHealth(services []string) (map[string]interface{}, error) {
 
 	for _, service := range services {
 
-		if !isKnownServiceKey(service) {
+		if !IsKnownServiceKey(service) {
 			LoggingClient.Warn(fmt.Sprintf("unknown service %s found while getting health", service))
 		}
 
@@ -275,18 +276,18 @@ func getHealth(services []string) (map[string]interface{}, error) {
 	return health, nil
 }
 
-func isKnownServiceKey(serviceKey string) bool {
+func IsKnownServiceKey(serviceKey string) bool {
 	// create a map because this is the easiest/cleanest way to determine whether something exists in a set
 	var services = map[string]struct{}{
-		internal.SupportNotificationsServiceKey: {},
-		internal.CoreCommandServiceKey:          {},
-		internal.CoreDataServiceKey:             {},
-		internal.CoreMetaDataServiceKey:         {},
-		internal.ExportClientServiceKey:         {},
-		internal.ExportDistroServiceKey:         {},
-		internal.SupportLoggingServiceKey:       {},
-		internal.SupportSchedulerServiceKey:     {},
-		internal.ConfigSeedServiceKey:           {},
+		clients.SupportNotificationsServiceKey: {},
+		clients.CoreCommandServiceKey:          {},
+		clients.CoreDataServiceKey:             {},
+		clients.CoreMetaDataServiceKey:         {},
+		clients.ExportClientServiceKey:         {},
+		clients.ExportDistroServiceKey:         {},
+		clients.SupportLoggingServiceKey:       {},
+		clients.SupportSchedulerServiceKey:     {},
+		clients.ConfigSeedServiceKey:           {},
 	}
 
 	_, exists := services[serviceKey]

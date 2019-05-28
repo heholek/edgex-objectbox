@@ -64,10 +64,10 @@ clean:
 	rm -f $(MICROSERVICES)
 
 test:
-	GO111MODULE=on go test -cover ./...
+	GO111MODULE=on go test -coverprofile=coverage.out ./...
 	GO111MODULE=on go vet ./...
-
-prepare:
+	gofmt -l .
+	[ "`gofmt -l .`" = "" ]
 
 run:
 	cd bin && ./edgex-launch.sh

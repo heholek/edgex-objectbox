@@ -44,7 +44,7 @@ func issueDeviceCommand(w http.ResponseWriter, r *http.Request, isPutCommand boo
 	ctx := r.Context()
 	body, status := commandByDeviceID(did, cid, string(b), isPutCommand, ctx)
 	if status != http.StatusOK {
-		w.WriteHeader(status)
+		http.Error(w, body, status)
 	} else {
 		if len(body) > 0 {
 			w.Header().Set("Content-Type", "application/json")
@@ -53,52 +53,38 @@ func issueDeviceCommand(w http.ResponseWriter, r *http.Request, isPutCommand boo
 	}
 }
 
-func restPutDeviceAdminState(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	did := vars[ID]
-	as := vars[ADMINSTATE]
-	ctx := r.Context()
-	status, err := putDeviceAdminState(did, as, ctx)
-	if err != nil {
-		LoggingClient.Error(err.Error())
-	}
-	w.WriteHeader(status)
+func restGetDeviceCommandByNames(w http.ResponseWriter, r *http.Request) {
+	issueDeviceCommandByNames(w, r, false)
 }
 
-func restPutDeviceAdminStateByDeviceName(w http.ResponseWriter, r *http.Request) {
+func restPutDeviceCommandByNames(w http.ResponseWriter, r *http.Request) {
+	issueDeviceCommandByNames(w, r, true)
+}
+
+func issueDeviceCommandByNames(w http.ResponseWriter, r *http.Request, isPutCommand bool) {
+	defer r.Body.Close()
+
 	vars := mux.Vars(r)
 	dn := vars[NAME]
-	as := vars[ADMINSTATE]
-	ctx := r.Context()
-	status, err := putDeviceAdminStateByName(dn, as, ctx)
-	if err != nil {
-		LoggingClient.Error(err.Error())
-	}
-	w.WriteHeader(status)
-}
+	cn := vars[COMMANDNAME]
 
-func restPutDeviceOpState(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	did := vars[ID]
-	os := vars[OPSTATE]
 	ctx := r.Context()
-	status, err := putDeviceOpState(did, os, ctx)
-	if err != nil {
-		LoggingClient.Error(err.Error())
-	}
-	w.WriteHeader(status)
-}
 
-func restPutDeviceOpStateByDeviceName(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	dn := vars[NAME]
-	os := vars[OPSTATE]
-	ctx := r.Context()
-	status, err := putDeviceOpStateByName(dn, os, ctx)
-	if err != nil {
+	b, err := ioutil.ReadAll(r.Body)
+	if b == nil && err != nil {
 		LoggingClient.Error(err.Error())
+		return
 	}
-	w.WriteHeader(status)
+	body, status := commandByNames(dn, cn, string(b), isPutCommand, ctx)
+
+	if status != http.StatusOK {
+		http.Error(w, body, status)
+	} else {
+		if len(body) > 0 {
+			w.Header().Set("Content-Type", "application/json")
+		}
+		w.Write([]byte(body))
+	}
 }
 
 func restGetCommandsByDeviceID(w http.ResponseWriter, r *http.Request) {

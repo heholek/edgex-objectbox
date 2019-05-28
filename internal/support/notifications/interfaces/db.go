@@ -56,14 +56,17 @@ type DBClient interface {
 	GetSubscriptionByCategoriesLabels(categories []string, labels []string) ([]contract.Subscription, error)
 	AddSubscription(s contract.Subscription) (string, error)
 	UpdateSubscription(s contract.Subscription) error
+	DeleteSubscriptionById(id string) error
 	DeleteSubscriptionBySlug(id string) error
 
 	// Transmissions
-	GetTransmissionsByNotificationSlug(slug string, resendLimit int) ([]contract.Transmission, error)
-	GetTransmissionsByStartEnd(start int64, end int64, resendLimit int) ([]contract.Transmission, error)
-	GetTransmissionsByStart(start int64, resendLimit int) ([]contract.Transmission, error)
-	GetTransmissionsByEnd(end int64, resendLimit int) ([]contract.Transmission, error)
-	GetTransmissionsByStatus(resendLimit int, status contract.TransmissionStatus) ([]contract.Transmission, error)
+	GetTransmissionById(id string) (contract.Transmission, error)
+	GetTransmissionsByNotificationSlug(slug string, limit int) ([]contract.Transmission, error)
+	GetTransmissionsByNotificationSlugAndStartEnd(slug string, start int64, end int64, limit int) ([]contract.Transmission, error)
+	GetTransmissionsByStartEnd(start int64, end int64, limit int) ([]contract.Transmission, error)
+	GetTransmissionsByStart(start int64, limit int) ([]contract.Transmission, error)
+	GetTransmissionsByEnd(end int64, limit int) ([]contract.Transmission, error)
+	GetTransmissionsByStatus(limit int, status contract.TransmissionStatus) ([]contract.Transmission, error)
 	AddTransmission(t contract.Transmission) (string, error)
 	UpdateTransmission(t contract.Transmission) error
 	DeleteTransmission(age int64, status contract.TransmissionStatus) error

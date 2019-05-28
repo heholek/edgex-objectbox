@@ -38,9 +38,10 @@ import (
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db/mongo"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db/redis"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
+
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox"
 )
 
 // Global variables
@@ -50,9 +51,9 @@ var LoggingClient logger.LoggingClient
 var registryClient registry.Client
 
 // TODO: Refactor names in separate PR: See comments on PR #1133
-var chEvents chan interface{}  //A channel for "domain events" sourced from event operations
-var chErrors chan error        //A channel for "config wait error" sourced from Registry
-var chUpdates chan interface{} //A channel for "config updates" sourced from Registry
+var chEvents chan interface{}  // A channel for "domain events" sourced from event operations
+var chErrors chan error        // A channel for "config wait error" sourced from Registry
+var chUpdates chan interface{} // A channel for "config updates" sourced from Registry
 
 var msgClient messaging.MessageClient
 var mdc metadata.DeviceClient
@@ -62,13 +63,13 @@ func Retry(useRegistry bool, useProfile string, timeout int, wait *sync.WaitGrou
 	until := time.Now().Add(time.Millisecond * time.Duration(timeout))
 	for time.Now().Before(until) {
 		var err error
-		//When looping, only handle configuration if it hasn't already been set.
+		// When looping, only handle configuration if it hasn't already been set.
 		if Configuration == nil {
 			Configuration, err = initializeConfiguration(useRegistry, useProfile)
 			if err != nil {
 				ch <- err
 				if !useRegistry {
-					//Error occurred when attempting to read from local filesystem. Fail fast.
+					// Error occurred when attempting to read from local filesystem. Fail fast.
 					close(ch)
 					wait.Done()
 					return
@@ -76,14 +77,14 @@ func Retry(useRegistry bool, useProfile string, timeout int, wait *sync.WaitGrou
 			} else {
 				// Setup Logging
 				logTarget := setLoggingTarget()
-				LoggingClient = logger.NewClient(internal.CoreDataServiceKey, Configuration.Logging.EnableRemote, logTarget, Configuration.Writable.LogLevel)
+				LoggingClient = logger.NewClient(clients.CoreDataServiceKey, Configuration.Logging.EnableRemote, logTarget, Configuration.Writable.LogLevel)
 
-				//Initialize service clients
+				// Initialize service clients
 				initializeClients(useRegistry)
 			}
 		}
 
-		//Only attempt to connect to database if configuration has been populated
+		// Only attempt to connect to database if configuration has been populated
 		if Configuration != nil {
 			err := connectToDatabase()
 			if err != nil {
@@ -167,7 +168,7 @@ func newDBClient(dbType string) (interfaces.DBClient, error) {
 			Host: Configuration.Databases["Primary"].Host,
 			Port: Configuration.Databases["Primary"].Port,
 		}
-		return redis.NewClient(dbConfig) //TODO: Verify this also connects to Redis
+		return redis.NewClient(dbConfig) // TODO: Verify this also connects to Redis
 	case db.ObjectBox:
 		dbConfig := db.Configuration{
 			DatabaseName: Configuration.Databases["Primary"].Name,
@@ -179,7 +180,7 @@ func newDBClient(dbType string) (interfaces.DBClient, error) {
 }
 
 func initializeConfiguration(useRegistry bool, useProfile string) (*ConfigurationStruct, error) {
-	//We currently have to load configuration from filesystem first in order to obtain Registry Host/Port
+	// We currently have to load configuration from filesystem first in order to obtain Registry Host/Port
 	configuration := &ConfigurationStruct{}
 	err := config.LoadFromFile(useProfile, configuration)
 	if err != nil {
@@ -219,7 +220,7 @@ func connectToRegistry(conf *ConfigurationStruct) error {
 		Host:            conf.Registry.Host,
 		Port:            conf.Registry.Port,
 		Type:            conf.Registry.Type,
-		ServiceKey:      internal.CoreDataServiceKey,
+		ServiceKey:      clients.CoreDataServiceKey,
 		ServiceHost:     conf.Service.Host,
 		ServicePort:     conf.Service.Port,
 		ServiceProtocol: conf.Service.Protocol,
@@ -290,7 +291,7 @@ func listenForConfigChanges() {
 func initializeClients(useRegistry bool) {
 	// Create metadata clients
 	params := types.EndpointParams{
-		ServiceKey:  internal.CoreMetaDataServiceKey,
+		ServiceKey:  clients.CoreMetaDataServiceKey,
 		Path:        clients.ApiDeviceRoute,
 		UseRegistry: useRegistry,
 		Url:         Configuration.Clients["Metadata"].Url() + clients.ApiDeviceRoute,

@@ -53,6 +53,13 @@ func notificationHandler(w http.ResponseWriter, r *http.Request) {
 
 		if n.Severity == models.NotificationsSeverity(models.Critical) {
 			LoggingClient.Info("Critical severity scheduler is triggered for: " + n.Slug)
+			n, err = dbClient.GetNotificationById(n.ID)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				LoggingClient.Error(err.Error())
+				return
+			}
+
 			err := distributeAndMark(n)
 			if err != nil {
 				return
@@ -62,7 +69,7 @@ func notificationHandler(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusAccepted)
-		w.Write([]byte(n.Slug))
+		w.Write([]byte(n.ID))
 	}
 }
 
@@ -215,7 +222,7 @@ func notificationBySenderHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		if limitNum > Configuration.Service.ReadMaxLimit {
+		if limitNum > Configuration.Service.MaxResultCount {
 			http.Error(w, "Exceeded max limit", http.StatusRequestEntityTooLarge)
 			LoggingClient.Error("Exceeded max limit")
 			return
@@ -267,7 +274,7 @@ func notificationByStartEndHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		if limitNum > Configuration.Service.ReadMaxLimit {
+		if limitNum > Configuration.Service.MaxResultCount {
 			http.Error(w, "Exceeded max limit", http.StatusRequestEntityTooLarge)
 			LoggingClient.Error("Exceeded max limit")
 			return
@@ -307,7 +314,7 @@ func notificationByStartHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		if limitNum > Configuration.Service.ReadMaxLimit {
+		if limitNum > Configuration.Service.MaxResultCount {
 			http.Error(w, "Exceeded max limit", http.StatusRequestEntityTooLarge)
 			LoggingClient.Error("Exceeded max limit")
 			return
@@ -353,7 +360,7 @@ func notificationByEndHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		if limitNum > Configuration.Service.ReadMaxLimit {
+		if limitNum > Configuration.Service.MaxResultCount {
 			http.Error(w, "Exceeded max limit", http.StatusRequestEntityTooLarge)
 			LoggingClient.Error("Exceeded max limit")
 			return
@@ -393,7 +400,7 @@ func notificationsByLabelsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		if limitNum > Configuration.Service.ReadMaxLimit {
+		if limitNum > Configuration.Service.MaxResultCount {
 			http.Error(w, "Exceeded max limit", http.StatusRequestEntityTooLarge)
 			LoggingClient.Error("Exceeded max limit")
 			return
@@ -435,7 +442,7 @@ func notificationsNewHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		if limitNum > Configuration.Service.ReadMaxLimit {
+		if limitNum > Configuration.Service.MaxResultCount {
 			http.Error(w, "Exceeded max limit", http.StatusRequestEntityTooLarge)
 			LoggingClient.Error("Exceeded max limit")
 			return

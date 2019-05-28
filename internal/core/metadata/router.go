@@ -68,9 +68,8 @@ func loadDeviceRoutes(b *mux.Router) {
 
 	// /api/v1/" + DEVICE" + ID + "
 	d.HandleFunc("/{"+ID+"}", restGetDeviceById).Methods(http.MethodGet)
+	d.HandleFunc("/{"+ID+"}", restSetDeviceStateById).Methods(http.MethodPut)
 	d.HandleFunc("/"+ID+"/{"+ID+"}", restDeleteDeviceById).Methods(http.MethodDelete)
-	d.HandleFunc("/{"+ID+"}/"+OPSTATE+"/{"+OPSTATE+"}", restSetDeviceOpStateById).Methods(http.MethodPut)
-	d.HandleFunc("/{"+ID+"}/"+URLADMINSTATE+"/{"+ADMINSTATE+"}", restSetDeviceAdminStateById).Methods(http.MethodPut)
 	d.HandleFunc("/{"+ID+"}/"+URLLASTREPORTED+"/{"+LASTREPORTED+"}", restSetDeviceLastReportedById).Methods(http.MethodPut)
 	d.HandleFunc("/{"+ID+"}/"+URLLASTREPORTED+"/{"+LASTREPORTED+"}/{"+LASTREPORTEDNOTIFY+"}", restSetDeviceLastReportedByIdNotify).Methods(http.MethodPut)
 	d.HandleFunc("/{"+ID+"}/"+URLLASTCONNECTED+"/{"+LASTCONNECTED+"}", restSetDeviceLastConnectedById).Methods(http.MethodPut)
@@ -81,8 +80,7 @@ func loadDeviceRoutes(b *mux.Router) {
 	n := d.PathPrefix("/" + NAME).Subrouter()
 	n.HandleFunc("/{"+NAME+"}", restGetDeviceByName).Methods(http.MethodGet)
 	n.HandleFunc("/{"+NAME+"}", restDeleteDeviceByName).Methods(http.MethodDelete)
-	n.HandleFunc("/{"+NAME+"}/"+OPSTATE+"/{"+OPSTATE+"}", restSetDeviceOpStateByName).Methods(http.MethodPut)
-	n.HandleFunc("/{"+NAME+"}/"+URLADMINSTATE+"/{"+ADMINSTATE+"}", restSetDeviceAdminStateByName).Methods(http.MethodPut)
+	n.HandleFunc("/{"+NAME+"}", restSetDeviceStateByDeviceName).Methods(http.MethodPut)
 	n.HandleFunc("/{"+NAME+"}/"+URLLASTREPORTED+"/{"+LASTREPORTED+"}", restSetDeviceLastReportedByName).Methods(http.MethodPut)
 	n.HandleFunc("/{"+NAME+"}/"+URLLASTREPORTED+"/{"+LASTREPORTED+"}/{"+LASTREPORTEDNOTIFY+"}", restSetDeviceLastReportedByNameNotify).Methods(http.MethodPut)
 	n.HandleFunc("/{"+NAME+"}/"+URLLASTCONNECTED+"/{"+LASTCONNECTED+"}", restSetDeviceLastConnectedByName).Methods(http.MethodPut)
@@ -205,14 +203,10 @@ func loadCommandRoutes(b *mux.Router) {
 
 	// /api/v1/command
 	b.HandleFunc("/"+COMMAND, restGetAllCommands).Methods(http.MethodGet)
-	b.HandleFunc("/"+COMMAND, restAddCommand).Methods(http.MethodPost)
-	b.HandleFunc("/"+COMMAND, restUpdateCommand).Methods(http.MethodPut)
 
 	c := b.PathPrefix("/" + COMMAND).Subrouter()
 	c.HandleFunc("/{"+ID+"}", restGetCommandById).Methods(http.MethodGet)
-	c.HandleFunc("/"+ID+"/{"+ID+"}", restDeleteCommandById).Methods(http.MethodDelete)
 	c.HandleFunc("/"+NAME+"/{"+NAME+"}", restGetCommandByName).Methods(http.MethodGet)
-	//c.HandleFunc("/" + NAME + "/{" + NAME + "}", restDeleteCommandByName).Methods(http.MethodDelete)
 }
 func pingHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")

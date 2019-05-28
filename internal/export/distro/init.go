@@ -39,7 +39,8 @@ var registryErrors chan error        //A channel for "config wait errors" source
 var registryUpdates chan interface{} //A channel for "config updates" sourced from Registry
 var messageClient messaging.MessageClient
 var messageErrors chan error
-var messageEnvelopes chan *msgTypes.MessageEnvelope
+var messageEnvelopes chan msgTypes.MessageEnvelope
+var processStop chan bool
 
 func Retry(useRegistry bool, useProfile string, timeout int, wait *sync.WaitGroup, ch chan error) {
 	until := time.Now().Add(time.Millisecond * time.Duration(timeout))
@@ -59,7 +60,7 @@ func Retry(useRegistry bool, useProfile string, timeout int, wait *sync.WaitGrou
 			} else {
 				// Setup Logging
 				logTarget := setLoggingTarget()
-				LoggingClient = logger.NewClient(internal.ExportDistroServiceKey, Configuration.Logging.EnableRemote, logTarget, Configuration.Writable.LogLevel)
+				LoggingClient = logger.NewClient(clients.ExportDistroServiceKey, Configuration.Logging.EnableRemote, logTarget, Configuration.Writable.LogLevel)
 
 				//Initialize service clients
 				initializeClients(useRegistry)
@@ -89,6 +90,8 @@ func Init(useRegistry bool) bool {
 
 	var err error
 	messageErrors, messageEnvelopes, err = initMessaging(messageClient)
+	processStop = make(chan bool)
+
 	if err != nil {
 		LoggingClient.Error(err.Error())
 		return false
@@ -108,6 +111,11 @@ func Destruct() {
 		close(registryUpdates)
 	}
 
+	if processStop != nil {
+		processStop <- true
+		close(processStop)
+	}
+
 	if messageErrors != nil {
 		close(messageErrors)
 	}
@@ -123,7 +131,7 @@ func connectToRegistry(conf *ConfigurationStruct) error {
 		Host:            conf.Registry.Host,
 		Port:            conf.Registry.Port,
 		Type:            conf.Registry.Type,
-		ServiceKey:      internal.ExportDistroServiceKey,
+		ServiceKey:      clients.ExportDistroServiceKey,
 		ServiceHost:     conf.Service.Host,
 		ServicePort:     conf.Service.Port,
 		ServiceProtocol: conf.Service.Protocol,
@@ -152,7 +160,7 @@ func connectToRegistry(conf *ConfigurationStruct) error {
 
 func initializeClients(useRegistry bool) {
 	params := types.EndpointParams{
-		ServiceKey:  internal.CoreDataServiceKey,
+		ServiceKey:  clients.CoreDataServiceKey,
 		Path:        clients.ApiEventRoute,
 		UseRegistry: useRegistry,
 		Url:         Configuration.Clients["CoreData"].Url() + clients.ApiEventRoute,

@@ -9,8 +9,8 @@ package logging
 import (
 	"os"
 
-	"github.com/objectbox/edgex-objectbox/internal"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
@@ -41,7 +41,7 @@ type privLogger struct {
 
 func newPrivateLogger() privLogger {
 	pl := privLogger{}
-	logLevel := logger.InfoLog
+	logLevel := models.InfoLog
 	pl.logLevel = &logLevel
 
 	// Set up the loggers
@@ -49,7 +49,7 @@ func newPrivateLogger() privLogger {
 
 	pl.rootLogger = log.NewLogfmtLogger(os.Stdout)
 	pl.rootLogger = log.WithPrefix(pl.rootLogger, "ts", log.DefaultTimestampUTC,
-		"app", internal.SupportLoggingServiceKey, "source", log.Caller(5))
+		"app", clients.SupportLoggingServiceKey, "source", log.Caller(5))
 
 	return pl
 }
@@ -57,11 +57,11 @@ func newPrivateLogger() privLogger {
 func (l privLogger) log(logLevel string, msg string, args ...interface{}) {
 	// Check minimum log level
 	for _, name := range []string{
-		logger.TraceLog,
-		logger.DebugLog,
-		logger.InfoLog,
-		logger.WarnLog,
-		logger.ErrorLog} {
+		models.TraceLog,
+		models.DebugLog,
+		models.InfoLog,
+		models.WarnLog,
+		models.ErrorLog} {
 		if name == *l.logLevel {
 			break
 		}
@@ -74,7 +74,7 @@ func (l privLogger) log(logLevel string, msg string, args ...interface{}) {
 		logEntry := models.LogEntry{
 			Level:         logLevel,
 			Args:          args,
-			OriginService: internal.SupportLoggingServiceKey,
+			OriginService: clients.SupportLoggingServiceKey,
 			Message:       msg,
 			Created:       db.MakeTimestamp(),
 		}
@@ -111,21 +111,21 @@ func (l privLogger) SetLogLevel(logLevel string) error {
 }
 
 func (l privLogger) Debug(msg string, args ...interface{}) {
-	l.log(logger.DebugLog, msg, args...)
+	l.log(models.DebugLog, msg, args...)
 }
 
 func (l privLogger) Error(msg string, args ...interface{}) {
-	l.log(logger.ErrorLog, msg, args...)
+	l.log(models.ErrorLog, msg, args...)
 }
 
 func (l privLogger) Info(msg string, args ...interface{}) {
-	l.log(logger.InfoLog, msg, args...)
+	l.log(models.InfoLog, msg, args...)
 }
 
 func (l privLogger) Trace(msg string, args ...interface{}) {
-	l.log(logger.TraceLog, msg, args...)
+	l.log(models.TraceLog, msg, args...)
 }
 
 func (l privLogger) Warn(msg string, args ...interface{}) {
-	l.log(logger.WarnLog, msg, args...)
+	l.log(models.WarnLog, msg, args...)
 }

@@ -161,16 +161,14 @@ func loadConfigIntervals() error {
 	intervals := Configuration.Intervals
 	for i := range intervals {
 		interval := contract.Interval{
-			ID:        "",
-			Created:   0,
-			Modified:  0,
-			Origin:    0,
-			Name:      intervals[i].Name,
-			Start:     intervals[i].Start,
-			End:       intervals[i].End,
-			Frequency: intervals[i].Frequency,
-			Cron:      intervals[i].Cron,
-			RunOnce:   intervals[i].RunOnce,
+			ID:         "",
+			Timestamps: contract.Timestamps{},
+			Name:       intervals[i].Name,
+			Start:      intervals[i].Start,
+			End:        intervals[i].End,
+			Frequency:  intervals[i].Frequency,
+			Cron:       intervals[i].Cron,
+			RunOnce:    intervals[i].RunOnce,
 		}
 
 		// query scheduler service for interval in memory queue

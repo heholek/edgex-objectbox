@@ -20,8 +20,8 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/export/distro"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
-	"github.com/edgexfoundry/go-mod-registry/registry"
 	registryTypes "github.com/edgexfoundry/go-mod-registry/pkg/types"
+	"github.com/edgexfoundry/go-mod-registry/registry"
 
 	"github.com/objectbox/edgex-objectbox/internal"
 	"github.com/objectbox/edgex-objectbox/internal/export"
@@ -61,7 +61,7 @@ func Retry(useRegistry bool, useProfile string, timeout int, wait *sync.WaitGrou
 			} else {
 				// Setup Logging
 				logTarget := setLoggingTarget()
-				LoggingClient = logger.NewClient(internal.ExportClientServiceKey, Configuration.Logging.EnableRemote, logTarget, Configuration.Writable.LogLevel)
+				LoggingClient = logger.NewClient(clients.ExportClientServiceKey, Configuration.Logging.EnableRemote, logTarget, Configuration.Writable.LogLevel)
 
 				//Initialize service clients
 				initializeClients(useRegistry)
@@ -194,7 +194,7 @@ func initializeConfiguration(useRegistry bool, useProfile string) (*Configuratio
 func initializeClients(useRegistry bool) {
 	// Create export-distro client
 	params := types.EndpointParams{
-		ServiceKey:  internal.ExportDistroServiceKey,
+		ServiceKey:  clients.ExportDistroServiceKey,
 		UseRegistry: useRegistry,
 		Url:         Configuration.Clients["Distro"].Url(),
 		Interval:    Configuration.Service.ClientMonitor,
@@ -209,7 +209,7 @@ func connectToRegistry(conf *ConfigurationStruct) error {
 		Host:            conf.Registry.Host,
 		Port:            conf.Registry.Port,
 		Type:            conf.Registry.Type,
-		ServiceKey:      internal.ExportClientServiceKey,
+		ServiceKey:      clients.ExportClientServiceKey,
 		ServiceHost:     conf.Service.Host,
 		ServicePort:     conf.Service.Port,
 		ServiceProtocol: conf.Service.Protocol,

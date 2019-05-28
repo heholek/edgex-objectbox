@@ -17,8 +17,6 @@ package scheduler
 import (
 	"errors"
 	"fmt"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/db/redis"
 	"os"
 	"os/signal"
 	"sync"
@@ -34,8 +32,11 @@ import (
 	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db/mongo"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/redis"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/interfaces"
+	
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox"
 )
 
 var Configuration *ConfigurationStruct
@@ -71,7 +72,7 @@ func Retry(useRegistry bool, useProfile string, timeout int, wait *sync.WaitGrou
 				}
 				// Setup Logging
 				logTarget := setLoggingTarget()
-				LoggingClient = logger.NewClient(internal.SupportSchedulerServiceKey, Configuration.Logging.EnableRemote, logTarget, Configuration.Writable.LogLevel)
+				LoggingClient = logger.NewClient(clients.SupportSchedulerServiceKey, Configuration.Logging.EnableRemote, logTarget, Configuration.Writable.LogLevel)
 
 				// Initialize the ticker time
 				ticker = time.NewTicker(time.Duration(Configuration.Writable.ScheduleIntervalTime) * time.Millisecond)
@@ -177,7 +178,7 @@ func connectToRegistry(conf *ConfigurationStruct) error {
 		Host:            conf.Registry.Host,
 		Port:            conf.Registry.Port,
 		Type:            conf.Registry.Type,
-		ServiceKey:      internal.SupportSchedulerServiceKey,
+		ServiceKey:      clients.SupportSchedulerServiceKey,
 		ServiceHost:     conf.Service.Host,
 		ServicePort:     conf.Service.Port,
 		ServiceProtocol: conf.Service.Protocol,

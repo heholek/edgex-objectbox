@@ -18,7 +18,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 
 	"github.com/objectbox/edgex-objectbox"
 	"github.com/objectbox/edgex-objectbox/internal"
@@ -44,12 +46,12 @@ func main() {
 	startup.Bootstrap(params, distro.Retry, logBeforeInit)
 
 	if ok := distro.Init(useRegistry); !ok {
-		logBeforeInit(fmt.Errorf("%s: Service bootstrap failed", internal.ExportDistroServiceKey))
+		logBeforeInit(fmt.Errorf("%s: Service bootstrap failed", clients.ExportDistroServiceKey))
 		os.Exit(1)
 	}
 
 	distro.LoggingClient.Info("Service dependencies resolved...")
-	distro.LoggingClient.Info(fmt.Sprintf("Starting %s %s ", internal.ExportDistroServiceKey, edgex.Version))
+	distro.LoggingClient.Info(fmt.Sprintf("Starting %s %s ", clients.ExportDistroServiceKey, edgex.Version))
 
 	http.TimeoutHandler(nil, time.Millisecond*time.Duration(distro.Configuration.Service.Timeout), "Request timed out")
 	distro.LoggingClient.Info(distro.Configuration.Service.StartupMsg)
@@ -58,7 +60,7 @@ func main() {
 
 	listenForInterrupt(errs)
 
-	distro.Loop()
+	go distro.Loop()
 
 	// Time it took to start service
 	distro.LoggingClient.Info("Service started in: " + time.Since(start).String())
@@ -72,7 +74,7 @@ func main() {
 }
 
 func logBeforeInit(err error) {
-	l := logger.NewClient(internal.ExportDistroServiceKey, false, "", logger.InfoLog)
+	l := logger.NewClient(clients.ExportDistroServiceKey, false, "", models.InfoLog)
 	l.Error(err.Error())
 }
 

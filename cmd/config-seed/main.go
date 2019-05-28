@@ -22,7 +22,9 @@ import (
 	"github.com/objectbox/edgex-objectbox/internal"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/usage"
 	"github.com/objectbox/edgex-objectbox/internal/seed/config"
+	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 func main() {
@@ -46,7 +48,7 @@ func main() {
 	bootstrap(useProfile)
 	ok := config.Init()
 	if !ok {
-		logBeforeInit(fmt.Errorf("%s: Service bootstrap failed!", internal.ConfigSeedServiceKey))
+		logBeforeInit(fmt.Errorf("%s: Service bootstrap failed!", clients.ConfigSeedServiceKey))
 		os.Exit(1)
 	}
 	config.LoggingClient.Info("Service dependencies resolved...")
@@ -86,6 +88,6 @@ func bootstrap(profile string) {
 }
 
 func logBeforeInit(err error) {
-	l := logger.NewClient(internal.ConfigSeedServiceKey, false, "", logger.InfoLog)
+	l := logger.NewClient(clients.ConfigSeedServiceKey, false, "", models.InfoLog)
 	l.Error(err.Error())
 }

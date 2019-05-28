@@ -34,7 +34,7 @@ func restGetAllDeviceProfiles(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
-	if len(res) > Configuration.Service.ReadMaxLimit {
+	if len(res) > Configuration.Service.MaxResultCount {
 		err = errors.New("Max limit exceeded with request for profiles")
 		http.Error(w, err.Error(), http.StatusRequestEntityTooLarge)
 		LoggingClient.Error(err.Error())
@@ -362,7 +362,12 @@ func deleteDeviceProfile(dp models.DeviceProfile, w http.ResponseWriter) error {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return err
 	}
-
+	for _, command := range dp.CoreCommands {
+		if err := dbClient.DeleteCommandById(command.Id); err != nil {
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			return err
+		}
+	}
 	// Delete the profile
 	if err := dbClient.DeleteDeviceProfileById(dp.Id); err != nil {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
@@ -660,8 +665,8 @@ func notifyProfileAssociates(dp models.DeviceProfile, action string) error {
 	ds := []models.DeviceService{}
 	for _, device := range d {
 		// Only add if not there
-		if _, ok := dsMap[device.Service.Service.Id]; !ok {
-			dsMap[device.Service.Service.Id] = device.Service
+		if _, ok := dsMap[device.Service.Id]; !ok {
+			dsMap[device.Service.Id] = device.Service
 			ds = append(ds, device.Service)
 		}
 	}

@@ -10,7 +10,6 @@ require (
 	github.com/edgexfoundry/go-mod-registry v0.0.0
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-kit/kit v0.8.0
-	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/flatbuffers v1.10.0
 	github.com/google/uuid v1.1.0
@@ -29,7 +28,6 @@ require (
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/stretchr/testify v1.3.0
 	github.com/ugorji/go v1.1.4
-	github.com/vektra/mockery v0.0.0-20181123154057-e78b021dcbb5 // indirect
 	gopkg.in/eapache/queue.v1 v1.1.0
 	gopkg.in/yaml.v2 v2.2.2
 )

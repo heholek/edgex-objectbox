@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"testing"
 
-	servicesMock "github.com/edgexfoundry/edgex-go/internal/system/agent/interfaces/mocks"
+	servicesMock "github.com/objectbox/edgex-objectbox/internal/system/agent/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/stretchr/testify/mock"

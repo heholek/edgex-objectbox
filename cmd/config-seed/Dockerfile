@@ -24,7 +24,7 @@ ENV GOPATH=/go
 ENV PATH=$GOPATH/bin:$PATH
 
 # set the working directory
-WORKDIR $GOPATH/src/github.com/edgexfoundry/edgex-go
+WORKDIR $GOPATH/src/github.com/objectbox/edgex-objectbox
 
 RUN apk update && apk add make git python3 jq
 
@@ -78,31 +78,31 @@ LABEL license='SPDX-License-Identifier: Apache-2.0' \
 WORKDIR $APP_DIR
 
 # copy files
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd/config-seed/Attribution.txt  .
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd/config-seed/config-seed  .
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd/config-seed/res ./res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/config-seed/Attribution.txt  .
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/config-seed/config-seed  .
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/config-seed/res ./res
 
 # copy all the default (i.e. mongodb) configuration.toml files into /edgex/cmd
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd/core-command/res /edgex/cmd/core-command/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd/core-data/res /edgex/cmd/core-data/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd/core-metadata/res /edgex/cmd/core-metadata/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd/export-client/res /edgex/cmd/export-client/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd/export-distro/res /edgex/cmd/export-distro/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd/support-logging/res /edgex/cmd/support-logging/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd/support-notifications/res /edgex/cmd/support-notifications/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd/support-scheduler/res /edgex/cmd/support-scheduler/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd/sys-mgmt-agent/res /edgex/cmd/sys-mgmt-agent/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/core-command/res /edgex/cmd/core-command/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/core-data/res /edgex/cmd/core-data/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/core-metadata/res /edgex/cmd/core-metadata/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/export-client/res /edgex/cmd/export-client/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/export-distro/res /edgex/cmd/export-distro/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/support-logging/res /edgex/cmd/support-logging/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/support-notifications/res /edgex/cmd/support-notifications/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/support-scheduler/res /edgex/cmd/support-scheduler/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/sys-mgmt-agent/res /edgex/cmd/sys-mgmt-agent/res
 
 # copy all the redis configuration.toml into /edgex/cmd-redis
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd-redis/core-command/res /edgex/cmd-redis/core-command/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd-redis/core-data/res /edgex/cmd-redis/core-data/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd-redis/core-metadata/res /edgex/cmd-redis/core-metadata/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd-redis/export-client/res /edgex/cmd-redis/export-client/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd-redis/export-distro/res /edgex/cmd-redis/export-distro/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd-redis/support-logging/res /edgex/cmd-redis/support-logging/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd-redis/support-notifications/res /edgex/cmd-redis/support-notifications/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd-redis/support-scheduler/res /edgex/cmd-redis/support-scheduler/res
-COPY --from=build-env /go/src/github.com/edgexfoundry/edgex-go/cmd-redis/sys-mgmt-agent/res /edgex/cmd-redis/sys-mgmt-agent/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd-redis/core-command/res /edgex/cmd-redis/core-command/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd-redis/core-data/res /edgex/cmd-redis/core-data/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd-redis/core-metadata/res /edgex/cmd-redis/core-metadata/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd-redis/export-client/res /edgex/cmd-redis/export-client/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd-redis/export-distro/res /edgex/cmd-redis/export-distro/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd-redis/support-logging/res /edgex/cmd-redis/support-logging/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd-redis/support-notifications/res /edgex/cmd-redis/support-notifications/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd-redis/support-scheduler/res /edgex/cmd-redis/support-scheduler/res
+COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd-redis/sys-mgmt-agent/res /edgex/cmd-redis/sys-mgmt-agent/res
 
 ENTRYPOINT ["/edgex/cmd/config-seed/config-seed"]
 CMD ["--profile=docker", "--cmd=/edgex/cmd"]

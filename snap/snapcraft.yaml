@@ -9,7 +9,7 @@ description: |
   snap contains all of the EdgeX core, security, and support reference 
   services, as well as Consul, Kong, MongoDB, Vault, a JRE for the two 
   remaining Java services, and a set of basic device services. The packaging 
-  for this snap can be found at: https://github.com/edgexfoundry/edgex-go
+  for this snap can be found at: https://github.com/objectbox/edgex-objectbox
 icon: snap/local/assets/edgex-snap-icon.png
 
 # TODO: add armhf here when that's supported
@@ -294,7 +294,7 @@ parts:
   # otherwise go will try to import all of the files from the top-level go.mod
   # from edgex-go which at this point will fail
   # eventually we would like these changes to be upstreamed but until then
-  # they live here. see also https://github.com/edgexfoundry/edgex-go/issues/1109
+  # they live here. see also https://github.com/objectbox/edgex-objectbox/issues/1109
   go:
     plugin: nil
     source: https://go.googlesource.com/go
@@ -412,7 +412,7 @@ parts:
       - go
     override-build: |
       . $SNAPCRAFT_STAGE/bin/go-build-helper.sh
-      gopartbootstrap github.com/edgexfoundry/edgex-go
+      gopartbootstrap github.com/objectbox/edgex-objectbox
 
       make build
 

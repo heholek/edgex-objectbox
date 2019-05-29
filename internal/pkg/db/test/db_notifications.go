@@ -276,13 +276,13 @@ func testDBTransmission(t *testing.T, db interfaces.DBClient) {
 	if err != nil {
 		t.Fatalf("Fail to update transmission, %v", err)
 	}
-	transmissions, err := db.GetTransmissionsByStatus(transmission.ResendCount+1, contract.Failed)
+	transmissions, err := db.GetTransmissionsByStatus(0, contract.Failed)
 	if transmissions[0].Status != contract.Failed {
 		t.Fatalf("Unexpect test result. Transmission status '%s' not match %s", transmissions[0].Status, contract.Failed)
 	}
 
 	// Test GetTransmissionsByNotificationSlug
-	transmissions, err = db.GetTransmissionsByNotificationSlug(slugName, transmission.ResendCount+1)
+	transmissions, err = db.GetTransmissionsByNotificationSlug(slugName, 10)
 	if err != nil {
 		t.Fatalf("Fail to get transmission by notification slug, %v", err)
 	}
@@ -301,7 +301,7 @@ func testDBTransmission(t *testing.T, db interfaces.DBClient) {
 	}
 	afterTime := dbp.MakeTimestamp() + 1
 
-	transmissions, err = db.GetTransmissionsByStartEnd(beforeTime, afterTime, resendCount+1)
+	transmissions, err = db.GetTransmissionsByStartEnd(beforeTime, afterTime, amount)
 	if err != nil {
 		t.Fatalf("Fail to get transmission by start time and end time, %v", err)
 	}
@@ -310,7 +310,7 @@ func testDBTransmission(t *testing.T, db interfaces.DBClient) {
 	}
 
 	// Test GetTransmissionsByStart
-	transmissions, err = db.GetTransmissionsByStart(beforeTime, resendCount+1)
+	transmissions, err = db.GetTransmissionsByStart(beforeTime, amount)
 	if err != nil {
 		t.Fatalf("Fail to get transmission by start time, %v", err)
 	}
@@ -319,7 +319,7 @@ func testDBTransmission(t *testing.T, db interfaces.DBClient) {
 	}
 
 	// Test GetTransmissionsByEnd
-	transmissions, err = db.GetTransmissionsByEnd(afterTime, resendCount+1)
+	transmissions, err = db.GetTransmissionsByEnd(afterTime, amount)
 	if err != nil {
 		t.Fatalf("Fail to get transmission by start time, %v", err)
 	}

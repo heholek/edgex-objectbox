@@ -44,14 +44,14 @@ type notificationsQueries struct {
 		slug                subscriptionQuery
 	}
 	transmission struct {
-		createdBAndResendCount                    transmissionQuery
-		createdGTAndResendCount                   transmissionQuery
-		createdLTAndResendCount                   transmissionQuery
-		notification                              transmissionQuery
-		notificationAndResendCount                transmissionQuery
-		notificationSlugAndCreatedBAndResendCount transmissionQuery
-		statusAndModifiedLT                       transmissionQuery
-		statusAndResendCount                      transmissionQuery
+		createdB                    transmissionQuery
+		createdGT                   transmissionQuery
+		createdLT                   transmissionQuery
+		notification                transmissionQuery
+		notificationSlug            transmissionQuery
+		notificationSlugAndCreatedB transmissionQuery
+		statusAndModifiedLT         transmissionQuery
+		status                      transmissionQuery
 	}
 }
 
@@ -165,18 +165,18 @@ func newNotificationsClient(objectBox *objectbox.ObjectBox) (*notificationsClien
 
 	//region Transmission
 	if err == nil {
-		client.queries.transmission.createdBAndResendCount.TransmissionQuery, err = client.transmissionBox.QueryOrError(
-			obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Created.Between(0, 0))
+		client.queries.transmission.createdB.TransmissionQuery, err =
+			client.transmissionBox.QueryOrError(obx.Transmission_.Created.Between(0, 0))
 	}
 
 	if err == nil {
-		client.queries.transmission.createdGTAndResendCount.TransmissionQuery, err = client.transmissionBox.QueryOrError(
-			obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Created.GreaterThan(0))
+		client.queries.transmission.createdGT.TransmissionQuery, err =
+			client.transmissionBox.QueryOrError(obx.Transmission_.Created.GreaterThan(0))
 	}
 
 	if err == nil {
-		client.queries.transmission.createdLTAndResendCount.TransmissionQuery, err = client.transmissionBox.QueryOrError(
-			obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Created.LessThan(0))
+		client.queries.transmission.createdLT.TransmissionQuery, err =
+			client.transmissionBox.QueryOrError(obx.Transmission_.Created.LessThan(0))
 	}
 
 	if err == nil {
@@ -185,21 +185,21 @@ func newNotificationsClient(objectBox *objectbox.ObjectBox) (*notificationsClien
 	}
 
 	if err == nil {
-		client.queries.transmission.notificationAndResendCount.TransmissionQuery, err =
-			client.transmissionBox.QueryOrError(obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Notification.In())
+		client.queries.transmission.notificationSlug.TransmissionQuery, err = client.transmissionBox.QueryOrError(
+			obx.Transmission_.Notification.Link(obx.Notification_.Slug.Equals("", true)),
+		)
 	}
 
 	if err == nil {
-		client.queries.transmission.notificationSlugAndCreatedBAndResendCount.TransmissionQuery, err = client.transmissionBox.QueryOrError(
-			obx.Transmission_.ResendCount.LessThan(0),
+		client.queries.transmission.notificationSlugAndCreatedB.TransmissionQuery, err = client.transmissionBox.QueryOrError(
 			obx.Transmission_.Created.Between(0, 0),
 			obx.Transmission_.Notification.Link(obx.Notification_.Slug.Equals("", true)),
 		)
 	}
 
 	if err == nil {
-		client.queries.transmission.statusAndResendCount.TransmissionQuery, err = client.transmissionBox.QueryOrError(
-			obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Status.Equals("", true))
+		client.queries.transmission.status.TransmissionQuery, err =
+			client.transmissionBox.QueryOrError(obx.Transmission_.Status.Equals("", true))
 	}
 
 	if err == nil {
@@ -280,7 +280,9 @@ func (client *notificationsClient) GetNotificationsByStartEnd(start int64, end i
 	query.Lock()
 	defer query.Unlock()
 
-	if err := query.SetInt64Params(obx.Notification_.Created, start, end); err != nil {
+	// ObjectBox between is the same as (>= && <=), i.e. inclusive.
+	// Therefore, we need to shift the values to keep the behaviour same as the MongoDB $gt, $lt operators
+	if err := query.SetInt64Params(obx.Notification_.Created, start+1, end-1); err != nil {
 		return nil, mapError(err)
 	}
 
@@ -542,62 +544,13 @@ func (client *notificationsClient) GetTransmissionById(id string) (contract.Tran
 	}
 }
 
-func (client *notificationsClient) GetTransmissionsByNotificationSlug(slug string, resendLimit int) ([]contract.Transmission, error) {
-	var query = &client.queries.notification.slug
+func (client *notificationsClient) GetTransmissionsByNotificationSlug(slug string, limit int) ([]contract.Transmission, error) {
+	var query = &client.queries.transmission.notificationSlug
 
 	query.Lock()
 	defer query.Unlock()
 
 	if err := query.SetStringParams(obx.Notification_.Slug, slug); err != nil {
-		return nil, mapError(err)
-	}
-
-	if ids, err := query.Limit(0).FindIds(); err != nil {
-		return nil, mapError(err)
-	} else {
-		result, err := client.getTransmissionsByNotificationIds(resendLimit, ids)
-		return result, mapError(err)
-	}
-}
-
-func (client *notificationsClient) getTransmissionsByNotificationIds(resendLimit int, ids []uint64) ([]contract.Transmission, error) {
-	if len(ids) == 0 {
-		return nil, nil
-	}
-
-	var query = &client.queries.transmission.notificationAndResendCount
-
-	query.Lock()
-	defer query.Unlock()
-
-	intIds := make([]int64, len(ids))
-	for k, v := range ids {
-		intIds[k] = int64(v)
-	}
-
-	if err := query.SetInt64ParamsIn(obx.Transmission_.Notification, intIds...); err != nil {
-		return nil, mapError(err)
-	}
-
-	if err := query.SetInt64Params(obx.Transmission_.ResendCount, int64(resendLimit)); err != nil {
-		return nil, mapError(err)
-	}
-
-	result, err := query.Limit(0).Find()
-	return result, mapError(err)
-}
-
-func (client *notificationsClient) GetTransmissionsByNotificationSlugAndStartEnd(slug string, start int64, end int64, limit int) ([]contract.Transmission, error) {
-	var query = &client.queries.transmission.notificationSlugAndCreatedBAndResendCount
-
-	query.Lock()
-	defer query.Unlock()
-
-	if err := query.SetStringParams(obx.Notification_.Slug, slug); err != nil {
-		return nil, mapError(err)
-	}
-
-	if err := query.SetInt64Params(obx.Transmission_.Created, start, end); err != nil {
 		return nil, mapError(err)
 	}
 
@@ -605,26 +558,44 @@ func (client *notificationsClient) GetTransmissionsByNotificationSlugAndStartEnd
 	return result, mapError(err)
 }
 
-func (client *notificationsClient) GetTransmissionsByStartEnd(start int64, end int64, resendLimit int) ([]contract.Transmission, error) {
-	var query = &client.queries.transmission.createdBAndResendCount
+func (client *notificationsClient) GetTransmissionsByNotificationSlugAndStartEnd(slug string, start int64, end int64, limit int) ([]contract.Transmission, error) {
+	var query = &client.queries.transmission.notificationSlugAndCreatedB
 
 	query.Lock()
 	defer query.Unlock()
 
-	if err := query.SetInt64Params(obx.Transmission_.Created, start, end); err != nil {
+	if err := query.SetStringParams(obx.Notification_.Slug, slug); err != nil {
 		return nil, mapError(err)
 	}
 
-	if err := query.SetInt64Params(obx.Transmission_.ResendCount, int64(resendLimit)); err != nil {
+	// ObjectBox between is the same as (>= && <=), i.e. inclusive.
+	// Therefore, we need to shift the values to keep the behaviour same as the MongoDB $gt, $lt operators
+	if err := query.SetInt64Params(obx.Transmission_.Created, start+1, end-1); err != nil {
 		return nil, mapError(err)
 	}
 
-	result, err := query.Limit(0).Find()
+	result, err := query.Limit(uint64(limit)).Find()
 	return result, mapError(err)
 }
 
-func (client *notificationsClient) GetTransmissionsByStart(start int64, resendLimit int) ([]contract.Transmission, error) {
-	var query = &client.queries.transmission.createdGTAndResendCount
+func (client *notificationsClient) GetTransmissionsByStartEnd(start int64, end int64, limit int) ([]contract.Transmission, error) {
+	var query = &client.queries.transmission.createdB
+
+	query.Lock()
+	defer query.Unlock()
+
+	// ObjectBox between is the same as (>= && <=), i.e. inclusive.
+	// Therefore, we need to shift the values to keep the behaviour same as the MongoDB $gt, $lt operators
+	if err := query.SetInt64Params(obx.Transmission_.Created, start+1, end-1); err != nil {
+		return nil, mapError(err)
+	}
+
+	result, err := query.Limit(uint64(limit)).Find()
+	return result, mapError(err)
+}
+
+func (client *notificationsClient) GetTransmissionsByStart(start int64, limit int) ([]contract.Transmission, error) {
+	var query = &client.queries.transmission.createdGT
 
 	query.Lock()
 	defer query.Unlock()
@@ -633,16 +604,12 @@ func (client *notificationsClient) GetTransmissionsByStart(start int64, resendLi
 		return nil, mapError(err)
 	}
 
-	if err := query.SetInt64Params(obx.Transmission_.ResendCount, int64(resendLimit)); err != nil {
-		return nil, mapError(err)
-	}
-
-	result, err := query.Limit(0).Find()
+	result, err := query.Limit(uint64(limit)).Find()
 	return result, mapError(err)
 }
 
-func (client *notificationsClient) GetTransmissionsByEnd(end int64, resendLimit int) ([]contract.Transmission, error) {
-	var query = &client.queries.transmission.createdLTAndResendCount
+func (client *notificationsClient) GetTransmissionsByEnd(end int64, limit int) ([]contract.Transmission, error) {
+	var query = &client.queries.transmission.createdLT
 
 	query.Lock()
 	defer query.Unlock()
@@ -651,16 +618,12 @@ func (client *notificationsClient) GetTransmissionsByEnd(end int64, resendLimit 
 		return nil, mapError(err)
 	}
 
-	if err := query.SetInt64Params(obx.Transmission_.ResendCount, int64(resendLimit)); err != nil {
-		return nil, mapError(err)
-	}
-
-	result, err := query.Limit(0).Find()
+	result, err := query.Limit(uint64(limit)).Find()
 	return result, mapError(err)
 }
 
-func (client *notificationsClient) GetTransmissionsByStatus(resendLimit int, status contract.TransmissionStatus) ([]contract.Transmission, error) {
-	var query = &client.queries.transmission.statusAndResendCount
+func (client *notificationsClient) GetTransmissionsByStatus(limit int, status contract.TransmissionStatus) ([]contract.Transmission, error) {
+	var query = &client.queries.transmission.status
 
 	query.Lock()
 	defer query.Unlock()
@@ -669,11 +632,7 @@ func (client *notificationsClient) GetTransmissionsByStatus(resendLimit int, sta
 		return nil, mapError(err)
 	}
 
-	if err := query.SetInt64Params(obx.Transmission_.ResendCount, int64(resendLimit)); err != nil {
-		return nil, mapError(err)
-	}
-
-	result, err := query.Limit(0).Find()
+	result, err := query.Limit(uint64(limit)).Find()
 	return result, mapError(err)
 }
 

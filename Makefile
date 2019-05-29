@@ -5,7 +5,7 @@
 #
 
 
-.PHONY: build clean test docker run
+.PHONY: build clean test docker run snap
 
 
 GO=CGO_ENABLED=0 GO111MODULE=on go
@@ -24,6 +24,7 @@ VERSION_SUFFIX=-dev
 GOFLAGS=-ldflags "-X github.com/objectbox/edgex-objectbox.Version=$(VERSION)"
 
 GIT_SHA=$(shell git rev-parse HEAD)
+ROOT_DIR=$(shell pwd)
 
 build: $(MICROSERVICES)
 
@@ -180,3 +181,6 @@ docker_sys_mgmt_agent:
 		-t objectboxio/edge-sys-mgmt-agent:$(GIT_SHA) \
 		-t objectboxio/edge-sys-mgmt-agent:$(VERSION)$(VERSION_SUFFIX) \
 		.
+
+snap:
+	docker run -it -v"$(ROOT_DIR)":/edgex snapcore/snapcraft:stable bash -c "apt update && cd /edgex && snapcraft"

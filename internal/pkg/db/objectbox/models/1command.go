@@ -22,6 +22,6 @@ type Command struct {
 	models.Timestamps `inline`
 	Id                string
 	Name              string
-	Get               *Get
-	Put               *Put
+	Get               Get
+	Put               Put
 }

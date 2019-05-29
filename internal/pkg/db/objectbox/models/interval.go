@@ -14,6 +14,8 @@
 
 package models
 
+import "github.com/edgexfoundry/go-mod-core-contracts/models"
+
 type Interval struct {
 	Timestamps models.Timestamps `inline`
 	ID         string

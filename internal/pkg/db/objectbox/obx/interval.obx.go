@@ -5,6 +5,7 @@ package obx
 
 import (
 	. "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -24,10 +25,10 @@ var IntervalBinding = interval_EntityInfo{
 
 // Interval_ contains type-based Property helpers to facilitate some common operations such as Queries.
 var Interval_ = struct {
-	ID        *objectbox.PropertyUint64
 	Created   *objectbox.PropertyInt64
 	Modified  *objectbox.PropertyInt64
 	Origin    *objectbox.PropertyInt64
+	ID        *objectbox.PropertyUint64
 	Name      *objectbox.PropertyString
 	Start     *objectbox.PropertyString
 	End       *objectbox.PropertyString
@@ -35,12 +36,6 @@ var Interval_ = struct {
 	Cron      *objectbox.PropertyString
 	RunOnce   *objectbox.PropertyBool
 }{
-	ID: &objectbox.PropertyUint64{
-		BaseProperty: &objectbox.BaseProperty{
-			Id:     1,
-			Entity: &IntervalBinding.Entity,
-		},
-	},
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id:     2,
@@ -56,6 +51,12 @@ var Interval_ = struct {
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
 			Id:     4,
+			Entity: &IntervalBinding.Entity,
+		},
+	},
+	ID: &objectbox.PropertyUint64{
+		BaseProperty: &objectbox.BaseProperty{
+			Id:     1,
 			Entity: &IntervalBinding.Entity,
 		},
 	},
@@ -105,11 +106,11 @@ func (interval_EntityInfo) GeneratorVersion() int {
 // AddToModel is called by ObjectBox during model build
 func (interval_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Interval", 10, 7776691412575067801)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 6621318798456684065)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
 	model.Property("Created", objectbox.PropertyType_Long, 2, 4844875194390890308)
 	model.Property("Modified", objectbox.PropertyType_Long, 3, 7077503010831821587)
 	model.Property("Origin", objectbox.PropertyType_Long, 4, 1376927553496194605)
+	model.Property("ID", objectbox.PropertyType_Long, 1, 6621318798456684065)
+	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
 	model.Property("Name", objectbox.PropertyType_String, 5, 5045401852415426063)
 	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
 	model.PropertyIndex(10, 109793853252723826)
@@ -163,10 +164,10 @@ func (interval_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder,
 
 	// build the FlatBuffers object
 	fbb.StartObject(10)
+	fbutils.SetInt64Slot(fbb, 1, obj.Timestamps.Created)
+	fbutils.SetInt64Slot(fbb, 2, obj.Timestamps.Modified)
+	fbutils.SetInt64Slot(fbb, 3, obj.Timestamps.Origin)
 	fbutils.SetUint64Slot(fbb, 0, id)
-	fbutils.SetInt64Slot(fbb, 1, obj.Created)
-	fbutils.SetInt64Slot(fbb, 2, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 3, obj.Origin)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetStart)
 	fbutils.SetUOffsetTSlot(fbb, 6, offsetEnd)
@@ -185,10 +186,12 @@ func (interval_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (inter
 	var id = table.GetUint64Slot(4, 0)
 
 	return &Interval{
+		Timestamps: models.Timestamps{
+			Created:  table.GetInt64Slot(6, 0),
+			Modified: table.GetInt64Slot(8, 0),
+			Origin:   table.GetInt64Slot(10, 0),
+		},
 		ID:        objectbox.StringIdConvertToEntityProperty(id),
-		Created:   table.GetInt64Slot(6, 0),
-		Modified:  table.GetInt64Slot(8, 0),
-		Origin:    table.GetInt64Slot(10, 0),
 		Name:      fbutils.GetStringSlot(table, 12),
 		Start:     fbutils.GetStringSlot(table, 14),
 		End:       fbutils.GetStringSlot(table, 16),

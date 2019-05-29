@@ -144,19 +144,19 @@ func (deviceService_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (deviceService_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*DeviceService); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.Service.Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(DeviceService).Service.Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(DeviceService).Id), nil
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
 func (deviceService_EntityInfo) SetId(object interface{}, id uint64) {
 	if obj, ok := object.(*DeviceService); ok {
-		obj.Service.Id = objectbox.StringIdConvertToEntityProperty(id)
+		obj.Id = objectbox.StringIdConvertToEntityProperty(id)
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
-		_ = object.(DeviceService).Service.Id
+		_ = object.(DeviceService).Id
 	}
 }
 
@@ -188,10 +188,10 @@ func (deviceService_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 		obj = &objVal
 	}
 
-	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.Service.DescribedObject.Description)
-	var offsetName = fbutils.CreateStringOffset(fbb, obj.Service.Name)
-	var offsetOperatingState = fbutils.CreateStringOffset(fbb, string(obj.Service.OperatingState))
-	var offsetLabels = fbutils.CreateStringVectorOffset(fbb, obj.Service.Labels)
+	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.DescribedObject.Description)
+	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
+	var offsetOperatingState = fbutils.CreateStringOffset(fbb, string(obj.OperatingState))
+	var offsetLabels = fbutils.CreateStringVectorOffset(fbb, obj.Labels)
 	var offsetAdminState = fbutils.CreateStringOffset(fbb, string(obj.AdminState))
 
 	var rIdAddressable uint64
@@ -205,14 +205,14 @@ func (deviceService_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 
 	// build the FlatBuffers object
 	fbb.StartObject(12)
-	fbutils.SetInt64Slot(fbb, 0, obj.Service.DescribedObject.Timestamps.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Service.DescribedObject.Timestamps.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Service.DescribedObject.Timestamps.Origin)
+	fbutils.SetInt64Slot(fbb, 0, obj.DescribedObject.Timestamps.Created)
+	fbutils.SetInt64Slot(fbb, 1, obj.DescribedObject.Timestamps.Modified)
+	fbutils.SetInt64Slot(fbb, 2, obj.DescribedObject.Timestamps.Origin)
 	fbutils.SetUOffsetTSlot(fbb, 3, offsetDescription)
 	fbutils.SetUint64Slot(fbb, 4, id)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetName)
-	fbutils.SetInt64Slot(fbb, 6, obj.Service.LastConnected)
-	fbutils.SetInt64Slot(fbb, 7, obj.Service.LastReported)
+	fbutils.SetInt64Slot(fbb, 6, obj.LastConnected)
+	fbutils.SetInt64Slot(fbb, 7, obj.LastReported)
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetOperatingState)
 	fbutils.SetUOffsetTSlot(fbb, 9, offsetLabels)
 	fbutils.SetUint64Slot(fbb, 10, rIdAddressable)
@@ -248,24 +248,22 @@ func (deviceService_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (
 	}
 
 	return &DeviceService{
-		Service: Service{
-			DescribedObject: DescribedObject{
-				Timestamps: Timestamps{
-					Created:  table.GetInt64Slot(4, 0),
-					Modified: table.GetInt64Slot(6, 0),
-					Origin:   table.GetInt64Slot(8, 0),
-				},
-				Description: fbutils.GetStringSlot(table, 10),
+		DescribedObject: models.DescribedObject{
+			Timestamps: Timestamps{
+				Created:  table.GetInt64Slot(4, 0),
+				Modified: table.GetInt64Slot(6, 0),
+				Origin:   table.GetInt64Slot(8, 0),
 			},
-			Id:             objectbox.StringIdConvertToEntityProperty(id),
-			Name:           fbutils.GetStringSlot(table, 14),
-			LastConnected:  table.GetInt64Slot(16, 0),
-			LastReported:   table.GetInt64Slot(18, 0),
-			OperatingState: models.OperatingState(fbutils.GetStringSlot(table, 20)),
-			Labels:         fbutils.GetStringVectorSlot(table, 22),
-			Addressable:    *relAddressable,
+			Description: fbutils.GetStringSlot(table, 10),
 		},
-		AdminState: models.AdminState(fbutils.GetStringSlot(table, 26)),
+		Id:             objectbox.StringIdConvertToEntityProperty(id),
+		Name:           fbutils.GetStringSlot(table, 14),
+		LastConnected:  table.GetInt64Slot(16, 0),
+		LastReported:   table.GetInt64Slot(18, 0),
+		OperatingState: models.OperatingState(fbutils.GetStringSlot(table, 20)),
+		Labels:         fbutils.GetStringVectorSlot(table, 22),
+		Addressable:    *relAddressable,
+		AdminState:     models.AdminState(fbutils.GetStringSlot(table, 26)),
 	}, nil
 }
 
@@ -292,14 +290,14 @@ func BoxForDeviceService(ob *objectbox.ObjectBox) *DeviceServiceBox {
 }
 
 // Put synchronously inserts/updates a single object.
-// In case the Service.Id is not specified, it would be assigned automatically (auto-increment).
-// When inserting, the DeviceService.Service.Id property on the passed object will be assigned the new ID as well.
+// In case the Id is not specified, it would be assigned automatically (auto-increment).
+// When inserting, the DeviceService.Id property on the passed object will be assigned the new ID as well.
 func (box *DeviceServiceBox) Put(object *DeviceService) (uint64, error) {
 	return box.Box.Put(object)
 }
 
 // PutAsync asynchronously inserts/updates a single object.
-// When inserting, the DeviceService.Service.Id property on the passed object will be assigned the new ID as well.
+// When inserting, the DeviceService.Id property on the passed object will be assigned the new ID as well.
 //
 // It's executed on a separate internal thread for better performance.
 //
@@ -321,12 +319,12 @@ func (box *DeviceServiceBox) PutAsync(object *DeviceService) (uint64, error) {
 }
 
 // PutAll inserts multiple objects in single transaction.
-// In case Service.Ids are not set on the objects, they would be assigned automatically (auto-increment).
+// In case Ids are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
-// When inserting, the DeviceService.Service.Id property on the objects in the slice will be assigned the new IDs as well.
+// When inserting, the DeviceService.Id property on the objects in the slice will be assigned the new IDs as well.
 //
-// Note: In case an error occurs during the transaction, some of the objects may already have the DeviceService.Service.Id assigned
+// Note: In case an error occurs during the transaction, some of the objects may already have the DeviceService.Id assigned
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
@@ -358,7 +356,7 @@ func (box *DeviceServiceBox) GetAll() ([]DeviceService, error) {
 
 // Remove deletes a single object
 func (box *DeviceServiceBox) Remove(object *DeviceService) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.Service.Id))
+	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.Id))
 }
 
 // Creates a query with the given conditions. Use the fields of the DeviceService_ struct to create conditions.

@@ -134,18 +134,14 @@ func (client *schedulerClient) IntervalById(id string) (contract.Interval, error
 }
 
 func (client *schedulerClient) AddInterval(interval contract.Interval) (string, error) {
-	// NOTE this is done instead of onCreate because there is no reg.Timestamps
-	if interval.Created == 0 {
-		interval.Created = db.MakeTimestamp()
-	}
+	onCreate(&interval.Timestamps)
 
 	id, err := client.intervalBox.Put(&interval)
 	return obx.IdToString(id), mapError(err)
 }
 
 func (client *schedulerClient) UpdateInterval(interval contract.Interval) error {
-	// NOTE this is done instead of onUpdate because there is no reg.Timestamps
-	interval.Modified = db.MakeTimestamp()
+	onUpdate(&interval.Timestamps)
 
 	if id, err := obx.IdFromString(interval.ID); err != nil {
 		return mapError(err)

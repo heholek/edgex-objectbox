@@ -19,6 +19,13 @@ import (
 )
 
 type DeviceService struct {
-	Service    `inline`
-	AdminState models.AdminState
+	models.DescribedObject `inline`
+	Id                     string
+	Name                   string `unique`
+	LastConnected          int64
+	LastReported           int64
+	OperatingState         models.OperatingState
+	Labels                 []string
+	Addressable            Addressable `link`
+	AdminState             models.AdminState
 }

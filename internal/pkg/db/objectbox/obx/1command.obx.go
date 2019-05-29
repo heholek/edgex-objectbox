@@ -212,14 +212,14 @@ func (command_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interf
 		},
 		Id:   objectbox.StringIdConvertToEntityProperty(id),
 		Name: fbutils.GetStringSlot(table, 12),
-		Get: &Get{
+		Get: Get{
 			Action: Action{
 				Path:      fbutils.GetStringSlot(table, 14),
 				Responses: responsesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 16)),
 				URL:       fbutils.GetStringSlot(table, 18),
 			},
 		},
-		Put: &Put{
+		Put: Put{
 			Action: Action{
 				Path:      fbutils.GetStringSlot(table, 20),
 				Responses: responsesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 22)),

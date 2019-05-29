@@ -15,14 +15,12 @@
 package models
 
 type Interval struct {
-	ID        string
-	Created   int64
-	Modified  int64
-	Origin    int64
-	Name      string `unique`
-	Start     string
-	End       string
-	Frequency string
-	Cron      string
-	RunOnce   bool
+	Timestamps models.Timestamps `inline`
+	ID         string
+	Name       string `unique`
+	Start      string
+	End        string
+	Frequency  string
+	Cron       string
+	RunOnce    bool
 }

@@ -5,9 +5,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/influxdata/influxdb/pkg/testing/assert"
+	correlation "github.com/objectbox/edgex-objectbox/internal/pkg/correlation/models"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 )
 
 func TestObjectBox(t *testing.T) {
@@ -61,8 +62,10 @@ func TestObjectBoxEvents(t *testing.T) {
 	client := createClient()
 	defer client.Disconnect()
 
-	event := models.Event{
-		Device: "my device",
+	event := correlation.Event{
+		Event: models.Event{
+			Device: "my device",
+		},
 	}
 	objectId, err := client.AddEvent(event)
 	if err != nil {

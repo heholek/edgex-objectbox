@@ -3,9 +3,10 @@ package objectbox
 // implements core-data service contract
 
 import (
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	correlation "github.com/objectbox/edgex-objectbox/internal/pkg/correlation/models"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox/obx"
-	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"sync"
 )
@@ -179,21 +180,31 @@ func (client *coreDataClient) EventsWithLimit(limit int) ([]contract.Event, erro
 	return result, mapError(err)
 }
 
-func (client *coreDataClient) AddEvent(event contract.Event) (string, error) {
+func (client *coreDataClient) AddEvent(e correlation.Event) (string, error) {
 	// synchronize with PutAsync in AddReading manually or we could be dead-locked in PutRelated write-TX
 	client.awaitAsync()
 
-	if event.Created == 0 {
-		event.Created = db.MakeTimestamp()
+	if e.Created == 0 {
+		e.Created = db.MakeTimestamp()
 	}
 
-	// TODO currently tests don't add any readings to the event
+	for i := range e.Readings {
+		var reading = &e.Readings[i]
+		if reading.Created == 0 {
+			reading.Created = db.MakeTimestamp()
+		}
 
-	id, err := client.eventBox.Put(&event)
+		// same thing as Mongo binding does
+		if reading.Device == "" {
+			reading.Device = e.Device
+		}
+	}
+
+	id, err := client.eventBox.Put(&e.Event)
 	return obx.IdToString(id), mapError(err)
 }
 
-func (client *coreDataClient) UpdateEvent(e contract.Event) error {
+func (client *coreDataClient) UpdateEvent(e correlation.Event) error {
 	// synchronize with PutAsync in AddReading manually or we could be dead-locked in PutRelated write-TX
 	client.awaitAsync()
 
@@ -207,7 +218,7 @@ func (client *coreDataClient) UpdateEvent(e contract.Event) error {
 		return mapError(db.ErrNotFound)
 	}
 
-	_, err := client.eventBox.Put(&e)
+	_, err := client.eventBox.Put(&e.Event)
 	return mapError(err)
 }
 
@@ -221,6 +232,11 @@ func (client *coreDataClient) EventById(id string) (contract.Event, error) {
 	} else {
 		return *object, nil
 	}
+}
+
+func (client *coreDataClient) EventsByChecksum(checksum string) ([]contract.Event, error) {
+	// TODO
+	return nil, nil
 }
 
 func (client *coreDataClient) EventCount() (int, error) {

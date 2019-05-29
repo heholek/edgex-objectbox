@@ -3,9 +3,9 @@ package objectbox
 // implements core-data service contract
 
 import (
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox/obx"
-	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"sync"
 )
@@ -44,13 +44,14 @@ type notificationsQueries struct {
 		slug                subscriptionQuery
 	}
 	transmission struct {
-		createdBAndResendCount     transmissionQuery
-		createdGTAndResendCount    transmissionQuery
-		createdLTAndResendCount    transmissionQuery
-		notification               transmissionQuery
-		notificationAndResendCount transmissionQuery
-		statusAndModifiedLT        transmissionQuery
-		statusAndResendCount       transmissionQuery
+		createdBAndResendCount                    transmissionQuery
+		createdGTAndResendCount                   transmissionQuery
+		createdLTAndResendCount                   transmissionQuery
+		notification                              transmissionQuery
+		notificationAndResendCount                transmissionQuery
+		notificationSlugAndCreatedBAndResendCount transmissionQuery
+		statusAndModifiedLT                       transmissionQuery
+		statusAndResendCount                      transmissionQuery
 	}
 }
 
@@ -186,6 +187,14 @@ func newNotificationsClient(objectBox *objectbox.ObjectBox) (*notificationsClien
 	if err == nil {
 		client.queries.transmission.notificationAndResendCount.TransmissionQuery, err =
 			client.transmissionBox.QueryOrError(obx.Transmission_.ResendCount.LessThan(0), obx.Transmission_.Notification.In())
+	}
+
+	if err == nil {
+		client.queries.transmission.notificationSlugAndCreatedBAndResendCount.TransmissionQuery, err = client.transmissionBox.QueryOrError(
+			obx.Transmission_.ResendCount.LessThan(0),
+			obx.Transmission_.Created.Between(0, 0),
+			obx.Transmission_.Notification.Link(obx.Notification_.Slug.Equals("", true)),
+		)
 	}
 
 	if err == nil {
@@ -504,11 +513,32 @@ func (client *notificationsClient) UpdateSubscription(s contract.Subscription) e
 	return mapError(err)
 }
 
+func (client *notificationsClient) DeleteSubscriptionById(idString string) error {
+	id, err := obx.IdFromString(idString)
+	if err != nil {
+		return mapError(err)
+	}
+
+	return mapError(client.notificationBox.Box.Remove(id))
+}
+
 func (client *notificationsClient) DeleteSubscriptionBySlug(slug string) error {
 	if obj, err := client.GetSubscriptionBySlug(slug); err != nil {
 		return mapError(err)
 	} else {
 		return mapError(client.subscriptionBox.Remove(&obj))
+	}
+}
+
+func (client *notificationsClient) GetTransmissionById(id string) (contract.Transmission, error) {
+	if id, err := obx.IdFromString(id); err != nil {
+		return contract.Transmission{}, mapError(err)
+	} else if object, err := client.transmissionBox.Get(id); err != nil {
+		return contract.Transmission{}, mapError(err)
+	} else if object == nil {
+		return contract.Transmission{}, mapError(db.ErrNotFound)
+	} else {
+		return *object, nil
 	}
 }
 
@@ -554,6 +584,24 @@ func (client *notificationsClient) getTransmissionsByNotificationIds(resendLimit
 	}
 
 	result, err := query.Limit(0).Find()
+	return result, mapError(err)
+}
+
+func (client *notificationsClient) GetTransmissionsByNotificationSlugAndStartEnd(slug string, start int64, end int64, limit int) ([]contract.Transmission, error) {
+	var query = &client.queries.transmission.notificationSlugAndCreatedBAndResendCount
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.Notification_.Slug, slug); err != nil {
+		return nil, mapError(err)
+	}
+
+	if err := query.SetInt64Params(obx.Transmission_.Created, start, end); err != nil {
+		return nil, mapError(err)
+	}
+
+	result, err := query.Limit(uint64(limit)).Find()
 	return result, mapError(err)
 }
 

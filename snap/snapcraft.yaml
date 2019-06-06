@@ -7,7 +7,7 @@ description: |
   EdgeX Foundry is a vendor-neutral open source project hosted by The Linux 
   Foundation building a common open framework for IoT edge computing. This 
   snap contains all of the EdgeX core, security, and support reference 
-  services, as well as Consul, Kong, MongoDB, Vault, a JRE for the two 
+  services, as well as Consul, Kong, Vault, a JRE for the two 
   remaining Java services, and a set of basic device services. The packaging 
   for this snap can be found at: https://github.com/objectbox/edgex-objectbox
 icon: snap/local/assets/edgex-snap-icon.png
@@ -43,14 +43,14 @@ apps:
     passthrough:
       after:
         - consul
-  mongod:
-    command: bin/mongod-wrapper.sh
-    stop-command: bin/mongod --shutdown --dbpath ${SNAP_DATA}/mongo/db
-    plugs: [hardware-observe, network, network-bind, system-observe]
-    daemon: simple
-    passthrough:
-      after:
-        - core-config-seed
+  # mongod:
+  #   command: bin/mongod-wrapper.sh
+  #   stop-command: bin/mongod --shutdown --dbpath ${SNAP_DATA}/mongo/db
+  #   plugs: [hardware-observe, network, network-bind, system-observe]
+  #   daemon: simple
+  #   passthrough:
+  #     after:
+  #       - core-config-seed
   cassandra:
     command: bin/cassandra-wrapper.sh
     daemon: forking
@@ -116,13 +116,13 @@ apps:
       after:
         - vault-worker
         - kong-daemon
-  mongo-worker:
-    command: bin/mongo-worker-wrapper.sh
-    plugs: [network]
-    daemon: oneshot
-    passthrough:
-      after:
-        - mongod
+  # mongo-worker:
+  #   command: bin/mongo-worker-wrapper.sh
+  #   plugs: [network]
+  #   daemon: oneshot
+  #   passthrough:
+  #     after:
+  #       - mongod
   support-logging:
     command: bin/fork-wrapper.sh $SNAP/bin/go-services-wrapper.sh support-logging --registry
     daemon: forking
@@ -130,7 +130,7 @@ apps:
     passthrough:
       after:
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
   support-notifications:
     command: bin/fork-wrapper.sh $SNAP/bin/go-services-wrapper.sh support-notifications --registry
@@ -139,7 +139,7 @@ apps:
     passthrough:
       after:
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
   core-data:
     command: bin/fork-wrapper.sh $SNAP/bin/go-services-wrapper.sh core-data --registry
@@ -148,7 +148,7 @@ apps:
     passthrough:
       after:
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
   core-metadata:
     command: bin/fork-wrapper.sh $SNAP/bin/go-services-wrapper.sh core-metadata --registry
@@ -157,7 +157,7 @@ apps:
     passthrough:
       after:
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
   core-command:
     command: bin/fork-wrapper.sh $SNAP/bin/go-services-wrapper.sh core-command --registry
@@ -166,7 +166,7 @@ apps:
     passthrough:
       after:
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
   support-scheduler:
     command: bin/fork-wrapper.sh $SNAP/bin/go-services-wrapper.sh support-scheduler --registry
@@ -175,7 +175,7 @@ apps:
     passthrough:
       after:
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
   support-rulesengine:
     command: bin/support-rulesengine-wrapper.sh
@@ -185,7 +185,7 @@ apps:
       after:
         - export-client
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
   export-client:
     command: bin/fork-wrapper.sh $SNAP/bin/go-services-wrapper.sh export-client --registry
@@ -194,7 +194,7 @@ apps:
     passthrough:
       after:
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
   export-distro:
     command: bin/fork-wrapper.sh $SNAP/bin/go-services-wrapper.sh export-distro --registry
@@ -203,7 +203,7 @@ apps:
     passthrough:
       after:
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
   sys-mgmt-agent:
     command: bin/fork-wrapper.sh $SNAP/bin/go-services-wrapper.sh sys-mgmt-agent --registry
@@ -212,7 +212,7 @@ apps:
     passthrough:
       after:
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
   device-modbus:
     command: bin/go-services-wrapper.sh device-modbus
@@ -221,7 +221,7 @@ apps:
     passthrough:
       after:
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
   device-mqtt:
     command: bin/go-services-wrapper.sh device-mqtt
@@ -230,7 +230,7 @@ apps:
     passthrough:
       after:
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
   device-random:
     command: bin/go-services-wrapper.sh device-random
@@ -239,19 +239,19 @@ apps:
     passthrough:
       after:
         - core-config-seed
-        - mongo-worker
+        # - mongo-worker
         - edgexproxy
 
   # helper commands the snap exposes
-  mongo:
-    command: bin/mongo
-    plugs: [home, removable-media, network]
-  mongostat:
-    command: bin/mongostat
-    plugs: [network]
-  mongodump:
-    command: bin/mongodump
-    plugs: [network]
+  # mongo:
+  #   command: bin/mongo
+  #   plugs: [home, removable-media, network]
+  # mongostat:
+  #   command: bin/mongostat
+  #   plugs: [network]
+  # mongodump:
+  #   command: bin/mongodump
+  #   plugs: [network]
   consul-cli:
     command: bin/consul
     plugs: [network, network-bind]
@@ -358,62 +358,62 @@ parts:
       - make
       - zip
 
-  mongodb:
-    plugin: dump
-    source:
-      - on amd64: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1604-3.4.10.tgz
-      - else:
-          - on arm64: https://fastdl.mongodb.org/linux/mongodb-linux-arm64-ubuntu1604-3.4.10.tgz
-      - else fail
-    organize:
-      GNU-AGPL-3.0: usr/share/doc/mongodb/GNU-AGPL-3.0
-      MPL-2: usr/share/doc/mongodb/MPL-2
-      README: usr/share/doc/mongodb/README
-      THIRD-PARTY-NOTICES: usr/share/doc/mongodb/THIRD-PARTY-NOTICES
-    stage-packages:
-      - libssl1.0.0
-    stage:
-      - -bin/bsondump
-      - -bin/mongoexport
-      - -bin/mongofiles
-      - -bin/mongoimport
-      - -bin/mongooplog
-      - -bin/mongoperf
-      - -bin/mongoreplay
-      - -bin/mongorestore
-      - -bin/mongos
-      - -bin/mongotop
+  # mongodb:
+  #   plugin: dump
+  #   source:
+  #     - on amd64: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1604-3.4.10.tgz
+  #     - else:
+  #         - on arm64: https://fastdl.mongodb.org/linux/mongodb-linux-arm64-ubuntu1604-3.4.10.tgz
+  #     - else fail
+  #   organize:
+  #     GNU-AGPL-3.0: usr/share/doc/mongodb/GNU-AGPL-3.0
+  #     MPL-2: usr/share/doc/mongodb/MPL-2
+  #     README: usr/share/doc/mongodb/README
+  #     THIRD-PARTY-NOTICES: usr/share/doc/mongodb/THIRD-PARTY-NOTICES
+  #   stage-packages:
+  #     - libssl1.0.0
+  #   stage:
+  #     - -bin/bsondump
+  #     - -bin/mongoexport
+  #     - -bin/mongofiles
+  #     - -bin/mongoimport
+  #     - -bin/mongooplog
+  #     - -bin/mongoperf
+  #     - -bin/mongoreplay
+  #     - -bin/mongorestore
+  #     - -bin/mongos
+  #     - -bin/mongotop
 
-  mongo-config:
-    source: https://github.com/edgexfoundry/docker-edgex-mongo.git
-    source-depth: 1
-    plugin: dump
-    # NOTE - both the mongo-config & go install README.md to root-dir of the snap
-    # which breaks when 'stage' runs.  The only workaround so far is
-    # is to not stage these files.  This needs a better solution long-term.
-    stage:
-      - -README.md
-      - -Dockerfile*
-    override-build: |
-      snapcraftctl build
-      echo "Installing mongo-config files"
-      echo "DIR=`pwd`"
-      echo "SNAPCRAFT_PART_INSTALL=$SNAPCRAFT_PART_INSTALL"
-      install -d "$SNAPCRAFT_PART_INSTALL/mongo"
-      cat ./launch-edgex-mongo.sh | \
-        sed -e s/\$SLEEP_TIME_BEFORE_CONFIG/10/ \
-            -e s:mongod:mongod\ --dbpath\ \$SNAP_DATA/mongo/db\ --logpath\ \$SNAP_COMMON/mongodb.log: \
-            -e '/wait/ d' \
-            -e s:/edgex/mongo/config/:\$SNAP/mongo/: > \
-         "$SNAPCRAFT_PART_INSTALL/mongo/launch-edgex-mongo.sh"
-      mv "$SNAPCRAFT_PART_INSTALL/init_mongo.js" \
-         "$SNAPCRAFT_PART_INSTALL/mongo/init_mongo.js"
-      chmod 755 "$SNAPCRAFT_PART_INSTALL/mongo/launch-edgex-mongo.sh"
-      install -DT "./LICENSE-2.0.TXT" \
-         "$SNAPCRAFT_PART_INSTALL/usr/share/doc/mongo-config/LICENSE-2.0.TXT"
-    prime:
-      - -launch-edgex-mongo.sh
-      - -LICENSE-2.0.TXT
+  # mongo-config:
+  #   source: https://github.com/edgexfoundry/docker-edgex-mongo.git
+  #   source-depth: 1
+  #   plugin: dump
+  #   # NOTE - both the mongo-config & go install README.md to root-dir of the snap
+  #   # which breaks when 'stage' runs.  The only workaround so far is
+  #   # is to not stage these files.  This needs a better solution long-term.
+  #   stage:
+  #     - -README.md
+  #     - -Dockerfile*
+  #   override-build: |
+  #     snapcraftctl build
+  #     echo "Installing mongo-config files"
+  #     echo "DIR=`pwd`"
+  #     echo "SNAPCRAFT_PART_INSTALL=$SNAPCRAFT_PART_INSTALL"
+  #     install -d "$SNAPCRAFT_PART_INSTALL/mongo"
+  #     cat ./launch-edgex-mongo.sh | \
+  #       sed -e s/\$SLEEP_TIME_BEFORE_CONFIG/10/ \
+  #           -e s:mongod:mongod\ --dbpath\ \$SNAP_DATA/mongo/db\ --logpath\ \$SNAP_COMMON/mongodb.log: \
+  #           -e '/wait/ d' \
+  #           -e s:/edgex/mongo/config/:\$SNAP/mongo/: > \
+  #        "$SNAPCRAFT_PART_INSTALL/mongo/launch-edgex-mongo.sh"
+  #     mv "$SNAPCRAFT_PART_INSTALL/init_mongo.js" \
+  #        "$SNAPCRAFT_PART_INSTALL/mongo/init_mongo.js"
+  #     chmod 755 "$SNAPCRAFT_PART_INSTALL/mongo/launch-edgex-mongo.sh"
+  #     install -DT "./LICENSE-2.0.TXT" \
+  #        "$SNAPCRAFT_PART_INSTALL/usr/share/doc/mongo-config/LICENSE-2.0.TXT"
+  #   prime:
+  #     - -launch-edgex-mongo.sh
+  #     - -LICENSE-2.0.TXT
 
   edgex-go:
     source: .

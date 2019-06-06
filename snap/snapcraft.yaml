@@ -267,6 +267,16 @@ apps:
       - network-bind
 
 parts:
+  objectbox-c:
+    plugin: nil 
+    source: https://github.com/objectbox/objectbox-c.git
+    after: [curl]
+    override-build: |
+      echo "N" | ./download.sh 0.5
+      mv lib "$SNAPCRAFT_PART_INSTALL/lib"
+    stage: # for building other parts
+      - lib/libobjectbox.so
+
   curl:
     plugin: nil
     # the default source for a part that doesn't specify one is ".", which
@@ -410,7 +420,10 @@ parts:
     plugin: make
     after:
       - go
+      - objectbox-c
     override-build: |
+      export LIBRARY_PATH=$SNAPCRAFT_STAGE/lib:$LIBRARY_PATH
+
       . $SNAPCRAFT_STAGE/bin/go-build-helper.sh
       gopartbootstrap github.com/objectbox/edgex-objectbox
 

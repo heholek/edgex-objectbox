@@ -5,7 +5,7 @@
 #
 
 
-.PHONY: build clean test docker run snap
+.PHONY: build clean test docker run
 
 
 GO=CGO_ENABLED=0 GO111MODULE=on go
@@ -19,12 +19,11 @@ MICROSERVICES=cmd/config-seed/config-seed cmd/export-client/export-client cmd/ex
 .PHONY: $(MICROSERVICES)
 
 VERSION=$(shell cat ./VERSION)
-VERSION_SUFFIX=-dev
+DOCKER_TAG=$(VERSION)-dev
 
 GOFLAGS=-ldflags "-X github.com/objectbox/edgex-objectbox.Version=$(VERSION)"
 
 GIT_SHA=$(shell git rev-parse HEAD)
-ROOT_DIR=$(shell pwd)
 
 build: $(MICROSERVICES)
 
@@ -74,7 +73,7 @@ run:
 	cd bin && ./edgex-launch.sh
 
 run_docker:
-	cd bin && EDGEX_COMPOSE_FILE=docker-compose.yml ./edgex-docker-launch.sh
+	bin/edgex-docker-launch.sh $(EDGEX_DB)
 
 docker: $(DOCKERS)
 
@@ -89,7 +88,7 @@ docker_volume:
 	docker build \
 		--label "git_sha=$(GIT_SHA)" \
 		-t objectboxio/edge-volume:$(GIT_SHA) \
-		-t objectboxio/edge-volume:$(VERSION)$(VERSION_SUFFIX) \
+		-t objectboxio/edge-volume:$(DOCKER_TAG) \
 		build/volume
 
 docker_config_seed:
@@ -97,8 +96,8 @@ docker_config_seed:
 		-f cmd/config-seed/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-core-config-seed:$(GIT_SHA) \
-		-t objectboxio/edge-core-config-seed:$(VERSION)$(VERSION_SUFFIX) \
+		-t objectboxio/docker-core-config-seed-go:$(GIT_SHA) \
+		-t objectboxio/docker-core-config-seed-go:$(DOCKER_TAG) \
 		.
 
 docker_core_metadata:
@@ -106,8 +105,8 @@ docker_core_metadata:
 		-f cmd/Dockerfile --build-arg service=core-metadata \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-core-metadata:$(GIT_SHA) \
-		-t objectboxio/edge-core-metadata:$(VERSION)$(VERSION_SUFFIX) \
+		-t objectboxio/docker-core-metadata-go:$(GIT_SHA) \
+		-t objectboxio/docker-core-metadata-go:$(DOCKER_TAG) \
 		.
 
 docker_core_data:
@@ -115,8 +114,8 @@ docker_core_data:
 		-f cmd/Dockerfile --build-arg service=core-data \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-core-data:$(GIT_SHA) \
-		-t objectboxio/edge-core-data:$(VERSION)$(VERSION_SUFFIX) \
+		-t objectboxio/docker-core-data-go:$(GIT_SHA) \
+		-t objectboxio/docker-core-data-go:$(DOCKER_TAG) \
 		.
 
 docker_core_command:
@@ -124,8 +123,8 @@ docker_core_command:
 		-f cmd/core-command/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-core-command:$(GIT_SHA) \
-		-t objectboxio/edge-core-command:$(VERSION)$(VERSION_SUFFIX) \
+		-t objectboxio/docker-core-command-go:$(GIT_SHA) \
+		-t objectboxio/docker-core-command-go:$(DOCKER_TAG) \
 		.
 
 docker_export_client:
@@ -133,8 +132,8 @@ docker_export_client:
 		-f cmd/Dockerfile --build-arg service=export-client \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-export-client:$(GIT_SHA) \
-		-t objectboxio/edge-export-client:$(VERSION)$(VERSION_SUFFIX) \
+		-t objectboxio/docker-export-client-go:$(GIT_SHA) \
+		-t objectboxio/docker-export-client-go:$(DOCKER_TAG) \
 		.
 
 docker_export_distro:
@@ -142,8 +141,8 @@ docker_export_distro:
 		-f cmd/export-distro/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-export-distro:$(GIT_SHA) \
-		-t objectboxio/edge-export-distro:$(VERSION)$(VERSION_SUFFIX) \
+		-t objectboxio/docker-export-distro-go:$(GIT_SHA) \
+		-t objectboxio/docker-export-distro-go:$(DOCKER_TAG) \
 		.
 
 docker_support_logging:
@@ -151,8 +150,8 @@ docker_support_logging:
 		-f cmd/support-logging/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-support-logging:$(GIT_SHA) \
-		-t objectboxio/edge-support-logging:$(VERSION)$(VERSION_SUFFIX) \
+		-t objectboxio/docker-support-logging-go:$(GIT_SHA) \
+		-t objectboxio/docker-support-logging-go:$(DOCKER_TAG) \
 		.
 
 docker_support_notifications:
@@ -160,8 +159,8 @@ docker_support_notifications:
 		-f cmd/Dockerfile --build-arg service=support-notifications \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-support-notifications:$(GIT_SHA) \
-		-t objectboxio/edge-support-notifications:$(VERSION)$(VERSION_SUFFIX) \
+		-t objectboxio/docker-support-notifications-go:$(GIT_SHA) \
+		-t objectboxio/docker-support-notifications-go:$(DOCKER_TAG) \
 		.
 
 docker_support_scheduler:
@@ -169,8 +168,8 @@ docker_support_scheduler:
 		-f cmd/Dockerfile --build-arg service=support-scheduler \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-support-scheduler:$(GIT_SHA) \
-		-t objectboxio/edge-support-scheduler:$(VERSION)$(VERSION_SUFFIX) \
+		-t objectboxio/docker-support-scheduler-go:$(GIT_SHA) \
+		-t objectboxio/docker-support-scheduler-go:$(DOCKER_TAG) \
 		.
 
 docker_sys_mgmt_agent:
@@ -178,9 +177,6 @@ docker_sys_mgmt_agent:
 		-f cmd/sys-mgmt-agent/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-sys-mgmt-agent:$(GIT_SHA) \
-		-t objectboxio/edge-sys-mgmt-agent:$(VERSION)$(VERSION_SUFFIX) \
+		-t objectboxio/sys-mgmt-agent-go:$(GIT_SHA) \
+		-t objectboxio/sys-mgmt-agent-go:$(DOCKER_TAG) \
 		.
-
-snap:
-	docker run -it -v"$(ROOT_DIR)":/edgex snapcore/snapcraft:stable bash -c "apt update && cd /edgex && snapcraft"

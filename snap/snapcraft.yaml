@@ -624,7 +624,7 @@ parts:
 
       # Configure ObjectBox database directory (Databases.Primary.Name) for all services
       find "$SNAPCRAFT_PART_INSTALL/config/" -type f -name "configuration.toml" -exec \
-        perl -i -0pe "s{(\[Databases\.Primary\]\s+Name\s*=\s*')}{\$1\\\$SNAP_DATA/}" "{}" \;
+        perl -i -0pe "s{(\[Databases\.Primary\]\s+Name\s*=\s*')}{\$1\\\$SNAP_DATA/objectbox/db/}" "{}" \;
 
       find "$SNAPCRAFT_PART_INSTALL/config/" -type f -name "configuration.toml" -exec \
         grep Name "{}" \;

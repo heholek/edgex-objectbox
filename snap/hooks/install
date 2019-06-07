@@ -90,7 +90,10 @@ mkdir -p "$SNAP_DATA/consul/data"
 mkdir -p "$SNAP_DATA/consul/config"
 
 # ensure mongodb data dirs exist
-mkdir -p "$SNAP_DATA/mongo/db"
+# mkdir -p "$SNAP_DATA/mongo/db"
+
+# ensure ObjectBox data dirs exist
+mkdir -p "$SNAP_DATA/objectbox/db"
 
 # ensure vault pki directory exists
 mkdir -p "$SNAP_DATA/vault/pki"
@@ -104,14 +107,14 @@ for type in proxy admin; do
 done
 
 # install redis configuration files
-if [ ! -f "$SNAP_DATA/config/redis/redis.conf" ]; then
-    mkdir -p "$SNAP_DATA/redis"
-    cp "$SNAP/config/redis/redis.conf" "$SNAP_DATA/redis/redis.conf"
-    sed -i -e "s@\$SNAP_COMMON@$SNAP_COMMON@g" \
-        -e "s@\$SNAP_DATA@$SNAP_DATA_CURRENT@g" \
-        -e "s@\$SNAP@$SNAP_CURRENT@g" \
-        "$SNAP_DATA/redis/redis.conf"
-fi
+# if [ ! -f "$SNAP_DATA/config/redis/redis.conf" ]; then
+#     mkdir -p "$SNAP_DATA/redis"
+#     cp "$SNAP/config/redis/redis.conf" "$SNAP_DATA/redis/redis.conf"
+#     sed -i -e "s@\$SNAP_COMMON@$SNAP_COMMON@g" \
+#         -e "s@\$SNAP_DATA@$SNAP_DATA_CURRENT@g" \
+#         -e "s@\$SNAP@$SNAP_CURRENT@g" \
+#         "$SNAP_DATA/redis/redis.conf"
+# fi
 
 # the vault config needs to be generated with sed, replacing $SNAP_DATA in the file 
 # with the actual absolute directory
@@ -143,7 +146,7 @@ fi
 # finally, disable and turn off non-default services
 # by default, we want the export-*, support-*, device-*, and redis services 
 # off.
-for svc in export-distro export-client support-notifications support-scheduler support-logging support-rulesengine device-random device-virtual redis; do
+for svc in export-distro export-client support-notifications support-scheduler support-logging support-rulesengine device-random device-virtual; do
     # set the service as off, so that the setting is persistent after a refresh
     # due to snapd bug: https://bugs.launchpad.net/snapd/+bug/1818306
     snapctl set $svc=off

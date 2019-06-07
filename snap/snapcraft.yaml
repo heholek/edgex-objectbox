@@ -622,6 +622,13 @@ parts:
             -e s:'http\://localhost\:48061/api/v1/logs':: > \
        "$SNAPCRAFT_PART_INSTALL/config/sys-mgmt-agent/res/configuration.toml"
 
+      # Configure ObjectBox database directory (Databases.Primary.Name) for all services
+      find "$SNAPCRAFT_PART_INSTALL/config/" -type f -name "configuration.toml" -exec \
+        perl -i -0pe "s{(\[Databases\.Primary\]\s+Name\s*=\s*')}{\$1\\\$SNAP_DATA/}" "{}" \;
+
+      find "$SNAPCRAFT_PART_INSTALL/config/" -type f -name "configuration.toml" -exec \
+        grep Name "{}" \;
+
       # handle license/attribution files
       install -DT "./cmd/core-command/Attribution.txt" \
               "$SNAPCRAFT_PART_INSTALL/usr/share/doc/github.com/edgexfoundry/core-command/Attribution.txt"

@@ -340,6 +340,8 @@ parts:
     override-build: |
       echo "N" | ./download.sh 0.5
       mv lib "$SNAPCRAFT_PART_INSTALL/lib"
+    prime:
+      - lib/libobjectbox.so
     stage: # for building other parts
       - lib/libobjectbox.so
 

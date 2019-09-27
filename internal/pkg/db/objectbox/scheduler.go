@@ -13,8 +13,8 @@ import (
 type schedulerClient struct {
 	objectBox *objectbox.ObjectBox
 
-	intervalBox       *obx.IntervalBox
-	intervalActionBox *obx.IntervalActionBox
+	intervalBox       *obx.IntervalBox       // no async - has unique and requires insert/update to fail
+	intervalActionBox *obx.IntervalActionBox // no async - has unique and requires insert/update to fail
 
 	queries schedulerQueries
 }

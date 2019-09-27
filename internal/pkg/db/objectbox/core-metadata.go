@@ -13,13 +13,13 @@ import (
 type coreMetaDataClient struct {
 	objectBox *objectbox.ObjectBox
 
-	addressableBox      *obx.AddressableBox
-	commandBox          *obx.CommandBox
-	deviceBox           *obx.DeviceBox
-	deviceProfileBox    *obx.DeviceProfileBox
-	deviceReportBox     *obx.DeviceReportBox
-	deviceServiceBox    *obx.DeviceServiceBox
-	provisionWatcherBox *obx.ProvisionWatcherBox
+	addressableBox      *obx.AddressableBox      // no async - a config
+	commandBox          *obx.CommandBox          // no async - a config
+	deviceBox           *obx.DeviceBox           // no async - a config/state
+	deviceProfileBox    *obx.DeviceProfileBox    // no async - a config/state
+	deviceReportBox     *obx.DeviceReportBox     // no async - has unique and requires insert/update to fail
+	deviceServiceBox    *obx.DeviceServiceBox    // no async - a config/state, not for data ingress; has relations
+	provisionWatcherBox *obx.ProvisionWatcherBox // no async - has relations
 
 	queries coreMetaDataQueries
 }

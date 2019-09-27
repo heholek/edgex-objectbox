@@ -13,7 +13,7 @@ import (
 type exportClient struct {
 	objectBox *objectbox.ObjectBox
 
-	registrationBox *obx.RegistrationBox
+	registrationBox *obx.RegistrationBox // no async - a config
 
 	queries exportQueries
 }

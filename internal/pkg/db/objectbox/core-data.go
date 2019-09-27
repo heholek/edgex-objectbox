@@ -14,9 +14,9 @@ import (
 type coreDataClient struct {
 	objectBox *objectbox.ObjectBox
 
-	eventBox           *obx.EventBox
-	readingBox         *obx.ReadingBox
-	valueDescriptorBox *obx.ValueDescriptorBox
+	eventBox           *obx.EventBox           // no async - has relation
+	readingBox         *obx.ReadingBox         // async used
+	valueDescriptorBox *obx.ValueDescriptorBox // no async - a config
 
 	queries coreDataQueries
 }

@@ -13,9 +13,9 @@ import (
 type notificationsClient struct {
 	objectBox *objectbox.ObjectBox
 
-	notificationBox *obx.NotificationBox
-	subscriptionBox *obx.SubscriptionBox
-	transmissionBox *obx.TransmissionBox
+	notificationBox *obx.NotificationBox // no async - has unique and requires insert/update to fail
+	subscriptionBox *obx.SubscriptionBox // no async - a config
+	transmissionBox *obx.TransmissionBox // no async - has relations
 
 	queries notificationsQueries
 

@@ -20,9 +20,9 @@ import (
 )
 
 type Notification struct {
-	models.Timestamps `inline`
+	models.Timestamps `objectbox:"inline"`
 	ID                string
-	Slug              string `unique`
+	Slug              string `objectbox:"unique"`
 	Sender            string
 	Category          models.NotificationsCategory
 	Severity          models.NotificationsSeverity

@@ -15,5 +15,5 @@
 package models
 
 type Get struct {
-	Action `inline`
+	Action `objectbox:"inline"`
 }

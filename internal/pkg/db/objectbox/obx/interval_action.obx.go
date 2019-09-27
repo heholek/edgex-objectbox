@@ -148,32 +148,32 @@ var IntervalAction_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (intervalAction_EntityInfo) GeneratorVersion() int {
-	return 2
+	return 3
 }
 
 // AddToModel is called by ObjectBox during model build
 func (intervalAction_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("IntervalAction", 9, 1483985685737893447)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 8106501057259745639)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 8606760504517642302)
-	model.Property("Modified", objectbox.PropertyType_Long, 3, 3733003772936789986)
-	model.Property("Origin", objectbox.PropertyType_Long, 4, 3384319087553382585)
-	model.Property("Name", objectbox.PropertyType_String, 5, 2527365102278053113)
-	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
+	model.Property("ID", 6, 1, 8106501057259745639)
+	model.PropertyFlags(8193)
+	model.Property("Created", 6, 2, 8606760504517642302)
+	model.Property("Modified", 6, 3, 3733003772936789986)
+	model.Property("Origin", 6, 4, 3384319087553382585)
+	model.Property("Name", 9, 5, 2527365102278053113)
+	model.PropertyFlags(32)
 	model.PropertyIndex(9, 2495121518887707707)
-	model.Property("Interval", objectbox.PropertyType_String, 6, 4045769860823082615)
-	model.Property("Parameters", objectbox.PropertyType_String, 7, 5680942227765053540)
-	model.Property("Target", objectbox.PropertyType_String, 8, 2616593658161519544)
-	model.Property("Protocol", objectbox.PropertyType_String, 9, 386210359121663987)
-	model.Property("HTTPMethod", objectbox.PropertyType_String, 10, 8050126696687748350)
-	model.Property("Address", objectbox.PropertyType_String, 11, 622602091182081080)
-	model.Property("Port", objectbox.PropertyType_Long, 12, 6884310575262387856)
-	model.Property("Path", objectbox.PropertyType_String, 13, 2509507802172033733)
-	model.Property("Publisher", objectbox.PropertyType_String, 14, 8761571734782667491)
-	model.Property("User", objectbox.PropertyType_String, 15, 7296768215214404882)
-	model.Property("Password", objectbox.PropertyType_String, 16, 544386887996073797)
-	model.Property("Topic", objectbox.PropertyType_String, 17, 3569001711987596649)
+	model.Property("Interval", 9, 6, 4045769860823082615)
+	model.Property("Parameters", 9, 7, 5680942227765053540)
+	model.Property("Target", 9, 8, 2616593658161519544)
+	model.Property("Protocol", 9, 9, 386210359121663987)
+	model.Property("HTTPMethod", 9, 10, 8050126696687748350)
+	model.Property("Address", 9, 11, 622602091182081080)
+	model.Property("Port", 6, 12, 6884310575262387856)
+	model.Property("Path", 9, 13, 2509507802172033733)
+	model.Property("Publisher", 9, 14, 8761571734782667491)
+	model.Property("User", 9, 15, 7296768215214404882)
+	model.Property("Password", 9, 16, 544386887996073797)
+	model.Property("Topic", 9, 17, 3569001711987596649)
 	model.EntityLastPropertyId(17, 3569001711987596649)
 }
 
@@ -197,7 +197,7 @@ func (intervalAction_EntityInfo) SetId(object interface{}, id uint64) {
 }
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
-func (intervalAction_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+func (intervalAction_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
 	return nil
 }
 
@@ -247,7 +247,7 @@ func (intervalAction_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bu
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (intervalAction_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
+func (intervalAction_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -256,9 +256,9 @@ func (intervalAction_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) 
 
 	return &IntervalAction{
 		ID:         objectbox.StringIdConvertToEntityProperty(id),
-		Created:    table.GetInt64Slot(6, 0),
-		Modified:   table.GetInt64Slot(8, 0),
-		Origin:     table.GetInt64Slot(10, 0),
+		Created:    fbutils.GetInt64Slot(table, 6),
+		Modified:   fbutils.GetInt64Slot(table, 8),
+		Origin:     fbutils.GetInt64Slot(table, 10),
 		Name:       fbutils.GetStringSlot(table, 12),
 		Interval:   fbutils.GetStringSlot(table, 14),
 		Parameters: fbutils.GetStringSlot(table, 16),
@@ -266,7 +266,7 @@ func (intervalAction_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) 
 		Protocol:   fbutils.GetStringSlot(table, 20),
 		HTTPMethod: fbutils.GetStringSlot(table, 22),
 		Address:    fbutils.GetStringSlot(table, 24),
-		Port:       int(table.GetUint64Slot(26, 0)),
+		Port:       fbutils.GetIntSlot(table, 26),
 		Path:       fbutils.GetStringSlot(table, 28),
 		Publisher:  fbutils.GetStringSlot(table, 30),
 		User:       fbutils.GetStringSlot(table, 32),
@@ -326,7 +326,7 @@ func (box *IntervalActionBox) PutAsync(object *IntervalAction) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
 
-// PutAll inserts multiple objects in single transaction.
+// PutMany inserts multiple objects in single transaction.
 // In case IDs are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
@@ -336,8 +336,8 @@ func (box *IntervalActionBox) PutAsync(object *IntervalAction) (uint64, error) {
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *IntervalActionBox) PutAll(objects []IntervalAction) ([]uint64, error) {
-	return box.Box.PutAll(objects)
+func (box *IntervalActionBox) PutMany(objects []IntervalAction) ([]uint64, error) {
+	return box.Box.PutMany(objects)
 }
 
 // Get reads a single object.
@@ -353,7 +353,17 @@ func (box *IntervalActionBox) Get(id uint64) (*IntervalAction, error) {
 	return object.(*IntervalAction), nil
 }
 
-// Get reads all stored objects
+// GetMany reads multiple objects at once.
+// If any of the objects doesn't exist, its position in the return slice is an empty object
+func (box *IntervalActionBox) GetMany(ids ...uint64) ([]IntervalAction, error) {
+	objects, err := box.Box.GetMany(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]IntervalAction), nil
+}
+
+// GetAll reads all stored objects
 func (box *IntervalActionBox) GetAll() ([]IntervalAction, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
@@ -363,8 +373,21 @@ func (box *IntervalActionBox) GetAll() ([]IntervalAction, error) {
 }
 
 // Remove deletes a single object
-func (box *IntervalActionBox) Remove(object *IntervalAction) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.ID))
+func (box *IntervalActionBox) Remove(object *IntervalAction) error {
+	return box.Box.Remove(object)
+}
+
+// RemoveMany deletes multiple objects at once.
+// Returns the number of deleted object or error on failure.
+// Note that this method will not fail if an object is not found (e.g. already removed).
+// In case you need to strictly check whether all of the objects exist before removing them,
+// you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
+func (box *IntervalActionBox) RemoveMany(objects ...*IntervalAction) (uint64, error) {
+	var ids = make([]uint64, len(objects))
+	for k, object := range objects {
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.ID)
+	}
+	return box.Box.RemoveIds(ids...)
 }
 
 // Creates a query with the given conditions. Use the fields of the IntervalAction_ struct to create conditions.

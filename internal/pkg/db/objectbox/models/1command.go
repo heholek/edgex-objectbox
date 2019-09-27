@@ -19,7 +19,7 @@ import (
 )
 
 type Command struct {
-	models.Timestamps `inline`
+	models.Timestamps `objectbox:"inline"`
 	Id                string
 	Name              string
 	Get               Get

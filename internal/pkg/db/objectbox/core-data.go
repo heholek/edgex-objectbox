@@ -208,6 +208,11 @@ func (client *coreDataClient) UpdateEvent(e correlation.Event) error {
 	// synchronize with PutAsync in AddReading manually or we could be dead-locked in PutRelated write-TX
 	client.awaitAsync()
 
+	// as we don't do lazy-loading externally, if the slice is nil, it's empty, not a "not-yet-loaded" lazy one
+	if e.Event.Readings == nil {
+		e.Event.Readings = []contract.Reading{}
+	}
+
 	e.Modified = db.MakeTimestamp()
 
 	if id, err := obx.IdFromString(e.ID); err != nil {
@@ -264,7 +269,7 @@ func (client *coreDataClient) DeleteEventById(idString string) error {
 		return mapError(err)
 	}
 
-	return mapError(client.eventBox.Box.Remove(id))
+	return mapError(client.eventBox.RemoveId(id))
 }
 
 func (client *coreDataClient) EventsForDeviceLimit(id string, limit int) ([]contract.Event, error) {
@@ -327,6 +332,8 @@ func (client *coreDataClient) EventsPushed() ([]contract.Event, error) {
 }
 
 func (client *coreDataClient) ScrubAllEvents() error {
+	client.awaitAsync()
+
 	if err := client.eventBox.RemoveAll(); err != nil {
 		return mapError(err)
 	}
@@ -334,6 +341,8 @@ func (client *coreDataClient) ScrubAllEvents() error {
 }
 
 func (client *coreDataClient) Readings() ([]contract.Reading, error) {
+	client.awaitAsync()
+
 	result, err := client.readingBox.GetAll()
 	return result, mapError(err)
 }
@@ -356,6 +365,8 @@ func (client *coreDataClient) AddReading(r contract.Reading) (string, error) {
 }
 
 func (client *coreDataClient) UpdateReading(r contract.Reading) error {
+	client.awaitAsync()
+
 	r.Modified = db.MakeTimestamp()
 
 	if id, err := obx.IdFromString(r.Id); err != nil {
@@ -377,6 +388,8 @@ func (client *coreDataClient) UpdateReading(r contract.Reading) error {
 }
 
 func (client *coreDataClient) ReadingById(id string) (contract.Reading, error) {
+	client.awaitAsync()
+
 	if id, err := obx.IdFromString(id); err != nil {
 		return contract.Reading{}, mapError(err)
 	} else if object, err := client.readingBox.Get(id); err != nil {
@@ -389,20 +402,26 @@ func (client *coreDataClient) ReadingById(id string) (contract.Reading, error) {
 }
 
 func (client *coreDataClient) ReadingCount() (int, error) {
+	client.awaitAsync()
+
 	count, err := client.readingBox.Count()
 	return int(count), mapError(err)
 }
 
 func (client *coreDataClient) DeleteReadingById(idString string) error {
+	client.awaitAsync()
+
 	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return mapError(err)
 	}
 
-	return mapError(client.readingBox.Box.Remove(id))
+	return mapError(client.readingBox.RemoveId(id))
 }
 
 func (client *coreDataClient) ReadingsByDevice(deviceId string, limit int) ([]contract.Reading, error) {
+	client.awaitAsync()
+
 	var query = &client.queries.reading.device
 
 	query.Lock()
@@ -417,6 +436,8 @@ func (client *coreDataClient) ReadingsByDevice(deviceId string, limit int) ([]co
 }
 
 func (client *coreDataClient) ReadingsByValueDescriptor(name string, limit int) ([]contract.Reading, error) {
+	client.awaitAsync()
+
 	var query = &client.queries.reading.name
 
 	query.Lock()
@@ -431,6 +452,8 @@ func (client *coreDataClient) ReadingsByValueDescriptor(name string, limit int) 
 }
 
 func (client *coreDataClient) ReadingsByValueDescriptorNames(names []string, limit int) ([]contract.Reading, error) {
+	client.awaitAsync()
+
 	var query = &client.queries.reading.names
 
 	query.Lock()
@@ -445,6 +468,8 @@ func (client *coreDataClient) ReadingsByValueDescriptorNames(names []string, lim
 }
 
 func (client *coreDataClient) ReadingsByCreationTime(start, end int64, limit int) ([]contract.Reading, error) {
+	client.awaitAsync()
+
 	var query = &client.queries.reading.createdB
 
 	query.Lock()
@@ -459,6 +484,8 @@ func (client *coreDataClient) ReadingsByCreationTime(start, end int64, limit int
 }
 
 func (client *coreDataClient) ReadingsByDeviceAndValueDescriptor(deviceId, valueDescriptor string, limit int) ([]contract.Reading, error) {
+	client.awaitAsync()
+
 	var query = &client.queries.reading.deviceAndName
 
 	query.Lock()
@@ -511,7 +538,7 @@ func (client *coreDataClient) DeleteValueDescriptorById(idString string) error {
 		return mapError(err)
 	}
 
-	return mapError(client.valueDescriptorBox.Box.Remove(id))
+	return mapError(client.valueDescriptorBox.RemoveId(id))
 }
 
 func (client *coreDataClient) ValueDescriptorByName(name string) (contract.ValueDescriptor, error) {

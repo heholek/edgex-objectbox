@@ -17,9 +17,9 @@ package models
 import "github.com/edgexfoundry/go-mod-core-contracts/models"
 
 type Interval struct {
-	Timestamps models.Timestamps `inline`
+	Timestamps models.Timestamps `objectbox:"inline"`
 	ID         string
-	Name       string `unique`
+	Name       string `objectbox:"unique"`
 	Start      string
 	End        string
 	Frequency  string

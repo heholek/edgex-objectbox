@@ -4,8 +4,8 @@
 package obx
 
 import (
-	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -95,28 +95,28 @@ var ProvisionWatcher_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (provisionWatcher_EntityInfo) GeneratorVersion() int {
-	return 2
+	return 3
 }
 
 // AddToModel is called by ObjectBox during model build
 func (provisionWatcher_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("ProvisionWatcher", 12, 678769668479103726)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 5400688834240787055)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 6936168735950790495)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 7324362782559730584)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 4214810142464261408)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Name", objectbox.PropertyType_String, 5, 1922646737032650250)
-	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
+	model.Property("Created", 6, 1, 5400688834240787055)
+	model.Property("Modified", 6, 2, 6936168735950790495)
+	model.Property("Origin", 6, 3, 7324362782559730584)
+	model.Property("Id", 6, 4, 4214810142464261408)
+	model.PropertyFlags(8193)
+	model.Property("Name", 9, 5, 1922646737032650250)
+	model.PropertyFlags(32)
 	model.PropertyIndex(12, 8347802915601169150)
-	model.Property("Identifiers", objectbox.PropertyType_ByteVector, 6, 6659681934816812940)
-	model.Property("Profile", objectbox.PropertyType_Relation, 7, 4488324877991092491)
-	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
+	model.Property("Identifiers", 23, 6, 6659681934816812940)
+	model.Property("Profile", 11, 7, 4488324877991092491)
+	model.PropertyFlags(8192)
 	model.PropertyRelation("DeviceProfile", 13, 5329856807707561884)
-	model.Property("Service", objectbox.PropertyType_Relation, 8, 6873740026061739530)
-	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
+	model.Property("Service", 11, 8, 6873740026061739530)
+	model.PropertyFlags(8192)
 	model.PropertyRelation("DeviceService", 14, 3453358122163741587)
-	model.Property("OperatingState", objectbox.PropertyType_String, 9, 3437982289020393516)
+	model.Property("OperatingState", 9, 9, 3437982289020393516)
 	model.EntityLastPropertyId(9, 3437982289020393516)
 }
 
@@ -140,29 +140,23 @@ func (provisionWatcher_EntityInfo) SetId(object interface{}, id uint64) {
 }
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
-func (provisionWatcher_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+func (provisionWatcher_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
 	if rel := &object.(*ProvisionWatcher).Profile; rel != nil {
-		rId, err := DeviceProfileBinding.GetId(rel)
-		if err != nil {
+		if rId, err := DeviceProfileBinding.GetId(rel); err != nil {
 			return err
 		} else if rId == 0 {
-			if err := txn.RunWithCursor(DeviceProfileBinding.Id, func(targetCursor *objectbox.Cursor) error {
-				_, err := targetCursor.Put(rel) // NOTE Put/PutAsync() has a side-effect of setting the rel.ID
-				return err
-			}); err != nil {
+			// NOTE Put/PutAsync() has a side-effect of setting the rel.ID
+			if _, err := BoxForDeviceProfile(ob).Put(rel); err != nil {
 				return err
 			}
 		}
 	}
 	if rel := &object.(*ProvisionWatcher).Service; rel != nil {
-		rId, err := DeviceServiceBinding.GetId(rel)
-		if err != nil {
+		if rId, err := DeviceServiceBinding.GetId(rel); err != nil {
 			return err
 		} else if rId == 0 {
-			if err := txn.RunWithCursor(DeviceServiceBinding.Id, func(targetCursor *objectbox.Cursor) error {
-				_, err := targetCursor.Put(rel) // NOTE Put/PutAsync() has a side-effect of setting the rel.ID
-				return err
-			}); err != nil {
+			// NOTE Put/PutAsync() has a side-effect of setting the rel.ID
+			if _, err := BoxForDeviceService(ob).Put(rel); err != nil {
 				return err
 			}
 		}
@@ -217,7 +211,7 @@ func (provisionWatcher_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (provisionWatcher_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
+func (provisionWatcher_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -225,38 +219,22 @@ func (provisionWatcher_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte
 	var id = table.GetUint64Slot(10, 0)
 
 	var relProfile *DeviceProfile
-	if rId := table.GetUint64Slot(16, 0); rId > 0 {
-		if err := txn.RunWithCursor(DeviceProfileBinding.Id, func(targetCursor *objectbox.Cursor) error {
-			if relObject, err := targetCursor.Get(rId); err != nil {
-				return err
-			} else if relObj, ok := relObject.(*DeviceProfile); ok {
-				relProfile = relObj
-			} else {
-				var relObj = relObject.(DeviceProfile)
-				relProfile = &relObj
-			}
-			return nil
-		}); err != nil {
+	if rId := fbutils.GetUint64Slot(table, 16); rId > 0 {
+		if rObject, err := BoxForDeviceProfile(ob).Get(rId); err != nil {
 			return nil, err
+		} else {
+			relProfile = rObject
 		}
 	} else {
 		relProfile = &DeviceProfile{}
 	}
 
 	var relService *DeviceService
-	if rId := table.GetUint64Slot(18, 0); rId > 0 {
-		if err := txn.RunWithCursor(DeviceServiceBinding.Id, func(targetCursor *objectbox.Cursor) error {
-			if relObject, err := targetCursor.Get(rId); err != nil {
-				return err
-			} else if relObj, ok := relObject.(*DeviceService); ok {
-				relService = relObj
-			} else {
-				var relObj = relObject.(DeviceService)
-				relService = &relObj
-			}
-			return nil
-		}); err != nil {
+	if rId := fbutils.GetUint64Slot(table, 18); rId > 0 {
+		if rObject, err := BoxForDeviceService(ob).Get(rId); err != nil {
 			return nil, err
+		} else {
+			relService = rObject
 		}
 	} else {
 		relService = &DeviceService{}
@@ -264,9 +242,9 @@ func (provisionWatcher_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte
 
 	return &ProvisionWatcher{
 		Timestamps: models.Timestamps{
-			Created:  table.GetInt64Slot(4, 0),
-			Modified: table.GetInt64Slot(6, 0),
-			Origin:   table.GetInt64Slot(8, 0),
+			Created:  fbutils.GetInt64Slot(table, 4),
+			Modified: fbutils.GetInt64Slot(table, 6),
+			Origin:   fbutils.GetInt64Slot(table, 8),
 		},
 		Id:             objectbox.StringIdConvertToEntityProperty(id),
 		Name:           fbutils.GetStringSlot(table, 12),
@@ -328,7 +306,7 @@ func (box *ProvisionWatcherBox) PutAsync(object *ProvisionWatcher) (uint64, erro
 	return box.Box.PutAsync(object)
 }
 
-// PutAll inserts multiple objects in single transaction.
+// PutMany inserts multiple objects in single transaction.
 // In case Ids are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
@@ -338,8 +316,8 @@ func (box *ProvisionWatcherBox) PutAsync(object *ProvisionWatcher) (uint64, erro
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *ProvisionWatcherBox) PutAll(objects []ProvisionWatcher) ([]uint64, error) {
-	return box.Box.PutAll(objects)
+func (box *ProvisionWatcherBox) PutMany(objects []ProvisionWatcher) ([]uint64, error) {
+	return box.Box.PutMany(objects)
 }
 
 // Get reads a single object.
@@ -355,7 +333,17 @@ func (box *ProvisionWatcherBox) Get(id uint64) (*ProvisionWatcher, error) {
 	return object.(*ProvisionWatcher), nil
 }
 
-// Get reads all stored objects
+// GetMany reads multiple objects at once.
+// If any of the objects doesn't exist, its position in the return slice is an empty object
+func (box *ProvisionWatcherBox) GetMany(ids ...uint64) ([]ProvisionWatcher, error) {
+	objects, err := box.Box.GetMany(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]ProvisionWatcher), nil
+}
+
+// GetAll reads all stored objects
 func (box *ProvisionWatcherBox) GetAll() ([]ProvisionWatcher, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
@@ -365,8 +353,21 @@ func (box *ProvisionWatcherBox) GetAll() ([]ProvisionWatcher, error) {
 }
 
 // Remove deletes a single object
-func (box *ProvisionWatcherBox) Remove(object *ProvisionWatcher) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.Id))
+func (box *ProvisionWatcherBox) Remove(object *ProvisionWatcher) error {
+	return box.Box.Remove(object)
+}
+
+// RemoveMany deletes multiple objects at once.
+// Returns the number of deleted object or error on failure.
+// Note that this method will not fail if an object is not found (e.g. already removed).
+// In case you need to strictly check whether all of the objects exist before removing them,
+// you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
+func (box *ProvisionWatcherBox) RemoveMany(objects ...*ProvisionWatcher) (uint64, error) {
+	var ids = make([]uint64, len(objects))
+	for k, object := range objects {
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Id)
+	}
+	return box.Box.RemoveIds(ids...)
 }
 
 // Creates a query with the given conditions. Use the fields of the ProvisionWatcher_ struct to create conditions.

@@ -4,8 +4,8 @@
 package obx
 
 import (
-	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -144,35 +144,35 @@ var Device_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (device_EntityInfo) GeneratorVersion() int {
-	return 2
+	return 3
 }
 
 // AddToModel is called by ObjectBox during model build
 func (device_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Device", 6, 7791960176883718600)
-	model.Property("Timestamps_Created", objectbox.PropertyType_Long, 1, 760884671802584626)
-	model.Property("Timestamps_Modified", objectbox.PropertyType_Long, 2, 7088417073149650316)
-	model.Property("Timestamps_Origin", objectbox.PropertyType_Long, 3, 5920013286322297706)
-	model.Property("Description", objectbox.PropertyType_String, 4, 5975955039079730091)
-	model.Property("Id", objectbox.PropertyType_Long, 5, 307498160650160795)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Name", objectbox.PropertyType_String, 6, 2954509445996888024)
-	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
+	model.Property("Timestamps_Created", 6, 1, 760884671802584626)
+	model.Property("Timestamps_Modified", 6, 2, 7088417073149650316)
+	model.Property("Timestamps_Origin", 6, 3, 5920013286322297706)
+	model.Property("Description", 9, 4, 5975955039079730091)
+	model.Property("Id", 6, 5, 307498160650160795)
+	model.PropertyFlags(8193)
+	model.Property("Name", 9, 6, 2954509445996888024)
+	model.PropertyFlags(32)
 	model.PropertyIndex(5, 8962276722579918082)
-	model.Property("AdminState", objectbox.PropertyType_String, 7, 6282469246205283102)
-	model.Property("OperatingState", objectbox.PropertyType_String, 8, 3498097526448157332)
-	model.Property("Protocols", objectbox.PropertyType_ByteVector, 9, 3666750183433369298)
-	model.Property("LastConnected", objectbox.PropertyType_Long, 10, 452571766281036281)
-	model.Property("LastReported", objectbox.PropertyType_Long, 11, 7158543833160973529)
-	model.Property("Labels", objectbox.PropertyType_StringVector, 12, 7169174010297297034)
-	model.Property("Location", objectbox.PropertyType_ByteVector, 13, 4015086596961837356)
-	model.Property("Service", objectbox.PropertyType_Relation, 14, 4088629018495371596)
-	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
+	model.Property("AdminState", 9, 7, 6282469246205283102)
+	model.Property("OperatingState", 9, 8, 3498097526448157332)
+	model.Property("Protocols", 23, 9, 3666750183433369298)
+	model.Property("LastConnected", 6, 10, 452571766281036281)
+	model.Property("LastReported", 6, 11, 7158543833160973529)
+	model.Property("Labels", 30, 12, 7169174010297297034)
+	model.Property("Location", 23, 13, 4015086596961837356)
+	model.Property("Service", 11, 14, 4088629018495371596)
+	model.PropertyFlags(8192)
 	model.PropertyRelation("DeviceService", 6, 1605942851186055727)
-	model.Property("Profile", objectbox.PropertyType_Relation, 15, 7161954191428807251)
-	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
+	model.Property("Profile", 11, 15, 7161954191428807251)
+	model.PropertyFlags(8192)
 	model.PropertyRelation("DeviceProfile", 7, 1592441353906626817)
-	model.Property("AutoEvents", objectbox.PropertyType_ByteVector, 16, 6886776406948515238)
+	model.Property("AutoEvents", 23, 16, 6886776406948515238)
 	model.EntityLastPropertyId(16, 6886776406948515238)
 }
 
@@ -196,29 +196,23 @@ func (device_EntityInfo) SetId(object interface{}, id uint64) {
 }
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
-func (device_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+func (device_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
 	if rel := &object.(*Device).Service; rel != nil {
-		rId, err := DeviceServiceBinding.GetId(rel)
-		if err != nil {
+		if rId, err := DeviceServiceBinding.GetId(rel); err != nil {
 			return err
 		} else if rId == 0 {
-			if err := txn.RunWithCursor(DeviceServiceBinding.Id, func(targetCursor *objectbox.Cursor) error {
-				_, err := targetCursor.Put(rel) // NOTE Put/PutAsync() has a side-effect of setting the rel.ID
-				return err
-			}); err != nil {
+			// NOTE Put/PutAsync() has a side-effect of setting the rel.ID
+			if _, err := BoxForDeviceService(ob).Put(rel); err != nil {
 				return err
 			}
 		}
 	}
 	if rel := &object.(*Device).Profile; rel != nil {
-		rId, err := DeviceProfileBinding.GetId(rel)
-		if err != nil {
+		if rId, err := DeviceProfileBinding.GetId(rel); err != nil {
 			return err
 		} else if rId == 0 {
-			if err := txn.RunWithCursor(DeviceProfileBinding.Id, func(targetCursor *objectbox.Cursor) error {
-				_, err := targetCursor.Put(rel) // NOTE Put/PutAsync() has a side-effect of setting the rel.ID
-				return err
-			}); err != nil {
+			// NOTE Put/PutAsync() has a side-effect of setting the rel.ID
+			if _, err := BoxForDeviceProfile(ob).Put(rel); err != nil {
 				return err
 			}
 		}
@@ -285,7 +279,7 @@ func (device_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, i
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
+func (device_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -293,38 +287,22 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interfa
 	var id = table.GetUint64Slot(12, 0)
 
 	var relService *DeviceService
-	if rId := table.GetUint64Slot(30, 0); rId > 0 {
-		if err := txn.RunWithCursor(DeviceServiceBinding.Id, func(targetCursor *objectbox.Cursor) error {
-			if relObject, err := targetCursor.Get(rId); err != nil {
-				return err
-			} else if relObj, ok := relObject.(*DeviceService); ok {
-				relService = relObj
-			} else {
-				var relObj = relObject.(DeviceService)
-				relService = &relObj
-			}
-			return nil
-		}); err != nil {
+	if rId := fbutils.GetUint64Slot(table, 30); rId > 0 {
+		if rObject, err := BoxForDeviceService(ob).Get(rId); err != nil {
 			return nil, err
+		} else {
+			relService = rObject
 		}
 	} else {
 		relService = &DeviceService{}
 	}
 
 	var relProfile *DeviceProfile
-	if rId := table.GetUint64Slot(32, 0); rId > 0 {
-		if err := txn.RunWithCursor(DeviceProfileBinding.Id, func(targetCursor *objectbox.Cursor) error {
-			if relObject, err := targetCursor.Get(rId); err != nil {
-				return err
-			} else if relObj, ok := relObject.(*DeviceProfile); ok {
-				relProfile = relObj
-			} else {
-				var relObj = relObject.(DeviceProfile)
-				relProfile = &relObj
-			}
-			return nil
-		}); err != nil {
+	if rId := fbutils.GetUint64Slot(table, 32); rId > 0 {
+		if rObject, err := BoxForDeviceProfile(ob).Get(rId); err != nil {
 			return nil, err
+		} else {
+			relProfile = rObject
 		}
 	} else {
 		relProfile = &DeviceProfile{}
@@ -333,9 +311,9 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interfa
 	return &Device{
 		DescribedObject: models.DescribedObject{
 			Timestamps: Timestamps{
-				Created:  table.GetInt64Slot(4, 0),
-				Modified: table.GetInt64Slot(6, 0),
-				Origin:   table.GetInt64Slot(8, 0),
+				Created:  fbutils.GetInt64Slot(table, 4),
+				Modified: fbutils.GetInt64Slot(table, 6),
+				Origin:   fbutils.GetInt64Slot(table, 8),
 			},
 			Description: fbutils.GetStringSlot(table, 10),
 		},
@@ -344,8 +322,8 @@ func (device_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interfa
 		AdminState:     models.AdminState(fbutils.GetStringSlot(table, 16)),
 		OperatingState: models.OperatingState(fbutils.GetStringSlot(table, 18)),
 		Protocols:      mapStringProtocolPropertiesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 20)),
-		LastConnected:  table.GetInt64Slot(22, 0),
-		LastReported:   table.GetInt64Slot(24, 0),
+		LastConnected:  fbutils.GetInt64Slot(table, 22),
+		LastReported:   fbutils.GetInt64Slot(table, 24),
 		Labels:         fbutils.GetStringVectorSlot(table, 26),
 		Location:       interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 28)),
 		Service:        *relService,
@@ -405,7 +383,7 @@ func (box *DeviceBox) PutAsync(object *Device) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
 
-// PutAll inserts multiple objects in single transaction.
+// PutMany inserts multiple objects in single transaction.
 // In case Ids are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
@@ -415,8 +393,8 @@ func (box *DeviceBox) PutAsync(object *Device) (uint64, error) {
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *DeviceBox) PutAll(objects []Device) ([]uint64, error) {
-	return box.Box.PutAll(objects)
+func (box *DeviceBox) PutMany(objects []Device) ([]uint64, error) {
+	return box.Box.PutMany(objects)
 }
 
 // Get reads a single object.
@@ -432,7 +410,17 @@ func (box *DeviceBox) Get(id uint64) (*Device, error) {
 	return object.(*Device), nil
 }
 
-// Get reads all stored objects
+// GetMany reads multiple objects at once.
+// If any of the objects doesn't exist, its position in the return slice is an empty object
+func (box *DeviceBox) GetMany(ids ...uint64) ([]Device, error) {
+	objects, err := box.Box.GetMany(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Device), nil
+}
+
+// GetAll reads all stored objects
 func (box *DeviceBox) GetAll() ([]Device, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
@@ -442,8 +430,21 @@ func (box *DeviceBox) GetAll() ([]Device, error) {
 }
 
 // Remove deletes a single object
-func (box *DeviceBox) Remove(object *Device) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.Id))
+func (box *DeviceBox) Remove(object *Device) error {
+	return box.Box.Remove(object)
+}
+
+// RemoveMany deletes multiple objects at once.
+// Returns the number of deleted object or error on failure.
+// Note that this method will not fail if an object is not found (e.g. already removed).
+// In case you need to strictly check whether all of the objects exist before removing them,
+// you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
+func (box *DeviceBox) RemoveMany(objects ...*Device) (uint64, error) {
+	var ids = make([]uint64, len(objects))
+	for k, object := range objects {
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Id)
+	}
+	return box.Box.RemoveIds(ids...)
 }
 
 // Creates a query with the given conditions. Use the fields of the Device_ struct to create conditions.

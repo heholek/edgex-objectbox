@@ -15,6 +15,6 @@
 package models
 
 type Put struct {
-	Action         `inline`
+	Action         `objectbox:"inline"`
 	ParameterNames []string
 }

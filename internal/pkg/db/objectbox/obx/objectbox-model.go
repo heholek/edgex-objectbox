@@ -10,7 +10,7 @@ import (
 // It is usually used when setting-up ObjectBox as an argument to the Builder.Model() function.
 func ObjectBoxModel() *objectbox.Model {
 	model := objectbox.NewModel()
-	model.GeneratorVersion(2)
+	model.GeneratorVersion(3)
 
 	model.RegisterBinding(AddressableBinding)
 	model.RegisterBinding(CommandBinding)
@@ -29,7 +29,7 @@ func ObjectBoxModel() *objectbox.Model {
 	model.RegisterBinding(TransmissionBinding)
 	model.RegisterBinding(ValueDescriptorBinding)
 	model.LastEntityId(16, 2903250960703756959)
-	model.LastIndexId(19, 8558604861306073232)
+	model.LastIndexId(20, 145108907760923749)
 	model.LastRelationId(2, 6583600503460504451)
 
 	return model

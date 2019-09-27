@@ -4,8 +4,8 @@
 package obx
 
 import (
-	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -136,32 +136,32 @@ var Registration_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (registration_EntityInfo) GeneratorVersion() int {
-	return 2
+	return 3
 }
 
 // AddToModel is called by ObjectBox during model build
 func (registration_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Registration", 13, 8697442173660558194)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 123887931587262126)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 1402964767567004529)
-	model.Property("Modified", objectbox.PropertyType_Long, 3, 3592048256596347124)
-	model.Property("Origin", objectbox.PropertyType_Long, 4, 6512940430179949006)
-	model.Property("Name", objectbox.PropertyType_String, 5, 471898448094503251)
-	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
+	model.Property("ID", 6, 1, 123887931587262126)
+	model.PropertyFlags(8193)
+	model.Property("Created", 6, 2, 1402964767567004529)
+	model.Property("Modified", 6, 3, 3592048256596347124)
+	model.Property("Origin", 6, 4, 6512940430179949006)
+	model.Property("Name", 9, 5, 471898448094503251)
+	model.PropertyFlags(32)
 	model.PropertyIndex(15, 3183733801868506910)
-	model.Property("Addressable", objectbox.PropertyType_Relation, 6, 8935979958445686361)
-	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
+	model.Property("Addressable", 11, 6, 8935979958445686361)
+	model.PropertyFlags(8192)
 	model.PropertyRelation("Addressable", 16, 6932752998076836248)
-	model.Property("Format", objectbox.PropertyType_String, 7, 3541213098300435357)
-	model.Property("Filter_DeviceIDs", objectbox.PropertyType_StringVector, 8, 2123523082225229536)
-	model.Property("Filter_ValueDescriptorIDs", objectbox.PropertyType_StringVector, 9, 1568686084581981546)
-	model.Property("Encryption_Algo", objectbox.PropertyType_String, 10, 99228324085287014)
-	model.Property("Encryption_Key", objectbox.PropertyType_String, 11, 46279435191312724)
-	model.Property("Encryption_InitVector", objectbox.PropertyType_String, 12, 5459531335994809378)
-	model.Property("Compression", objectbox.PropertyType_String, 13, 2579287944068867159)
-	model.Property("Enable", objectbox.PropertyType_Bool, 14, 3485720785546906540)
-	model.Property("Destination", objectbox.PropertyType_String, 15, 1837331318685115169)
+	model.Property("Format", 9, 7, 3541213098300435357)
+	model.Property("Filter_DeviceIDs", 30, 8, 2123523082225229536)
+	model.Property("Filter_ValueDescriptorIDs", 30, 9, 1568686084581981546)
+	model.Property("Encryption_Algo", 9, 10, 99228324085287014)
+	model.Property("Encryption_Key", 9, 11, 46279435191312724)
+	model.Property("Encryption_InitVector", 9, 12, 5459531335994809378)
+	model.Property("Compression", 9, 13, 2579287944068867159)
+	model.Property("Enable", 1, 14, 3485720785546906540)
+	model.Property("Destination", 9, 15, 1837331318685115169)
 	model.EntityLastPropertyId(15, 1837331318685115169)
 }
 
@@ -185,16 +185,13 @@ func (registration_EntityInfo) SetId(object interface{}, id uint64) {
 }
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
-func (registration_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+func (registration_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
 	if rel := &object.(*Registration).Addressable; rel != nil {
-		rId, err := AddressableBinding.GetId(rel)
-		if err != nil {
+		if rId, err := AddressableBinding.GetId(rel); err != nil {
 			return err
 		} else if rId == 0 {
-			if err := txn.RunWithCursor(AddressableBinding.Id, func(targetCursor *objectbox.Cursor) error {
-				_, err := targetCursor.Put(rel) // NOTE Put/PutAsync() has a side-effect of setting the rel.ID
-				return err
-			}); err != nil {
+			// NOTE Put/PutAsync() has a side-effect of setting the rel.ID
+			if _, err := BoxForAddressable(ob).Put(rel); err != nil {
 				return err
 			}
 		}
@@ -252,7 +249,7 @@ func (registration_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (registration_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
+func (registration_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -260,19 +257,11 @@ func (registration_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 	var id = table.GetUint64Slot(4, 0)
 
 	var relAddressable *Addressable
-	if rId := table.GetUint64Slot(14, 0); rId > 0 {
-		if err := txn.RunWithCursor(AddressableBinding.Id, func(targetCursor *objectbox.Cursor) error {
-			if relObject, err := targetCursor.Get(rId); err != nil {
-				return err
-			} else if relObj, ok := relObject.(*Addressable); ok {
-				relAddressable = relObj
-			} else {
-				var relObj = relObject.(Addressable)
-				relAddressable = &relObj
-			}
-			return nil
-		}); err != nil {
+	if rId := fbutils.GetUint64Slot(table, 14); rId > 0 {
+		if rObject, err := BoxForAddressable(ob).Get(rId); err != nil {
 			return nil, err
+		} else {
+			relAddressable = rObject
 		}
 	} else {
 		relAddressable = &Addressable{}
@@ -280,9 +269,9 @@ func (registration_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 
 	return &Registration{
 		ID:          objectbox.StringIdConvertToEntityProperty(id),
-		Created:     table.GetInt64Slot(6, 0),
-		Modified:    table.GetInt64Slot(8, 0),
-		Origin:      table.GetInt64Slot(10, 0),
+		Created:     fbutils.GetInt64Slot(table, 6),
+		Modified:    fbutils.GetInt64Slot(table, 8),
+		Origin:      fbutils.GetInt64Slot(table, 10),
 		Name:        fbutils.GetStringSlot(table, 12),
 		Addressable: *relAddressable,
 		Format:      fbutils.GetStringSlot(table, 16),
@@ -296,7 +285,7 @@ func (registration_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 			InitVector: fbutils.GetStringSlot(table, 26),
 		},
 		Compression: fbutils.GetStringSlot(table, 28),
-		Enable:      table.GetBoolSlot(30, false),
+		Enable:      fbutils.GetBoolSlot(table, 30),
 		Destination: fbutils.GetStringSlot(table, 32),
 	}, nil
 }
@@ -352,7 +341,7 @@ func (box *RegistrationBox) PutAsync(object *Registration) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
 
-// PutAll inserts multiple objects in single transaction.
+// PutMany inserts multiple objects in single transaction.
 // In case IDs are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
@@ -362,8 +351,8 @@ func (box *RegistrationBox) PutAsync(object *Registration) (uint64, error) {
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *RegistrationBox) PutAll(objects []Registration) ([]uint64, error) {
-	return box.Box.PutAll(objects)
+func (box *RegistrationBox) PutMany(objects []Registration) ([]uint64, error) {
+	return box.Box.PutMany(objects)
 }
 
 // Get reads a single object.
@@ -379,7 +368,17 @@ func (box *RegistrationBox) Get(id uint64) (*Registration, error) {
 	return object.(*Registration), nil
 }
 
-// Get reads all stored objects
+// GetMany reads multiple objects at once.
+// If any of the objects doesn't exist, its position in the return slice is an empty object
+func (box *RegistrationBox) GetMany(ids ...uint64) ([]Registration, error) {
+	objects, err := box.Box.GetMany(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Registration), nil
+}
+
+// GetAll reads all stored objects
 func (box *RegistrationBox) GetAll() ([]Registration, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
@@ -389,8 +388,21 @@ func (box *RegistrationBox) GetAll() ([]Registration, error) {
 }
 
 // Remove deletes a single object
-func (box *RegistrationBox) Remove(object *Registration) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.ID))
+func (box *RegistrationBox) Remove(object *Registration) error {
+	return box.Box.Remove(object)
+}
+
+// RemoveMany deletes multiple objects at once.
+// Returns the number of deleted object or error on failure.
+// Note that this method will not fail if an object is not found (e.g. already removed).
+// In case you need to strictly check whether all of the objects exist before removing them,
+// you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
+func (box *RegistrationBox) RemoveMany(objects ...*Registration) (uint64, error) {
+	var ids = make([]uint64, len(objects))
+	for k, object := range objects {
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.ID)
+	}
+	return box.Box.RemoveIds(ids...)
 }
 
 // Creates a query with the given conditions. Use the fields of the Registration_ struct to create conditions.

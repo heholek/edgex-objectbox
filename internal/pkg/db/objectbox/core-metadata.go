@@ -347,7 +347,7 @@ func (client *coreMetaDataClient) DeleteDeviceReportById(id string) error {
 	if id, err := obx.IdFromString(id); err != nil {
 		return mapError(err)
 	} else {
-		return mapError(client.deviceReportBox.Box.Remove(id))
+		return mapError(client.deviceReportBox.RemoveId(id))
 	}
 }
 
@@ -459,12 +459,23 @@ func (client *coreMetaDataClient) DeleteDeviceById(id string) error {
 	if id, err := obx.IdFromString(id); err != nil {
 		return mapError(err)
 	} else {
-		return mapError(client.deviceBox.Box.Remove(id))
+		return mapError(client.deviceBox.RemoveId(id))
 	}
 }
 
 func (client *coreMetaDataClient) UpdateDeviceProfile(dp contract.DeviceProfile) error {
 	onUpdate(&dp.Timestamps)
+
+	// as we don't do lazy-loading externally, if the slice is nil, it's empty, not a "not-yet-loaded" lazy one
+	if dp.DeviceCommands == nil {
+		dp.DeviceCommands = []contract.ProfileResource{}
+	}
+	if dp.DeviceResources == nil {
+		dp.DeviceResources = []contract.DeviceResource{}
+	}
+	if dp.CoreCommands == nil {
+		dp.CoreCommands = []contract.Command{}
+	}
 
 	if id, err := obx.IdFromString(dp.Id); err != nil {
 		return mapError(err)
@@ -506,7 +517,7 @@ func (client *coreMetaDataClient) DeleteDeviceProfileById(id string) error {
 	if id, err := obx.IdFromString(id); err != nil {
 		return mapError(err)
 	} else {
-		return mapError(client.deviceProfileBox.Box.Remove(id))
+		return mapError(client.deviceProfileBox.RemoveId(id))
 	}
 }
 
@@ -723,7 +734,7 @@ func (client *coreMetaDataClient) DeleteAddressableById(id string) error {
 	if id, err := obx.IdFromString(id); err != nil {
 		return mapError(err)
 	} else {
-		return mapError(client.addressableBox.Box.Remove(id))
+		return mapError(client.addressableBox.RemoveId(id))
 	}
 }
 
@@ -820,7 +831,7 @@ func (client *coreMetaDataClient) DeleteDeviceServiceById(idString string) error
 		return mapError(err)
 	}
 
-	return mapError(client.deviceServiceBox.Box.Remove(id))
+	return mapError(client.deviceServiceBox.RemoveId(id))
 }
 
 func (client *coreMetaDataClient) GetProvisionWatcherById(id string) (contract.ProvisionWatcher, error) {
@@ -939,7 +950,7 @@ func (client *coreMetaDataClient) DeleteProvisionWatcherById(id string) error {
 	if id, err := obx.IdFromString(id); err != nil {
 		return mapError(err)
 	} else {
-		return mapError(client.provisionWatcherBox.Box.Remove(id))
+		return mapError(client.provisionWatcherBox.RemoveId(id))
 	}
 }
 
@@ -1003,7 +1014,7 @@ func (client *coreMetaDataClient) DeleteCommandById(idString string) error {
 		return mapError(err)
 	}
 
-	return mapError(client.commandBox.Box.Remove(id))
+	return mapError(client.commandBox.RemoveId(id))
 }
 
 func (client *coreMetaDataClient) ScrubMetadata() error {

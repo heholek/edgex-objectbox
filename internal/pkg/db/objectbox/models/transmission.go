@@ -20,12 +20,12 @@ import (
 )
 
 type Transmission struct {
-	models.Timestamps `inline`
+	models.Timestamps `objectbox:"inline"`
 	ID                string
-	Notification      Notification `link`
+	Notification      Notification `objectbox:"link"`
 	Receiver          string
 	Channel           models.Channel
 	Status            models.TransmissionStatus
 	ResendCount       int
-	Records           []models.TransmissionRecord `type:"[]byte" converter:"transmissionRecordsJson"`
+	Records           []models.TransmissionRecord `objectbox:"type:[]byte converter:transmissionRecordsJson"`
 }

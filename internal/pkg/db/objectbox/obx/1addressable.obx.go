@@ -4,8 +4,8 @@
 package obx
 
 import (
-	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -42,19 +42,19 @@ var Addressable_ = struct {
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     1,
+			Id:     18,
 			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Modified: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     2,
+			Id:     19,
 			Entity: &AddressableBinding.Entity,
 		},
 	},
 	Origin: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
-			Id:     3,
+			Id:     20,
 			Entity: &AddressableBinding.Entity,
 		},
 	},
@@ -128,30 +128,30 @@ var Addressable_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (addressable_EntityInfo) GeneratorVersion() int {
-	return 2
+	return 3
 }
 
 // AddToModel is called by ObjectBox during model build
 func (addressable_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Addressable", 1, 7217845163978143536)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 4199454873679051688)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 5365490840012501486)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 3787839535615347154)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 6940330804195679104)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Name", objectbox.PropertyType_String, 5, 3463416070863865605)
-	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
-	model.PropertyIndex(1, 126768720287782938)
-	model.Property("Protocol", objectbox.PropertyType_String, 6, 9154790070052899448)
-	model.Property("HTTPMethod", objectbox.PropertyType_String, 7, 6202906043726176388)
-	model.Property("Address", objectbox.PropertyType_String, 8, 1600784579810166588)
-	model.Property("Port", objectbox.PropertyType_Long, 9, 447842982687258560)
-	model.Property("Path", objectbox.PropertyType_String, 10, 912313301129217428)
-	model.Property("Publisher", objectbox.PropertyType_String, 11, 7065046818255824027)
-	model.Property("User", objectbox.PropertyType_String, 12, 8846286542776796742)
-	model.Property("Password", objectbox.PropertyType_String, 13, 7000284953614172939)
-	model.Property("Topic", objectbox.PropertyType_String, 14, 7965452998683503188)
-	model.EntityLastPropertyId(14, 7965452998683503188)
+	model.Property("Created", 6, 18, 6934154088115342278)
+	model.Property("Modified", 6, 19, 6181428044507480808)
+	model.Property("Origin", 6, 20, 305883621945096386)
+	model.Property("Id", 6, 4, 6940330804195679104)
+	model.PropertyFlags(8193)
+	model.Property("Name", 9, 5, 3463416070863865605)
+	model.PropertyFlags(32)
+	model.PropertyIndex(20, 145108907760923749)
+	model.Property("Protocol", 9, 6, 9154790070052899448)
+	model.Property("HTTPMethod", 9, 7, 6202906043726176388)
+	model.Property("Address", 9, 8, 1600784579810166588)
+	model.Property("Port", 6, 9, 447842982687258560)
+	model.Property("Path", 9, 10, 912313301129217428)
+	model.Property("Publisher", 9, 11, 7065046818255824027)
+	model.Property("User", 9, 12, 8846286542776796742)
+	model.Property("Password", 9, 13, 7000284953614172939)
+	model.Property("Topic", 9, 14, 7965452998683503188)
+	model.EntityLastPropertyId(20, 305883621945096386)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -174,7 +174,7 @@ func (addressable_EntityInfo) SetId(object interface{}, id uint64) {
 }
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
-func (addressable_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+func (addressable_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
 	return nil
 }
 
@@ -199,10 +199,10 @@ func (addressable_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Build
 	var offsetTopic = fbutils.CreateStringOffset(fbb, obj.Topic)
 
 	// build the FlatBuffers object
-	fbb.StartObject(14)
-	fbutils.SetInt64Slot(fbb, 0, obj.Timestamps.Created)
-	fbutils.SetInt64Slot(fbb, 1, obj.Timestamps.Modified)
-	fbutils.SetInt64Slot(fbb, 2, obj.Timestamps.Origin)
+	fbb.StartObject(20)
+	fbutils.SetInt64Slot(fbb, 17, obj.Timestamps.Created)
+	fbutils.SetInt64Slot(fbb, 18, obj.Timestamps.Modified)
+	fbutils.SetInt64Slot(fbb, 19, obj.Timestamps.Origin)
 	fbutils.SetUint64Slot(fbb, 3, id)
 	fbutils.SetUOffsetTSlot(fbb, 4, offsetName)
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetProtocol)
@@ -218,7 +218,7 @@ func (addressable_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Build
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (addressable_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
+func (addressable_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -227,16 +227,16 @@ func (addressable_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (in
 
 	return &Addressable{
 		Timestamps: models.Timestamps{
-			Created:  table.GetInt64Slot(4, 0),
-			Modified: table.GetInt64Slot(6, 0),
-			Origin:   table.GetInt64Slot(8, 0),
+			Created:  fbutils.GetInt64Slot(table, 38),
+			Modified: fbutils.GetInt64Slot(table, 40),
+			Origin:   fbutils.GetInt64Slot(table, 42),
 		},
 		Id:         objectbox.StringIdConvertToEntityProperty(id),
 		Name:       fbutils.GetStringSlot(table, 12),
 		Protocol:   fbutils.GetStringSlot(table, 14),
 		HTTPMethod: fbutils.GetStringSlot(table, 16),
 		Address:    fbutils.GetStringSlot(table, 18),
-		Port:       int(table.GetUint64Slot(20, 0)),
+		Port:       fbutils.GetIntSlot(table, 20),
 		Path:       fbutils.GetStringSlot(table, 22),
 		Publisher:  fbutils.GetStringSlot(table, 24),
 		User:       fbutils.GetStringSlot(table, 26),
@@ -296,7 +296,7 @@ func (box *AddressableBox) PutAsync(object *Addressable) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
 
-// PutAll inserts multiple objects in single transaction.
+// PutMany inserts multiple objects in single transaction.
 // In case Ids are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
@@ -306,8 +306,8 @@ func (box *AddressableBox) PutAsync(object *Addressable) (uint64, error) {
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *AddressableBox) PutAll(objects []Addressable) ([]uint64, error) {
-	return box.Box.PutAll(objects)
+func (box *AddressableBox) PutMany(objects []Addressable) ([]uint64, error) {
+	return box.Box.PutMany(objects)
 }
 
 // Get reads a single object.
@@ -323,7 +323,17 @@ func (box *AddressableBox) Get(id uint64) (*Addressable, error) {
 	return object.(*Addressable), nil
 }
 
-// Get reads all stored objects
+// GetMany reads multiple objects at once.
+// If any of the objects doesn't exist, its position in the return slice is an empty object
+func (box *AddressableBox) GetMany(ids ...uint64) ([]Addressable, error) {
+	objects, err := box.Box.GetMany(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Addressable), nil
+}
+
+// GetAll reads all stored objects
 func (box *AddressableBox) GetAll() ([]Addressable, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
@@ -333,8 +343,21 @@ func (box *AddressableBox) GetAll() ([]Addressable, error) {
 }
 
 // Remove deletes a single object
-func (box *AddressableBox) Remove(object *Addressable) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.Id))
+func (box *AddressableBox) Remove(object *Addressable) error {
+	return box.Box.Remove(object)
+}
+
+// RemoveMany deletes multiple objects at once.
+// Returns the number of deleted object or error on failure.
+// Note that this method will not fail if an object is not found (e.g. already removed).
+// In case you need to strictly check whether all of the objects exist before removing them,
+// you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
+func (box *AddressableBox) RemoveMany(objects ...*Addressable) (uint64, error) {
+	var ids = make([]uint64, len(objects))
+	for k, object := range objects {
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Id)
+	}
+	return box.Box.RemoveIds(ids...)
 }
 
 // Creates a query with the given conditions. Use the fields of the Addressable_ struct to create conditions.

@@ -19,9 +19,9 @@ import (
 )
 
 type Addressable struct {
-	models.Timestamps `inline`
+	models.Timestamps `objectbox:"inline"`
 	Id                string
-	Name              string `unique`
+	Name              string `objectbox:"unique"`
 	Protocol          string
 	HTTPMethod        string
 	Address           string

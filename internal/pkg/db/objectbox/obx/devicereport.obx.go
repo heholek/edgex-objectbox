@@ -4,8 +4,8 @@
 package obx
 
 import (
-	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -86,23 +86,23 @@ var DeviceReport_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (deviceReport_EntityInfo) GeneratorVersion() int {
-	return 2
+	return 3
 }
 
 // AddToModel is called by ObjectBox during model build
 func (deviceReport_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("DeviceReport", 7, 2987965348377516725)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 144277113410594238)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 6752056937527638827)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 9138721759452247071)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 8821067739042639817)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Name", objectbox.PropertyType_String, 5, 4017589850413680442)
-	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
+	model.Property("Created", 6, 1, 144277113410594238)
+	model.Property("Modified", 6, 2, 6752056937527638827)
+	model.Property("Origin", 6, 3, 9138721759452247071)
+	model.Property("Id", 6, 4, 8821067739042639817)
+	model.PropertyFlags(8193)
+	model.Property("Name", 9, 5, 4017589850413680442)
+	model.PropertyFlags(32)
 	model.PropertyIndex(8, 6567592991408811323)
-	model.Property("Device", objectbox.PropertyType_String, 6, 4864361410797328287)
-	model.Property("Action", objectbox.PropertyType_String, 7, 7348386595663429576)
-	model.Property("Expected", objectbox.PropertyType_StringVector, 8, 3826804133873897010)
+	model.Property("Device", 9, 6, 4864361410797328287)
+	model.Property("Action", 9, 7, 7348386595663429576)
+	model.Property("Expected", 30, 8, 3826804133873897010)
 	model.EntityLastPropertyId(8, 3826804133873897010)
 }
 
@@ -126,7 +126,7 @@ func (deviceReport_EntityInfo) SetId(object interface{}, id uint64) {
 }
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
-func (deviceReport_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+func (deviceReport_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
 	return nil
 }
 
@@ -159,7 +159,7 @@ func (deviceReport_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (deviceReport_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
+func (deviceReport_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -168,9 +168,9 @@ func (deviceReport_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 
 	return &DeviceReport{
 		Timestamps: models.Timestamps{
-			Created:  table.GetInt64Slot(4, 0),
-			Modified: table.GetInt64Slot(6, 0),
-			Origin:   table.GetInt64Slot(8, 0),
+			Created:  fbutils.GetInt64Slot(table, 4),
+			Modified: fbutils.GetInt64Slot(table, 6),
+			Origin:   fbutils.GetInt64Slot(table, 8),
 		},
 		Id:       objectbox.StringIdConvertToEntityProperty(id),
 		Name:     fbutils.GetStringSlot(table, 12),
@@ -231,7 +231,7 @@ func (box *DeviceReportBox) PutAsync(object *DeviceReport) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
 
-// PutAll inserts multiple objects in single transaction.
+// PutMany inserts multiple objects in single transaction.
 // In case Ids are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
@@ -241,8 +241,8 @@ func (box *DeviceReportBox) PutAsync(object *DeviceReport) (uint64, error) {
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *DeviceReportBox) PutAll(objects []DeviceReport) ([]uint64, error) {
-	return box.Box.PutAll(objects)
+func (box *DeviceReportBox) PutMany(objects []DeviceReport) ([]uint64, error) {
+	return box.Box.PutMany(objects)
 }
 
 // Get reads a single object.
@@ -258,7 +258,17 @@ func (box *DeviceReportBox) Get(id uint64) (*DeviceReport, error) {
 	return object.(*DeviceReport), nil
 }
 
-// Get reads all stored objects
+// GetMany reads multiple objects at once.
+// If any of the objects doesn't exist, its position in the return slice is an empty object
+func (box *DeviceReportBox) GetMany(ids ...uint64) ([]DeviceReport, error) {
+	objects, err := box.Box.GetMany(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]DeviceReport), nil
+}
+
+// GetAll reads all stored objects
 func (box *DeviceReportBox) GetAll() ([]DeviceReport, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
@@ -268,8 +278,21 @@ func (box *DeviceReportBox) GetAll() ([]DeviceReport, error) {
 }
 
 // Remove deletes a single object
-func (box *DeviceReportBox) Remove(object *DeviceReport) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.Id))
+func (box *DeviceReportBox) Remove(object *DeviceReport) error {
+	return box.Box.Remove(object)
+}
+
+// RemoveMany deletes multiple objects at once.
+// Returns the number of deleted object or error on failure.
+// Note that this method will not fail if an object is not found (e.g. already removed).
+// In case you need to strictly check whether all of the objects exist before removing them,
+// you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
+func (box *DeviceReportBox) RemoveMany(objects ...*DeviceReport) (uint64, error) {
+	var ids = make([]uint64, len(objects))
+	for k, object := range objects {
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Id)
+	}
+	return box.Box.RemoveIds(ids...)
 }
 
 // Creates a query with the given conditions. Use the fields of the DeviceReport_ struct to create conditions.

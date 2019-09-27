@@ -23,8 +23,8 @@ type Registration struct {
 	Created     int64
 	Modified    int64
 	Origin      int64
-	Name        string      `unique`
-	Addressable Addressable `link`
+	Name        string      `objectbox:"unique"`
+	Addressable Addressable `objectbox:"link"`
 	Format      string
 	Filter      models.Filter
 	Encryption  models.EncryptionDetails

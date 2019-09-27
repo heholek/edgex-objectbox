@@ -20,12 +20,12 @@ import (
 )
 
 type Subscription struct {
-	models.Timestamps    `inline`
+	models.Timestamps    `objectbox:"inline"`
 	ID                   string
-	Slug                 string `unique`
+	Slug                 string `objectbox:"unique"`
 	Receiver             string
 	Description          string
-	SubscribedCategories []models.NotificationsCategory `type:"[]string" converter:"notificationsCategory"`
+	SubscribedCategories []models.NotificationsCategory `objectbox:"type:[]string converter:notificationsCategory"`
 	SubscribedLabels     []string
-	Channels             []models.Channel `type:"[]byte" converter:"channelsJson"`
+	Channels             []models.Channel `objectbox:"type:[]byte converter:channelsJson"`
 }

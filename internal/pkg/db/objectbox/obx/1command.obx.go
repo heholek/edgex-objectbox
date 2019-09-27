@@ -4,8 +4,8 @@
 package obx
 
 import (
-	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -114,25 +114,25 @@ var Command_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (command_EntityInfo) GeneratorVersion() int {
-	return 2
+	return 3
 }
 
 // AddToModel is called by ObjectBox during model build
 func (command_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Command", 2, 3466110984159220104)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 8976154384675543155)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 4173457774608518837)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 2804731238210135713)
-	model.Property("Id", objectbox.PropertyType_Long, 4, 7187431837387194143)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Name", objectbox.PropertyType_String, 5, 1838205786009926106)
-	model.Property("Get_Path", objectbox.PropertyType_String, 6, 4675672987288618325)
-	model.Property("Get_Responses", objectbox.PropertyType_ByteVector, 7, 6760659952611457052)
-	model.Property("Get_URL", objectbox.PropertyType_String, 8, 3771849917208761361)
-	model.Property("Put_Path", objectbox.PropertyType_String, 9, 101551801493008702)
-	model.Property("Put_Responses", objectbox.PropertyType_ByteVector, 10, 7143390721286976146)
-	model.Property("Put_URL", objectbox.PropertyType_String, 11, 5130326444177191018)
-	model.Property("Put_ParameterNames", objectbox.PropertyType_StringVector, 12, 706434787225063093)
+	model.Property("Created", 6, 1, 8976154384675543155)
+	model.Property("Modified", 6, 2, 4173457774608518837)
+	model.Property("Origin", 6, 3, 2804731238210135713)
+	model.Property("Id", 6, 4, 7187431837387194143)
+	model.PropertyFlags(8193)
+	model.Property("Name", 9, 5, 1838205786009926106)
+	model.Property("Get_Path", 9, 6, 4675672987288618325)
+	model.Property("Get_Responses", 23, 7, 6760659952611457052)
+	model.Property("Get_URL", 9, 8, 3771849917208761361)
+	model.Property("Put_Path", 9, 9, 101551801493008702)
+	model.Property("Put_Responses", 23, 10, 7143390721286976146)
+	model.Property("Put_URL", 9, 11, 5130326444177191018)
+	model.Property("Put_ParameterNames", 30, 12, 706434787225063093)
 	model.EntityLastPropertyId(12, 706434787225063093)
 }
 
@@ -156,7 +156,7 @@ func (command_EntityInfo) SetId(object interface{}, id uint64) {
 }
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
-func (command_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+func (command_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
 	return nil
 }
 
@@ -197,7 +197,7 @@ func (command_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, 
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (command_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
+func (command_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -206,9 +206,9 @@ func (command_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interf
 
 	return &Command{
 		Timestamps: models.Timestamps{
-			Created:  table.GetInt64Slot(4, 0),
-			Modified: table.GetInt64Slot(6, 0),
-			Origin:   table.GetInt64Slot(8, 0),
+			Created:  fbutils.GetInt64Slot(table, 4),
+			Modified: fbutils.GetInt64Slot(table, 6),
+			Origin:   fbutils.GetInt64Slot(table, 8),
 		},
 		Id:   objectbox.StringIdConvertToEntityProperty(id),
 		Name: fbutils.GetStringSlot(table, 12),
@@ -281,7 +281,7 @@ func (box *CommandBox) PutAsync(object *Command) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
 
-// PutAll inserts multiple objects in single transaction.
+// PutMany inserts multiple objects in single transaction.
 // In case Ids are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
@@ -291,8 +291,8 @@ func (box *CommandBox) PutAsync(object *Command) (uint64, error) {
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *CommandBox) PutAll(objects []Command) ([]uint64, error) {
-	return box.Box.PutAll(objects)
+func (box *CommandBox) PutMany(objects []Command) ([]uint64, error) {
+	return box.Box.PutMany(objects)
 }
 
 // Get reads a single object.
@@ -308,7 +308,17 @@ func (box *CommandBox) Get(id uint64) (*Command, error) {
 	return object.(*Command), nil
 }
 
-// Get reads all stored objects
+// GetMany reads multiple objects at once.
+// If any of the objects doesn't exist, its position in the return slice is an empty object
+func (box *CommandBox) GetMany(ids ...uint64) ([]Command, error) {
+	objects, err := box.Box.GetMany(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Command), nil
+}
+
+// GetAll reads all stored objects
 func (box *CommandBox) GetAll() ([]Command, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
@@ -318,8 +328,21 @@ func (box *CommandBox) GetAll() ([]Command, error) {
 }
 
 // Remove deletes a single object
-func (box *CommandBox) Remove(object *Command) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.Id))
+func (box *CommandBox) Remove(object *Command) error {
+	return box.Box.Remove(object)
+}
+
+// RemoveMany deletes multiple objects at once.
+// Returns the number of deleted object or error on failure.
+// Note that this method will not fail if an object is not found (e.g. already removed).
+// In case you need to strictly check whether all of the objects exist before removing them,
+// you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
+func (box *CommandBox) RemoveMany(objects ...*Command) (uint64, error) {
+	var ids = make([]uint64, len(objects))
+	for k, object := range objects {
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Id)
+	}
+	return box.Box.RemoveIds(ids...)
 }
 
 // Creates a query with the given conditions. Use the fields of the Command_ struct to create conditions.

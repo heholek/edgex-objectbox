@@ -18,6 +18,6 @@ import "github.com/edgexfoundry/go-mod-core-contracts/models"
 
 type Action struct {
 	Path      string
-	Responses []models.Response `type:"[]byte" converter:"responsesJson"`
+	Responses []models.Response `objectbox:"type:[]byte converter:responsesJson"`
 	URL       string
 }

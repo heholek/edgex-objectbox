@@ -20,10 +20,10 @@ type ValueDescriptor struct {
 	Description  string
 	Modified     int64
 	Origin       int64
-	Name         string      `unique`
-	Min          interface{} `type:"[]byte" converter:"interfaceJson"`
-	Max          interface{} `type:"[]byte" converter:"interfaceJson"`
-	DefaultValue interface{} `type:"[]byte" converter:"interfaceJson"`
+	Name         string      `objectbox:"unique"`
+	Min          interface{} `objectbox:"type:[]byte converter:interfaceJson"`
+	Max          interface{} `objectbox:"type:[]byte converter:interfaceJson"`
+	DefaultValue interface{} `objectbox:"type:[]byte converter:interfaceJson"`
 	Type         string
 	UomLabel     string
 	Formatting   string

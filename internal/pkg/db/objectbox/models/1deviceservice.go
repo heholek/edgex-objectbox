@@ -19,13 +19,13 @@ import (
 )
 
 type DeviceService struct {
-	models.DescribedObject `inline`
+	models.DescribedObject `objectbox:"inline"`
 	Id                     string
-	Name                   string `unique`
+	Name                   string `objectbox:"unique"`
 	LastConnected          int64
 	LastReported           int64
 	OperatingState         models.OperatingState
 	Labels                 []string
-	Addressable            Addressable `link`
+	Addressable            Addressable `objectbox:"link"`
 	AdminState             models.AdminState
 }

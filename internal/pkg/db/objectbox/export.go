@@ -3,9 +3,9 @@ package objectbox
 // implements export-client service contract
 
 import (
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox/obx"
-	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"sync"
 )
@@ -99,7 +99,7 @@ func (client *exportClient) DeleteRegistrationById(id string) error {
 	if id, err := obx.IdFromString(id); err != nil {
 		return mapError(err)
 	} else {
-		return mapError(client.registrationBox.Box.Remove(id))
+		return mapError(client.registrationBox.RemoveId(id))
 	}
 }
 

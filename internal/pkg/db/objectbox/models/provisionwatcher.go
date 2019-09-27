@@ -19,11 +19,11 @@ import (
 )
 
 type ProvisionWatcher struct {
-	models.Timestamps `inline`
+	models.Timestamps `objectbox:"inline"`
 	Id                string
-	Name              string            `unique`
-	Identifiers       map[string]string `type:"[]byte" converter:"mapStringStringJson"`
-	Profile           DeviceProfile     `link`
-	Service           DeviceService     `link`
+	Name              string            `objectbox:"unique"`
+	Identifiers       map[string]string `objectbox:"type:[]byte converter:mapStringStringJson"`
+	Profile           DeviceProfile     `objectbox:"link"`
+	Service           DeviceService     `objectbox:"link"`
 	OperatingState    models.OperatingState
 }

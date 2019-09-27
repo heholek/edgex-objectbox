@@ -19,13 +19,13 @@ import (
 )
 
 type DeviceProfile struct {
-	models.DescribedObject `inline`
+	models.DescribedObject `objectbox:"inline"`
 	Id                     string
-	Name                   string `unique`
+	Name                   string `objectbox:"unique"`
 	Manufacturer           string
 	Model                  string
 	Labels                 []string
-	DeviceResources        []models.DeviceResource  `type:"[]byte" converter:"deviceResourcesJson"`
-	DeviceCommands         []models.ProfileResource `type:"[]byte" converter:"profileResourcesJson"`
+	DeviceResources        []models.DeviceResource  `objectbox:"type:[]byte converter:deviceResourcesJson"`
+	DeviceCommands         []models.ProfileResource `objectbox:"type:[]byte converter:profileResourcesJson"`
 	CoreCommands           []Command
 }

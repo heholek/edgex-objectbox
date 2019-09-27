@@ -4,8 +4,8 @@
 package obx
 
 import (
-	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -100,25 +100,25 @@ var Subscription_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (subscription_EntityInfo) GeneratorVersion() int {
-	return 2
+	return 3
 }
 
 // AddToModel is called by ObjectBox during model build
 func (subscription_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Subscription", 14, 4790597517158533267)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 5157679359459246406)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 5632417580518702024)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 1893959681968276612)
-	model.Property("ID", objectbox.PropertyType_Long, 4, 5603884448953927663)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Slug", objectbox.PropertyType_String, 5, 6040395719468535542)
-	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
+	model.Property("Created", 6, 1, 5157679359459246406)
+	model.Property("Modified", 6, 2, 5632417580518702024)
+	model.Property("Origin", 6, 3, 1893959681968276612)
+	model.Property("ID", 6, 4, 5603884448953927663)
+	model.PropertyFlags(8193)
+	model.Property("Slug", 9, 5, 6040395719468535542)
+	model.PropertyFlags(32)
 	model.PropertyIndex(17, 8716895974642083960)
-	model.Property("Receiver", objectbox.PropertyType_String, 6, 4196336013963337708)
-	model.Property("Description", objectbox.PropertyType_String, 7, 8367424760486272699)
-	model.Property("SubscribedCategories", objectbox.PropertyType_StringVector, 8, 4391170479528597647)
-	model.Property("SubscribedLabels", objectbox.PropertyType_StringVector, 9, 875615126458241331)
-	model.Property("Channels", objectbox.PropertyType_ByteVector, 10, 6568091755753264242)
+	model.Property("Receiver", 9, 6, 4196336013963337708)
+	model.Property("Description", 9, 7, 8367424760486272699)
+	model.Property("SubscribedCategories", 30, 8, 4391170479528597647)
+	model.Property("SubscribedLabels", 30, 9, 875615126458241331)
+	model.Property("Channels", 23, 10, 6568091755753264242)
 	model.EntityLastPropertyId(10, 6568091755753264242)
 }
 
@@ -142,7 +142,7 @@ func (subscription_EntityInfo) SetId(object interface{}, id uint64) {
 }
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
-func (subscription_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+func (subscription_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
 	return nil
 }
 
@@ -179,7 +179,7 @@ func (subscription_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (subscription_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
+func (subscription_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -188,9 +188,9 @@ func (subscription_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 
 	return &Subscription{
 		Timestamps: models.Timestamps{
-			Created:  table.GetInt64Slot(4, 0),
-			Modified: table.GetInt64Slot(6, 0),
-			Origin:   table.GetInt64Slot(8, 0),
+			Created:  fbutils.GetInt64Slot(table, 4),
+			Modified: fbutils.GetInt64Slot(table, 6),
+			Origin:   fbutils.GetInt64Slot(table, 8),
 		},
 		ID:                   objectbox.StringIdConvertToEntityProperty(id),
 		Slug:                 fbutils.GetStringSlot(table, 12),
@@ -253,7 +253,7 @@ func (box *SubscriptionBox) PutAsync(object *Subscription) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
 
-// PutAll inserts multiple objects in single transaction.
+// PutMany inserts multiple objects in single transaction.
 // In case IDs are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
@@ -263,8 +263,8 @@ func (box *SubscriptionBox) PutAsync(object *Subscription) (uint64, error) {
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *SubscriptionBox) PutAll(objects []Subscription) ([]uint64, error) {
-	return box.Box.PutAll(objects)
+func (box *SubscriptionBox) PutMany(objects []Subscription) ([]uint64, error) {
+	return box.Box.PutMany(objects)
 }
 
 // Get reads a single object.
@@ -280,7 +280,17 @@ func (box *SubscriptionBox) Get(id uint64) (*Subscription, error) {
 	return object.(*Subscription), nil
 }
 
-// Get reads all stored objects
+// GetMany reads multiple objects at once.
+// If any of the objects doesn't exist, its position in the return slice is an empty object
+func (box *SubscriptionBox) GetMany(ids ...uint64) ([]Subscription, error) {
+	objects, err := box.Box.GetMany(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Subscription), nil
+}
+
+// GetAll reads all stored objects
 func (box *SubscriptionBox) GetAll() ([]Subscription, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
@@ -290,8 +300,21 @@ func (box *SubscriptionBox) GetAll() ([]Subscription, error) {
 }
 
 // Remove deletes a single object
-func (box *SubscriptionBox) Remove(object *Subscription) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.ID))
+func (box *SubscriptionBox) Remove(object *Subscription) error {
+	return box.Box.Remove(object)
+}
+
+// RemoveMany deletes multiple objects at once.
+// Returns the number of deleted object or error on failure.
+// Note that this method will not fail if an object is not found (e.g. already removed).
+// In case you need to strictly check whether all of the objects exist before removing them,
+// you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
+func (box *SubscriptionBox) RemoveMany(objects ...*Subscription) (uint64, error) {
+	var ids = make([]uint64, len(objects))
+	for k, object := range objects {
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.ID)
+	}
+	return box.Box.RemoveIds(ids...)
 }
 
 // Creates a query with the given conditions. Use the fields of the Subscription_ struct to create conditions.

@@ -77,19 +77,19 @@ var Event_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (event_EntityInfo) GeneratorVersion() int {
-	return 2
+	return 3
 }
 
 // AddToModel is called by ObjectBox during model build
 func (event_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Event", 8, 5261868944228209948)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 8408127641507867598)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Pushed", objectbox.PropertyType_Long, 2, 5256971571136440340)
-	model.Property("Device", objectbox.PropertyType_String, 3, 8701916792943957528)
-	model.Property("Created", objectbox.PropertyType_Long, 4, 8617743842335964745)
-	model.Property("Modified", objectbox.PropertyType_Long, 5, 9004481679338464951)
-	model.Property("Origin", objectbox.PropertyType_Long, 6, 536564806295219253)
+	model.Property("ID", 6, 1, 8408127641507867598)
+	model.PropertyFlags(8193)
+	model.Property("Pushed", 6, 2, 5256971571136440340)
+	model.Property("Device", 9, 3, 8701916792943957528)
+	model.Property("Created", 6, 4, 8617743842335964745)
+	model.Property("Modified", 6, 5, 9004481679338464951)
+	model.Property("Origin", 6, 6, 536564806295219253)
 	model.EntityLastPropertyId(6, 536564806295219253)
 	model.Relation(2, 6583600503460504451, ReadingBinding.Id, ReadingBinding.Uid)
 }
@@ -114,12 +114,11 @@ func (event_EntityInfo) SetId(object interface{}, id uint64) {
 }
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
-func (event_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
-	if err := txn.RunWithCursor(EventBinding.Id, func(cursor *objectbox.Cursor) error {
-		return cursor.RelationReplace(2, ReadingBinding.Id, id, object, object.(*Event).Readings)
-	}); err != nil {
+func (event_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
+	if err := BoxForEvent(ob).RelationReplace(Event_.Readings, id, object, object.(*Event).Readings); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -147,7 +146,7 @@ func (event_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (event_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
+func (event_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -155,24 +154,21 @@ func (event_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interfac
 	var id = table.GetUint64Slot(4, 0)
 
 	var relReadings []Reading
-	if err := txn.RunWithCursor(EventBinding.Id, func(cursor *objectbox.Cursor) error {
-		if rSlice, err := cursor.RelationGetAll(2, ReadingBinding.Id, id); err != nil {
-			return err
-		} else {
-			relReadings = rSlice.([]Reading)
-			return nil
-		}
-	}); err != nil {
+	if rIds, err := BoxForEvent(ob).RelationIds(Event_.Readings, id); err != nil {
 		return nil, err
+	} else if rSlice, err := BoxForReading(ob).GetMany(rIds...); err != nil {
+		return nil, err
+	} else {
+		relReadings = rSlice
 	}
 
 	return &Event{
 		ID:       objectbox.StringIdConvertToEntityProperty(id),
-		Pushed:   table.GetInt64Slot(6, 0),
+		Pushed:   fbutils.GetInt64Slot(table, 6),
 		Device:   fbutils.GetStringSlot(table, 8),
-		Created:  table.GetInt64Slot(10, 0),
-		Modified: table.GetInt64Slot(12, 0),
-		Origin:   table.GetInt64Slot(14, 0),
+		Created:  fbutils.GetInt64Slot(table, 10),
+		Modified: fbutils.GetInt64Slot(table, 12),
+		Origin:   fbutils.GetInt64Slot(table, 14),
 		Readings: relReadings,
 	}, nil
 }
@@ -228,7 +224,7 @@ func (box *EventBox) PutAsync(object *Event) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
 
-// PutAll inserts multiple objects in single transaction.
+// PutMany inserts multiple objects in single transaction.
 // In case IDs are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
@@ -238,8 +234,8 @@ func (box *EventBox) PutAsync(object *Event) (uint64, error) {
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *EventBox) PutAll(objects []Event) ([]uint64, error) {
-	return box.Box.PutAll(objects)
+func (box *EventBox) PutMany(objects []Event) ([]uint64, error) {
+	return box.Box.PutMany(objects)
 }
 
 // Get reads a single object.
@@ -255,7 +251,17 @@ func (box *EventBox) Get(id uint64) (*Event, error) {
 	return object.(*Event), nil
 }
 
-// Get reads all stored objects
+// GetMany reads multiple objects at once.
+// If any of the objects doesn't exist, its position in the return slice is an empty object
+func (box *EventBox) GetMany(ids ...uint64) ([]Event, error) {
+	objects, err := box.Box.GetMany(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Event), nil
+}
+
+// GetAll reads all stored objects
 func (box *EventBox) GetAll() ([]Event, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
@@ -265,8 +271,21 @@ func (box *EventBox) GetAll() ([]Event, error) {
 }
 
 // Remove deletes a single object
-func (box *EventBox) Remove(object *Event) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.ID))
+func (box *EventBox) Remove(object *Event) error {
+	return box.Box.Remove(object)
+}
+
+// RemoveMany deletes multiple objects at once.
+// Returns the number of deleted object or error on failure.
+// Note that this method will not fail if an object is not found (e.g. already removed).
+// In case you need to strictly check whether all of the objects exist before removing them,
+// you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
+func (box *EventBox) RemoveMany(objects ...*Event) (uint64, error) {
+	var ids = make([]uint64, len(objects))
+	for k, object := range objects {
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.ID)
+	}
+	return box.Box.RemoveIds(ids...)
 }
 
 // Creates a query with the given conditions. Use the fields of the Event_ struct to create conditions.

@@ -4,8 +4,8 @@
 package obx
 
 import (
-	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -100,25 +100,25 @@ var Interval_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (interval_EntityInfo) GeneratorVersion() int {
-	return 2
+	return 3
 }
 
 // AddToModel is called by ObjectBox during model build
 func (interval_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Interval", 10, 7776691412575067801)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 4844875194390890308)
-	model.Property("Modified", objectbox.PropertyType_Long, 3, 7077503010831821587)
-	model.Property("Origin", objectbox.PropertyType_Long, 4, 1376927553496194605)
-	model.Property("ID", objectbox.PropertyType_Long, 1, 6621318798456684065)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Name", objectbox.PropertyType_String, 5, 5045401852415426063)
-	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
+	model.Property("Created", 6, 2, 4844875194390890308)
+	model.Property("Modified", 6, 3, 7077503010831821587)
+	model.Property("Origin", 6, 4, 1376927553496194605)
+	model.Property("ID", 6, 1, 6621318798456684065)
+	model.PropertyFlags(8193)
+	model.Property("Name", 9, 5, 5045401852415426063)
+	model.PropertyFlags(32)
 	model.PropertyIndex(10, 109793853252723826)
-	model.Property("Start", objectbox.PropertyType_String, 6, 3486349604901008785)
-	model.Property("End", objectbox.PropertyType_String, 7, 5610259662973560311)
-	model.Property("Frequency", objectbox.PropertyType_String, 8, 3713977468053692261)
-	model.Property("Cron", objectbox.PropertyType_String, 9, 3557069308719432604)
-	model.Property("RunOnce", objectbox.PropertyType_Bool, 10, 5010559172680658469)
+	model.Property("Start", 9, 6, 3486349604901008785)
+	model.Property("End", 9, 7, 5610259662973560311)
+	model.Property("Frequency", 9, 8, 3713977468053692261)
+	model.Property("Cron", 9, 9, 3557069308719432604)
+	model.Property("RunOnce", 1, 10, 5010559172680658469)
 	model.EntityLastPropertyId(10, 5010559172680658469)
 }
 
@@ -142,7 +142,7 @@ func (interval_EntityInfo) SetId(object interface{}, id uint64) {
 }
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
-func (interval_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+func (interval_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
 	return nil
 }
 
@@ -178,7 +178,7 @@ func (interval_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder,
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (interval_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
+func (interval_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -187,9 +187,9 @@ func (interval_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (inter
 
 	return &Interval{
 		Timestamps: models.Timestamps{
-			Created:  table.GetInt64Slot(6, 0),
-			Modified: table.GetInt64Slot(8, 0),
-			Origin:   table.GetInt64Slot(10, 0),
+			Created:  fbutils.GetInt64Slot(table, 6),
+			Modified: fbutils.GetInt64Slot(table, 8),
+			Origin:   fbutils.GetInt64Slot(table, 10),
 		},
 		ID:        objectbox.StringIdConvertToEntityProperty(id),
 		Name:      fbutils.GetStringSlot(table, 12),
@@ -197,7 +197,7 @@ func (interval_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (inter
 		End:       fbutils.GetStringSlot(table, 16),
 		Frequency: fbutils.GetStringSlot(table, 18),
 		Cron:      fbutils.GetStringSlot(table, 20),
-		RunOnce:   table.GetBoolSlot(22, false),
+		RunOnce:   fbutils.GetBoolSlot(table, 22),
 	}, nil
 }
 
@@ -252,7 +252,7 @@ func (box *IntervalBox) PutAsync(object *Interval) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
 
-// PutAll inserts multiple objects in single transaction.
+// PutMany inserts multiple objects in single transaction.
 // In case IDs are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
@@ -262,8 +262,8 @@ func (box *IntervalBox) PutAsync(object *Interval) (uint64, error) {
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *IntervalBox) PutAll(objects []Interval) ([]uint64, error) {
-	return box.Box.PutAll(objects)
+func (box *IntervalBox) PutMany(objects []Interval) ([]uint64, error) {
+	return box.Box.PutMany(objects)
 }
 
 // Get reads a single object.
@@ -279,7 +279,17 @@ func (box *IntervalBox) Get(id uint64) (*Interval, error) {
 	return object.(*Interval), nil
 }
 
-// Get reads all stored objects
+// GetMany reads multiple objects at once.
+// If any of the objects doesn't exist, its position in the return slice is an empty object
+func (box *IntervalBox) GetMany(ids ...uint64) ([]Interval, error) {
+	objects, err := box.Box.GetMany(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Interval), nil
+}
+
+// GetAll reads all stored objects
 func (box *IntervalBox) GetAll() ([]Interval, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
@@ -289,8 +299,21 @@ func (box *IntervalBox) GetAll() ([]Interval, error) {
 }
 
 // Remove deletes a single object
-func (box *IntervalBox) Remove(object *Interval) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.ID))
+func (box *IntervalBox) Remove(object *Interval) error {
+	return box.Box.Remove(object)
+}
+
+// RemoveMany deletes multiple objects at once.
+// Returns the number of deleted object or error on failure.
+// Note that this method will not fail if an object is not found (e.g. already removed).
+// In case you need to strictly check whether all of the objects exist before removing them,
+// you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
+func (box *IntervalBox) RemoveMany(objects ...*Interval) (uint64, error) {
+	var ids = make([]uint64, len(objects))
+	for k, object := range objects {
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.ID)
+	}
+	return box.Box.RemoveIds(ids...)
 }
 
 // Creates a query with the given conditions. Use the fields of the Interval_ struct to create conditions.

@@ -30,7 +30,6 @@ func NewClient(config db.Configuration) (*ObjectBoxClient, error) {
 func (client *ObjectBoxClient) Connect() error {
 	objectBox, err := NewBuilder().
 		Directory(client.config.DatabaseName).
-		AlwaysAwaitAsync(asyncPut).
 		Model(obx.ObjectBoxModel()).
 		Build()
 

@@ -4,8 +4,8 @@
 package obx
 
 import (
-	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
@@ -115,27 +115,27 @@ var Transmission_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (transmission_EntityInfo) GeneratorVersion() int {
-	return 2
+	return 3
 }
 
 // AddToModel is called by ObjectBox during model build
 func (transmission_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Transmission", 15, 6516899534013799700)
-	model.Property("Created", objectbox.PropertyType_Long, 1, 874268777377311919)
-	model.Property("Modified", objectbox.PropertyType_Long, 2, 4563914448884285908)
-	model.Property("Origin", objectbox.PropertyType_Long, 3, 6396561716074782386)
-	model.Property("ID", objectbox.PropertyType_Long, 4, 7018017394194855826)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Notification", objectbox.PropertyType_Relation, 5, 2587965071970041075)
-	model.PropertyFlags(objectbox.PropertyFlags_UNSIGNED)
+	model.Property("Created", 6, 1, 874268777377311919)
+	model.Property("Modified", 6, 2, 4563914448884285908)
+	model.Property("Origin", 6, 3, 6396561716074782386)
+	model.Property("ID", 6, 4, 7018017394194855826)
+	model.PropertyFlags(8193)
+	model.Property("Notification", 11, 5, 2587965071970041075)
+	model.PropertyFlags(8192)
 	model.PropertyRelation("Notification", 18, 4309985151868307894)
-	model.Property("Receiver", objectbox.PropertyType_String, 6, 6970133143502682397)
-	model.Property("Channel_Type", objectbox.PropertyType_String, 7, 8315623827360567320)
-	model.Property("Channel_MailAddresses", objectbox.PropertyType_StringVector, 8, 2372831308292201526)
-	model.Property("Channel_Url", objectbox.PropertyType_String, 9, 7096098715837417906)
-	model.Property("Status", objectbox.PropertyType_String, 10, 161677121815195738)
-	model.Property("ResendCount", objectbox.PropertyType_Long, 11, 1458266355346453588)
-	model.Property("Records", objectbox.PropertyType_ByteVector, 12, 107793340757305390)
+	model.Property("Receiver", 9, 6, 6970133143502682397)
+	model.Property("Channel_Type", 9, 7, 8315623827360567320)
+	model.Property("Channel_MailAddresses", 30, 8, 2372831308292201526)
+	model.Property("Channel_Url", 9, 9, 7096098715837417906)
+	model.Property("Status", 9, 10, 161677121815195738)
+	model.Property("ResendCount", 6, 11, 1458266355346453588)
+	model.Property("Records", 23, 12, 107793340757305390)
 	model.EntityLastPropertyId(12, 107793340757305390)
 }
 
@@ -159,16 +159,13 @@ func (transmission_EntityInfo) SetId(object interface{}, id uint64) {
 }
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
-func (transmission_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+func (transmission_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
 	if rel := &object.(*Transmission).Notification; rel != nil {
-		rId, err := NotificationBinding.GetId(rel)
-		if err != nil {
+		if rId, err := NotificationBinding.GetId(rel); err != nil {
 			return err
 		} else if rId == 0 {
-			if err := txn.RunWithCursor(NotificationBinding.Id, func(targetCursor *objectbox.Cursor) error {
-				_, err := targetCursor.Put(rel) // NOTE Put/PutAsync() has a side-effect of setting the rel.ID
-				return err
-			}); err != nil {
+			// NOTE Put/PutAsync() has a side-effect of setting the rel.ID
+			if _, err := BoxForNotification(ob).Put(rel); err != nil {
 				return err
 			}
 		}
@@ -220,7 +217,7 @@ func (transmission_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (transmission_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
+func (transmission_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -228,19 +225,11 @@ func (transmission_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 	var id = table.GetUint64Slot(10, 0)
 
 	var relNotification *Notification
-	if rId := table.GetUint64Slot(12, 0); rId > 0 {
-		if err := txn.RunWithCursor(NotificationBinding.Id, func(targetCursor *objectbox.Cursor) error {
-			if relObject, err := targetCursor.Get(rId); err != nil {
-				return err
-			} else if relObj, ok := relObject.(*Notification); ok {
-				relNotification = relObj
-			} else {
-				var relObj = relObject.(Notification)
-				relNotification = &relObj
-			}
-			return nil
-		}); err != nil {
+	if rId := fbutils.GetUint64Slot(table, 12); rId > 0 {
+		if rObject, err := BoxForNotification(ob).Get(rId); err != nil {
 			return nil, err
+		} else {
+			relNotification = rObject
 		}
 	} else {
 		relNotification = &Notification{}
@@ -248,9 +237,9 @@ func (transmission_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 
 	return &Transmission{
 		Timestamps: models.Timestamps{
-			Created:  table.GetInt64Slot(4, 0),
-			Modified: table.GetInt64Slot(6, 0),
-			Origin:   table.GetInt64Slot(8, 0),
+			Created:  fbutils.GetInt64Slot(table, 4),
+			Modified: fbutils.GetInt64Slot(table, 6),
+			Origin:   fbutils.GetInt64Slot(table, 8),
 		},
 		ID:           objectbox.StringIdConvertToEntityProperty(id),
 		Notification: *relNotification,
@@ -261,7 +250,7 @@ func (transmission_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (i
 			Url:           fbutils.GetStringSlot(table, 20),
 		},
 		Status:      models.TransmissionStatus(fbutils.GetStringSlot(table, 22)),
-		ResendCount: int(table.GetUint64Slot(24, 0)),
+		ResendCount: fbutils.GetIntSlot(table, 24),
 		Records:     transmissionRecordsJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 26)),
 	}, nil
 }
@@ -317,7 +306,7 @@ func (box *TransmissionBox) PutAsync(object *Transmission) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
 
-// PutAll inserts multiple objects in single transaction.
+// PutMany inserts multiple objects in single transaction.
 // In case IDs are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
@@ -327,8 +316,8 @@ func (box *TransmissionBox) PutAsync(object *Transmission) (uint64, error) {
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *TransmissionBox) PutAll(objects []Transmission) ([]uint64, error) {
-	return box.Box.PutAll(objects)
+func (box *TransmissionBox) PutMany(objects []Transmission) ([]uint64, error) {
+	return box.Box.PutMany(objects)
 }
 
 // Get reads a single object.
@@ -344,7 +333,17 @@ func (box *TransmissionBox) Get(id uint64) (*Transmission, error) {
 	return object.(*Transmission), nil
 }
 
-// Get reads all stored objects
+// GetMany reads multiple objects at once.
+// If any of the objects doesn't exist, its position in the return slice is an empty object
+func (box *TransmissionBox) GetMany(ids ...uint64) ([]Transmission, error) {
+	objects, err := box.Box.GetMany(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Transmission), nil
+}
+
+// GetAll reads all stored objects
 func (box *TransmissionBox) GetAll() ([]Transmission, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
@@ -354,8 +353,21 @@ func (box *TransmissionBox) GetAll() ([]Transmission, error) {
 }
 
 // Remove deletes a single object
-func (box *TransmissionBox) Remove(object *Transmission) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.ID))
+func (box *TransmissionBox) Remove(object *Transmission) error {
+	return box.Box.Remove(object)
+}
+
+// RemoveMany deletes multiple objects at once.
+// Returns the number of deleted object or error on failure.
+// Note that this method will not fail if an object is not found (e.g. already removed).
+// In case you need to strictly check whether all of the objects exist before removing them,
+// you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
+func (box *TransmissionBox) RemoveMany(objects ...*Transmission) (uint64, error) {
+	var ids = make([]uint64, len(objects))
+	for k, object := range objects {
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.ID)
+	}
+	return box.Box.RemoveIds(ids...)
 }
 
 // Creates a query with the given conditions. Use the fields of the Transmission_ struct to create conditions.

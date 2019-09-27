@@ -120,28 +120,28 @@ var ValueDescriptor_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (valueDescriptor_EntityInfo) GeneratorVersion() int {
-	return 2
+	return 3
 }
 
 // AddToModel is called by ObjectBox during model build
 func (valueDescriptor_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("ValueDescriptor", 16, 2903250960703756959)
-	model.Property("Id", objectbox.PropertyType_Long, 1, 6873011748171964323)
-	model.PropertyFlags(objectbox.PropertyFlags_ID | objectbox.PropertyFlags_UNSIGNED)
-	model.Property("Created", objectbox.PropertyType_Long, 2, 1551957824880721748)
-	model.Property("Description", objectbox.PropertyType_String, 3, 929837542342336953)
-	model.Property("Modified", objectbox.PropertyType_Long, 4, 6532154564935767763)
-	model.Property("Origin", objectbox.PropertyType_Long, 5, 8880716450337486833)
-	model.Property("Name", objectbox.PropertyType_String, 6, 2621696991637966622)
-	model.PropertyFlags(objectbox.PropertyFlags_UNIQUE)
+	model.Property("Id", 6, 1, 6873011748171964323)
+	model.PropertyFlags(8193)
+	model.Property("Created", 6, 2, 1551957824880721748)
+	model.Property("Description", 9, 3, 929837542342336953)
+	model.Property("Modified", 6, 4, 6532154564935767763)
+	model.Property("Origin", 6, 5, 8880716450337486833)
+	model.Property("Name", 9, 6, 2621696991637966622)
+	model.PropertyFlags(32)
 	model.PropertyIndex(19, 8558604861306073232)
-	model.Property("Min", objectbox.PropertyType_ByteVector, 7, 1578207995766742188)
-	model.Property("Max", objectbox.PropertyType_ByteVector, 8, 1694373352675677816)
-	model.Property("DefaultValue", objectbox.PropertyType_ByteVector, 9, 415476961418490344)
-	model.Property("Type", objectbox.PropertyType_String, 10, 8376260686049225004)
-	model.Property("UomLabel", objectbox.PropertyType_String, 11, 8683875949437263689)
-	model.Property("Formatting", objectbox.PropertyType_String, 12, 6024578626204330523)
-	model.Property("Labels", objectbox.PropertyType_StringVector, 13, 3814172039806064934)
+	model.Property("Min", 23, 7, 1578207995766742188)
+	model.Property("Max", 23, 8, 1694373352675677816)
+	model.Property("DefaultValue", 23, 9, 415476961418490344)
+	model.Property("Type", 9, 10, 8376260686049225004)
+	model.Property("UomLabel", 9, 11, 8683875949437263689)
+	model.Property("Formatting", 9, 12, 6024578626204330523)
+	model.Property("Labels", 30, 13, 3814172039806064934)
 	model.EntityLastPropertyId(13, 3814172039806064934)
 }
 
@@ -165,7 +165,7 @@ func (valueDescriptor_EntityInfo) SetId(object interface{}, id uint64) {
 }
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
-func (valueDescriptor_EntityInfo) PutRelated(txn *objectbox.Transaction, object interface{}, id uint64) error {
+func (valueDescriptor_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
 	return nil
 }
 
@@ -208,7 +208,7 @@ func (valueDescriptor_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.B
 }
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
-func (valueDescriptor_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte) (interface{}, error) {
+func (valueDescriptor_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
@@ -217,10 +217,10 @@ func (valueDescriptor_EntityInfo) Load(txn *objectbox.Transaction, bytes []byte)
 
 	return &ValueDescriptor{
 		Id:           objectbox.StringIdConvertToEntityProperty(id),
-		Created:      table.GetInt64Slot(6, 0),
+		Created:      fbutils.GetInt64Slot(table, 6),
 		Description:  fbutils.GetStringSlot(table, 8),
-		Modified:     table.GetInt64Slot(10, 0),
-		Origin:       table.GetInt64Slot(12, 0),
+		Modified:     fbutils.GetInt64Slot(table, 10),
+		Origin:       fbutils.GetInt64Slot(table, 12),
 		Name:         fbutils.GetStringSlot(table, 14),
 		Min:          interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 16)),
 		Max:          interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 18)),
@@ -283,7 +283,7 @@ func (box *ValueDescriptorBox) PutAsync(object *ValueDescriptor) (uint64, error)
 	return box.Box.PutAsync(object)
 }
 
-// PutAll inserts multiple objects in single transaction.
+// PutMany inserts multiple objects in single transaction.
 // In case Ids are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
@@ -293,8 +293,8 @@ func (box *ValueDescriptorBox) PutAsync(object *ValueDescriptor) (uint64, error)
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
-func (box *ValueDescriptorBox) PutAll(objects []ValueDescriptor) ([]uint64, error) {
-	return box.Box.PutAll(objects)
+func (box *ValueDescriptorBox) PutMany(objects []ValueDescriptor) ([]uint64, error) {
+	return box.Box.PutMany(objects)
 }
 
 // Get reads a single object.
@@ -310,7 +310,17 @@ func (box *ValueDescriptorBox) Get(id uint64) (*ValueDescriptor, error) {
 	return object.(*ValueDescriptor), nil
 }
 
-// Get reads all stored objects
+// GetMany reads multiple objects at once.
+// If any of the objects doesn't exist, its position in the return slice is an empty object
+func (box *ValueDescriptorBox) GetMany(ids ...uint64) ([]ValueDescriptor, error) {
+	objects, err := box.Box.GetMany(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]ValueDescriptor), nil
+}
+
+// GetAll reads all stored objects
 func (box *ValueDescriptorBox) GetAll() ([]ValueDescriptor, error) {
 	objects, err := box.Box.GetAll()
 	if err != nil {
@@ -320,8 +330,21 @@ func (box *ValueDescriptorBox) GetAll() ([]ValueDescriptor, error) {
 }
 
 // Remove deletes a single object
-func (box *ValueDescriptorBox) Remove(object *ValueDescriptor) (err error) {
-	return box.Box.Remove(objectbox.StringIdConvertToDatabaseValue(object.Id))
+func (box *ValueDescriptorBox) Remove(object *ValueDescriptor) error {
+	return box.Box.Remove(object)
+}
+
+// RemoveMany deletes multiple objects at once.
+// Returns the number of deleted object or error on failure.
+// Note that this method will not fail if an object is not found (e.g. already removed).
+// In case you need to strictly check whether all of the objects exist before removing them,
+// you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
+func (box *ValueDescriptorBox) RemoveMany(objects ...*ValueDescriptor) (uint64, error) {
+	var ids = make([]uint64, len(objects))
+	for k, object := range objects {
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Id)
+	}
+	return box.Box.RemoveIds(ids...)
 }
 
 // Creates a query with the given conditions. Use the fields of the ValueDescriptor_ struct to create conditions.

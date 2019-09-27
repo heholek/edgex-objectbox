@@ -19,17 +19,17 @@ import (
 )
 
 type Device struct {
-	models.DescribedObject `inline`
+	models.DescribedObject `objectbox:"inline"`
 	Id                     string
-	Name                   string `unique`
+	Name                   string `objectbox:"unique"`
 	AdminState             models.AdminState
 	OperatingState         models.OperatingState
-	Protocols              map[string]models.ProtocolProperties `type:"[]byte" converter:"mapStringProtocolPropertiesJson"`
+	Protocols              map[string]models.ProtocolProperties `objectbox:"type:[]byte converter:mapStringProtocolPropertiesJson"`
 	LastConnected          int64
 	LastReported           int64
 	Labels                 []string
-	Location               interface{}   `type:"[]byte" converter:"interfaceJson"`
-	Service                DeviceService `link`
-	Profile                DeviceProfile `link`
-	AutoEvents             []AutoEvent   `type:"[]byte" converter:"autoEventsJson"`
+	Location               interface{}   `objectbox:"type:[]byte converter:interfaceJson"`
+	Service                DeviceService `objectbox:"link"`
+	Profile                DeviceProfile `objectbox:"link"`
+	AutoEvents             []AutoEvent   `objectbox:"type:[]byte converter:autoEventsJson"`
 }

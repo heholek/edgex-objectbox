@@ -5,7 +5,7 @@ set -euo pipefail
 obxmodels=internal/pkg/db/objectbox/models #source
 obxbindings=internal/pkg/db/objectbox/obx  #target
 
-generator="objectbox-gogen -byValue -persist ${obxbindings}/objectbox-model.json"
+generator="go run github.com/objectbox/objectbox-go/cmd/objectbox-gogen -byValue -persist ${obxbindings}/objectbox-model.json"
 
 # cleanup if there was a failed generation previously
 rm ${obxmodels}/*.obx.go -f

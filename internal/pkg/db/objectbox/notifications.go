@@ -381,7 +381,7 @@ func (client *notificationsClient) DeleteNotificationById(id string) error {
 	if id, err := obx.IdFromString(id); err != nil {
 		return mapError(err)
 	} else {
-		return mapError(client.notificationBox.Box.Remove(id))
+		return mapError(client.notificationBox.RemoveId(id))
 	}
 }
 
@@ -521,7 +521,7 @@ func (client *notificationsClient) DeleteSubscriptionById(idString string) error
 		return mapError(err)
 	}
 
-	return mapError(client.notificationBox.Box.Remove(id))
+	return mapError(client.notificationBox.RemoveId(id))
 }
 
 func (client *notificationsClient) DeleteSubscriptionBySlug(slug string) error {

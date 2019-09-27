@@ -61,10 +61,10 @@ type coreMetaDataQueries struct {
 		name        deviceServiceQuery
 	}
 	provisionWatcher struct {
-		identifier provisionWatcherQuery
-		name       provisionWatcherQuery
-		profile    provisionWatcherQuery
-		service    provisionWatcherQuery
+		//identifiers provisionWatcherQuery byte-vector .contains() query is currently not available
+		name    provisionWatcherQuery
+		profile provisionWatcherQuery
+		service provisionWatcherQuery
 	}
 }
 
@@ -232,10 +232,10 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	//endregion
 
 	//region ProvisionWatcher
-	if err == nil {
-		client.queries.provisionWatcher.name.ProvisionWatcherQuery, err =
-			client.provisionWatcherBox.QueryOrError(obx.ProvisionWatcher_.Name.Equals("", true))
-	}
+	//if err == nil {
+	//	client.queries.provisionWatcher.identifiers.ProvisionWatcherQuery, err =
+	//		client.provisionWatcherBox.QueryOrError(obx.ProvisionWatcher_.Identifiers.Contains(nil))
+	//}
 	if err == nil {
 		client.queries.provisionWatcher.name.ProvisionWatcherQuery, err =
 			client.provisionWatcherBox.QueryOrError(obx.ProvisionWatcher_.Name.Equals("", true))
@@ -903,6 +903,13 @@ func (client *coreMetaDataClient) GetProvisionWatchersByServiceId(id string) ([]
 }
 
 func (client *coreMetaDataClient) GetProvisionWatchersByIdentifier(k string, v string) ([]contract.ProvisionWatcher, error) {
+	// Identifiers is a map[string]string - and is stored as JSON []byte
+	// We can create a query that contains "name":"value". While this is not 100 % correct (could have problems with
+	// special characters), it's the way reference DB implementations do it so we assume there are no special characters
+	// TODO currently not possible because ObjectBox ByteVector doesn't support contains query
+	// var query = &client.queries.provisionWatcher.identifiers
+	// ...
+
 	// TODO can we make this more efficient?
 	//  The biggest problem is that ProvisionWatcher contains relations which are loaded eagerly
 	// options are

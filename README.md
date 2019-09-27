@@ -32,7 +32,7 @@ Now that you have EdgeX up and running, you can follow our [API Walkthrough](htt
 ## Snap Package
 
 EdgeX Foundry is also available as a snap package, for more details
-on the snap, including how to install it, please refer to [EdgeX snap](https://github.com/edgexfoundry/edgex-go/blob/master/snap/README.md)
+on the snap, including how to install it, please refer to [EdgeX snap](snap/README.md)
 
 ## Native binaries
 

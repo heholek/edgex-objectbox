@@ -12,14 +12,16 @@
  * the License.
  *******************************************************************************/
 
-package models
+package correlation
+
+import (
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
+)
+
+// Custom handling for internal/pkg/correlation/models/event
+// The generator doesn't work (well) with this one and the result requires updates so it's commented out in generate.sh
 
 type Event struct {
-	ID       string
-	Pushed   int64
-	Device   string
-	Created  int64
-	Modified int64
-	Origin   int64
-	Readings []Reading
+	models.Event `objectbox:"inline"`
+	Checksum     string
 }

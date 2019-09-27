@@ -4,8 +4,9 @@
 package obx
 
 import (
-	. "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
+	. "github.com/objectbox/edgex-objectbox/internal/pkg/correlation/models"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
 )
@@ -30,6 +31,7 @@ var Event_ = struct {
 	Created  *objectbox.PropertyInt64
 	Modified *objectbox.PropertyInt64
 	Origin   *objectbox.PropertyInt64
+	Checksum *objectbox.PropertyString
 	Readings *objectbox.RelationToMany
 }{
 	ID: &objectbox.PropertyUint64{
@@ -68,6 +70,12 @@ var Event_ = struct {
 			Entity: &EventBinding.Entity,
 		},
 	},
+	Checksum: &objectbox.PropertyString{
+		BaseProperty: &objectbox.BaseProperty{
+			Id:     7,
+			Entity: &EventBinding.Entity,
+		},
+	},
 	Readings: &objectbox.RelationToMany{
 		Id:     2,
 		Source: &EventBinding.Entity,
@@ -90,26 +98,27 @@ func (event_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Created", 6, 4, 8617743842335964745)
 	model.Property("Modified", 6, 5, 9004481679338464951)
 	model.Property("Origin", 6, 6, 536564806295219253)
-	model.EntityLastPropertyId(6, 536564806295219253)
+	model.Property("Checksum", 9, 7, 3254805299999864324)
+	model.EntityLastPropertyId(7, 3254805299999864324)
 	model.Relation(2, 6583600503460504451, ReadingBinding.Id, ReadingBinding.Uid)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (event_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*Event); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.Event.ID), nil
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(Event).ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(Event).Event.ID), nil
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
 func (event_EntityInfo) SetId(object interface{}, id uint64) {
 	if obj, ok := object.(*Event); ok {
-		obj.ID = objectbox.StringIdConvertToEntityProperty(id)
+		obj.Event.ID = objectbox.StringIdConvertToEntityProperty(id)
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
-		_ = object.(Event).ID
+		_ = object.(Event).Event.ID
 	}
 }
 
@@ -132,16 +141,18 @@ func (event_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id
 		obj = &objVal
 	}
 
-	var offsetDevice = fbutils.CreateStringOffset(fbb, obj.Device)
+	var offsetDevice = fbutils.CreateStringOffset(fbb, obj.Event.Device)
+	var offsetChecksum = fbutils.CreateStringOffset(fbb, obj.Checksum)
 
 	// build the FlatBuffers object
-	fbb.StartObject(6)
+	fbb.StartObject(7)
 	fbutils.SetUint64Slot(fbb, 0, id)
-	fbutils.SetInt64Slot(fbb, 1, obj.Pushed)
+	fbutils.SetInt64Slot(fbb, 1, obj.Event.Pushed)
 	fbutils.SetUOffsetTSlot(fbb, 2, offsetDevice)
-	fbutils.SetInt64Slot(fbb, 3, obj.Created)
-	fbutils.SetInt64Slot(fbb, 4, obj.Modified)
-	fbutils.SetInt64Slot(fbb, 5, obj.Origin)
+	fbutils.SetInt64Slot(fbb, 3, obj.Event.Created)
+	fbutils.SetInt64Slot(fbb, 4, obj.Event.Modified)
+	fbutils.SetInt64Slot(fbb, 5, obj.Event.Origin)
+	fbutils.SetUOffsetTSlot(fbb, 6, offsetChecksum)
 	return nil
 }
 
@@ -153,7 +164,7 @@ func (event_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}
 	}
 	var id = table.GetUint64Slot(4, 0)
 
-	var relReadings []Reading
+	var relReadings []models.Reading
 	if rIds, err := BoxForEvent(ob).RelationIds(Event_.Readings, id); err != nil {
 		return nil, err
 	} else if rSlice, err := BoxForReading(ob).GetMany(rIds...); err != nil {
@@ -162,15 +173,19 @@ func (event_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}
 		relReadings = rSlice
 	}
 
-	return &Event{
-		ID:       objectbox.StringIdConvertToEntityProperty(id),
-		Pushed:   fbutils.GetInt64Slot(table, 6),
-		Device:   fbutils.GetStringSlot(table, 8),
-		Created:  fbutils.GetInt64Slot(table, 10),
-		Modified: fbutils.GetInt64Slot(table, 12),
-		Origin:   fbutils.GetInt64Slot(table, 14),
-		Readings: relReadings,
-	}, nil
+	var result = &Event{
+		Checksum: fbutils.GetStringSlot(table, 16),
+	}
+
+	result.Event.ID = objectbox.StringIdConvertToEntityProperty(id)
+	result.Event.Pushed = fbutils.GetInt64Slot(table, 6)
+	result.Event.Device = fbutils.GetStringSlot(table, 8)
+	result.Event.Created = fbutils.GetInt64Slot(table, 10)
+	result.Event.Modified = fbutils.GetInt64Slot(table, 12)
+	result.Event.Origin = fbutils.GetInt64Slot(table, 14)
+	result.Event.Readings = relReadings
+
+	return result, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects
@@ -196,8 +211,8 @@ func BoxForEvent(ob *objectbox.ObjectBox) *EventBox {
 }
 
 // Put synchronously inserts/updates a single object.
-// In case the ID is not specified, it would be assigned automatically (auto-increment).
-// When inserting, the Event.ID property on the passed object will be assigned the new ID as well.
+// In case the Event.ID is not specified, it would be assigned automatically (auto-increment).
+// When inserting, the Event.Event.ID property on the passed object will be assigned the new ID as well.
 func (box *EventBox) Put(object *Event) (uint64, error) {
 	return box.Box.Put(object)
 }
@@ -225,12 +240,12 @@ func (box *EventBox) PutAsync(object *Event) (uint64, error) {
 }
 
 // PutMany inserts multiple objects in single transaction.
-// In case IDs are not set on the objects, they would be assigned automatically (auto-increment).
+// In case Event.IDs are not set on the objects, they would be assigned automatically (auto-increment).
 //
 // Returns: IDs of the put objects (in the same order).
-// When inserting, the Event.ID property on the objects in the slice will be assigned the new IDs as well.
+// When inserting, the Event.Event.ID property on the objects in the slice will be assigned the new IDs as well.
 //
-// Note: In case an error occurs during the transaction, some of the objects may already have the Event.ID assigned
+// Note: In case an error occurs during the transaction, some of the objects may already have the Event.Event.ID assigned
 // even though the transaction has been rolled back and the objects are not stored under those IDs.
 //
 // Note: The slice may be empty or even nil; in both cases, an empty IDs slice and no error is returned.
@@ -283,7 +298,7 @@ func (box *EventBox) Remove(object *Event) error {
 func (box *EventBox) RemoveMany(objects ...*Event) (uint64, error) {
 	var ids = make([]uint64, len(objects))
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.ID)
+		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Event.ID)
 	}
 	return box.Box.RemoveIds(ids...)
 }

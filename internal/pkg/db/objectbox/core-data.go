@@ -25,6 +25,7 @@ type coreDataClient struct {
 type coreDataQueries struct {
 	event struct {
 		all       eventQuery
+		checksum  eventQuery
 		createdB  eventQuery
 		createdLT eventQuery
 		device    eventQuery
@@ -79,6 +80,11 @@ func newCoreDataClient(objectBox *objectbox.ObjectBox) (*coreDataClient, error) 
 	if err == nil {
 		client.queries.event.device.EventQuery, err =
 			client.eventBox.QueryOrError(obx.Event_.Device.Equals("", true))
+	}
+
+	if err == nil {
+		client.queries.event.checksum.EventQuery, err =
+			client.eventBox.QueryOrError(obx.Event_.Checksum.Equals("", true))
 	}
 
 	if err == nil {
@@ -164,9 +170,17 @@ func (client *coreDataClient) awaitAsync() {
 	}
 }
 
+func correlationEventsToContractEvents(events []correlation.Event) []contract.Event {
+	var result []contract.Event
+	for k := range events {
+		result = append(result, events[k].Event)
+	}
+	return result
+}
+
 func (client *coreDataClient) Events() ([]contract.Event, error) {
 	result, err := client.eventBox.GetAll()
-	return result, mapError(err)
+	return correlationEventsToContractEvents(result), mapError(err)
 }
 
 func (client *coreDataClient) EventsWithLimit(limit int) ([]contract.Event, error) {
@@ -177,7 +191,7 @@ func (client *coreDataClient) EventsWithLimit(limit int) ([]contract.Event, erro
 	defer query.Unlock()
 
 	result, err := query.Limit(uint64(limit)).Find()
-	return result, mapError(err)
+	return correlationEventsToContractEvents(result), mapError(err)
 }
 
 func (client *coreDataClient) AddEvent(e correlation.Event) (string, error) {
@@ -200,7 +214,7 @@ func (client *coreDataClient) AddEvent(e correlation.Event) (string, error) {
 		}
 	}
 
-	id, err := client.eventBox.Put(&e.Event)
+	id, err := client.eventBox.Put(&e)
 	return obx.IdToString(id), mapError(err)
 }
 
@@ -223,7 +237,7 @@ func (client *coreDataClient) UpdateEvent(e correlation.Event) error {
 		return mapError(db.ErrNotFound)
 	}
 
-	_, err := client.eventBox.Put(&e.Event)
+	_, err := client.eventBox.Put(&e)
 	return mapError(err)
 }
 
@@ -235,13 +249,22 @@ func (client *coreDataClient) EventById(id string) (contract.Event, error) {
 	} else if object == nil {
 		return contract.Event{}, mapError(db.ErrNotFound)
 	} else {
-		return *object, nil
+		return object.Event, nil
 	}
 }
 
 func (client *coreDataClient) EventsByChecksum(checksum string) ([]contract.Event, error) {
-	// TODO
-	return nil, nil
+	var query = &client.queries.event.checksum
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.Event_.Checksum, checksum); err != nil {
+		return nil, mapError(err)
+	}
+
+	result, err := query.Find()
+	return correlationEventsToContractEvents(result), mapError(err)
 }
 
 func (client *coreDataClient) EventCount() (int, error) {
@@ -283,7 +306,7 @@ func (client *coreDataClient) EventsForDeviceLimit(id string, limit int) ([]cont
 	}
 
 	result, err := query.Limit(uint64(limit)).Find()
-	return result, mapError(err)
+	return correlationEventsToContractEvents(result), mapError(err)
 }
 
 func (client *coreDataClient) EventsForDevice(id string) ([]contract.Event, error) {
@@ -302,7 +325,7 @@ func (client *coreDataClient) EventsByCreationTime(start, end int64, limit int) 
 	}
 
 	result, err := query.Limit(uint64(limit)).Find()
-	return result, mapError(err)
+	return correlationEventsToContractEvents(result), mapError(err)
 }
 
 func (client *coreDataClient) EventsOlderThanAge(age int64) ([]contract.Event, error) {
@@ -318,7 +341,7 @@ func (client *coreDataClient) EventsOlderThanAge(age int64) ([]contract.Event, e
 	}
 
 	result, err := query.Limit(0).Find()
-	return result, mapError(err)
+	return correlationEventsToContractEvents(result), mapError(err)
 }
 
 func (client *coreDataClient) EventsPushed() ([]contract.Event, error) {
@@ -328,7 +351,7 @@ func (client *coreDataClient) EventsPushed() ([]contract.Event, error) {
 	defer query.Unlock()
 
 	result, err := query.Limit(0).Find()
-	return result, mapError(err)
+	return correlationEventsToContractEvents(result), mapError(err)
 }
 
 func (client *coreDataClient) ScrubAllEvents() error {

@@ -60,21 +60,26 @@ func (client *ObjectBoxClient) Connect() error {
 	}
 
 	if err != nil {
-		client.Disconnect()
+		client.CloseSession()
 	}
 	return err
 }
 
-func (client *ObjectBoxClient) Disconnect() {
+func (client *ObjectBoxClient) CloseSession() {
 	objectBoxToDestroy := client.objectBox
 	client.objectBox = nil
+
+	// remove service references
+	client.coreDataClient = nil
+	client.coreMetaDataClient = nil
+	client.exportClient = nil
+	client.schedulerClient = nil
+	client.notificationsClient = nil
+
 	if objectBoxToDestroy != nil {
+		objectBoxToDestroy.AwaitAsyncCompletion()
 		objectBoxToDestroy.Close()
 	}
-}
-
-func (client *ObjectBoxClient) CloseSession() {
-	client.Disconnect()
 }
 
 // TODO this is not in the upstream

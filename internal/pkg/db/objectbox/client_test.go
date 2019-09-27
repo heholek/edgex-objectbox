@@ -60,7 +60,7 @@ func createClient() *ObjectBoxClient {
 
 func TestObjectBoxEvents(t *testing.T) {
 	client := createClient()
-	defer client.Disconnect()
+	defer client.CloseSession()
 
 	event := correlation.Event{
 		Event: models.Event{
@@ -91,7 +91,7 @@ func TestObjectBoxEvents(t *testing.T) {
 
 func TestObjectBoxReadings(t *testing.T) {
 	client := createClient()
-	defer client.Disconnect()
+	defer client.CloseSession()
 
 	assert.NoError(t, client.ScrubAllEvents())
 	countPre, err := client.eventBox.Count()

@@ -76,9 +76,6 @@ func newNotificationsClient(objectBox *objectbox.ObjectBox) (*notificationsClien
 	var client = &notificationsClient{objectBox: objectBox}
 	var err error
 
-	// TODO check this, it's picked from ServicesTest
-	client.cleanupDefaultAge = 86400001
-
 	client.notificationBox = obx.BoxForNotification(client.objectBox)
 	client.subscriptionBox = obx.BoxForSubscription(client.objectBox)
 	client.transmissionBox = obx.BoxForTransmission(client.objectBox)

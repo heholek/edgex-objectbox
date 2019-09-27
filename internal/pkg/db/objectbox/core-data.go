@@ -195,7 +195,6 @@ func (client *coreDataClient) EventsWithLimit(limit int) ([]contract.Event, erro
 }
 
 func (client *coreDataClient) AddEvent(e correlation.Event) (string, error) {
-	// synchronize with PutAsync in AddReading manually or we could be dead-locked in PutRelated write-TX
 	client.awaitAsync()
 
 	if e.Created == 0 {
@@ -219,7 +218,6 @@ func (client *coreDataClient) AddEvent(e correlation.Event) (string, error) {
 }
 
 func (client *coreDataClient) UpdateEvent(e correlation.Event) error {
-	// synchronize with PutAsync in AddReading manually or we could be dead-locked in PutRelated write-TX
 	client.awaitAsync()
 
 	// as we don't do lazy-loading externally, if the slice is nil, it's empty, not a "not-yet-loaded" lazy one

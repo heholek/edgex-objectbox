@@ -15,7 +15,7 @@ LogLevel = 'INFO'
 BootTimeout = 30000
 ClientMonitor = 15000
 CheckInterval = '10s'
-Host = 'localhost'
+Host = 'edgex-sys-mgmt-agent'
 Port = 48090
 Protocol = 'http'
 MaxResultCount = 50000
@@ -29,7 +29,7 @@ Port = 8500
 Type = 'consul'
 
 [Logging]
-EnableRemote = false
+EnableRemote = true
 File = '/edgex/logs/edgex-sys-mgmt-agent.log'
 
 [Clients]

@@ -177,6 +177,6 @@ docker_sys_mgmt_agent:
 		-f cmd/sys-mgmt-agent/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/sys-mgmt-agent-go:$(GIT_SHA) \
-		-t objectboxio/sys-mgmt-agent-go:$(DOCKER_TAG) \
+		-t objectboxio/docker-sys-mgmt-agent-go:$(GIT_SHA) \
+		-t objectboxio/docker-sys-mgmt-agent-go:$(DOCKER_TAG) \
 		.

@@ -9,4 +9,4 @@
 package edgex
 
 // Global version
-var Version string = "1.0.0"
+var Version string = "1.0.2"

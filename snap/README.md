@@ -222,6 +222,8 @@ After building the snap from one of the above methods, you will have a binary sn
 $ sudo snap install --devmode edgexfoundry*.snap
 ```
 
+Open Consul - http://127.0.0.1:8500
+
 **Note** You can try installing a locally built snap with the `--dangerous` flag (instead of the `--devmode` flag), but there is a race condition with this method. Specifically Cassandra, MongoDB, and other services require accesses not provided by default to the snap, and these are provided by connecting the interfaces detailed below. The race condition occurs because if the services fail to start because the accesses were denied (because the interfaces weren't connected soon enough), the installation may be entirely aborted by snapd.  If you do install with `--dangerous`, it is recommended to perform the connections detailed below in the same shell command to minimize the time between the installation (and hence service startup) and granting of accesses from interface connection. Note this race condition doesn't happen when installing the snap from the store because the interface connection automatically happens before starting the services.
 
 In addition, if you are using snapcraft with multipass VM's, you can speedup development by not creating a *.snap file and instead running in "try" mode . This is done by running `snapcraft try` which results in a `prime` folder placed in the root project directory that can then be "installed" using `snap try`. For example:

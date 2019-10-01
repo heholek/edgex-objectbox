@@ -290,6 +290,7 @@ func (client *coreDataClient) DeleteEventById(idString string) error {
 		return mapError(err)
 	}
 
+	// TODO: Do this async to speed up deleteEventsByAge() when AsyncBox is available in objectbox-go
 	return mapError(client.eventBox.RemoveId(id))
 }
 

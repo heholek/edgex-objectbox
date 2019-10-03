@@ -75,7 +75,7 @@ LABEL license='SPDX-License-Identifier: Apache-2.0' \
     copyright='Copyright (c) 2017: Samsung'
 
 # set the working directory
-WORKDIR $APP_DIR
+WORKDIR /edgex/cmd/config-seed
 
 # copy files
 COPY --from=build-env /go/src/github.com/objectbox/edgex-objectbox/cmd/config-seed/Attribution.txt  .

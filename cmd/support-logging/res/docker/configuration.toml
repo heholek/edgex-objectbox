@@ -20,3 +20,9 @@ Type = 'consul'
 
 [Logging]
 File = '/edgex/logs/edgex-support-logging.log'
+
+# currently unused but required for clean startup even with Persistence = 'file'
+[Databases]
+  [Databases.Primary]
+  Name = 'logging'
+  Type = 'objectbox'

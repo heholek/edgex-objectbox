@@ -96,8 +96,8 @@ docker_config_seed:
 		-f cmd/config-seed/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/docker-core-config-seed-go:$(GIT_SHA) \
-		-t objectboxio/docker-core-config-seed-go:$(DOCKER_TAG) \
+		-t objectboxio/edge-core-config-seed:$(GIT_SHA) \
+		-t objectboxio/edge-core-config-seed:$(DOCKER_TAG) \
 		.
 
 docker_core_metadata:
@@ -105,8 +105,8 @@ docker_core_metadata:
 		-f cmd/Dockerfile --build-arg service=core-metadata \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/docker-core-metadata-go:$(GIT_SHA) \
-		-t objectboxio/docker-core-metadata-go:$(DOCKER_TAG) \
+		-t objectboxio/edge-core-metadata:$(GIT_SHA) \
+		-t objectboxio/edge-core-metadata:$(DOCKER_TAG) \
 		.
 
 docker_core_data:
@@ -114,8 +114,8 @@ docker_core_data:
 		-f cmd/Dockerfile --build-arg service=core-data \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/docker-core-data-go:$(GIT_SHA) \
-		-t objectboxio/docker-core-data-go:$(DOCKER_TAG) \
+		-t objectboxio/edge-core-data:$(GIT_SHA) \
+		-t objectboxio/edge-core-data:$(DOCKER_TAG) \
 		.
 
 docker_core_command:
@@ -123,8 +123,8 @@ docker_core_command:
 		-f cmd/core-command/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/docker-core-command-go:$(GIT_SHA) \
-		-t objectboxio/docker-core-command-go:$(DOCKER_TAG) \
+		-t objectboxio/edge-core-command:$(GIT_SHA) \
+		-t objectboxio/edge-core-command:$(DOCKER_TAG) \
 		.
 
 docker_export_client:
@@ -132,8 +132,8 @@ docker_export_client:
 		-f cmd/Dockerfile --build-arg service=export-client \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/docker-export-client-go:$(GIT_SHA) \
-		-t objectboxio/docker-export-client-go:$(DOCKER_TAG) \
+		-t objectboxio/edge-export-client:$(GIT_SHA) \
+		-t objectboxio/edge-export-client:$(DOCKER_TAG) \
 		.
 
 docker_export_distro:
@@ -141,8 +141,8 @@ docker_export_distro:
 		-f cmd/export-distro/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/docker-export-distro-go:$(GIT_SHA) \
-		-t objectboxio/docker-export-distro-go:$(DOCKER_TAG) \
+		-t objectboxio/edge-export-distro:$(GIT_SHA) \
+		-t objectboxio/edge-export-distro:$(DOCKER_TAG) \
 		.
 
 docker_support_logging:
@@ -150,8 +150,8 @@ docker_support_logging:
 		-f cmd/support-logging/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/docker-support-logging-go:$(GIT_SHA) \
-		-t objectboxio/docker-support-logging-go:$(DOCKER_TAG) \
+		-t objectboxio/edge-support-logging:$(GIT_SHA) \
+		-t objectboxio/edge-support-logging:$(DOCKER_TAG) \
 		.
 
 docker_support_notifications:
@@ -159,8 +159,8 @@ docker_support_notifications:
 		-f cmd/Dockerfile --build-arg service=support-notifications \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/docker-support-notifications-go:$(GIT_SHA) \
-		-t objectboxio/docker-support-notifications-go:$(DOCKER_TAG) \
+		-t objectboxio/edge-support-notifications:$(GIT_SHA) \
+		-t objectboxio/edge-support-notifications:$(DOCKER_TAG) \
 		.
 
 docker_support_scheduler:
@@ -168,8 +168,8 @@ docker_support_scheduler:
 		-f cmd/Dockerfile --build-arg service=support-scheduler \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/docker-support-scheduler-go:$(GIT_SHA) \
-		-t objectboxio/docker-support-scheduler-go:$(DOCKER_TAG) \
+		-t objectboxio/edge-support-scheduler:$(GIT_SHA) \
+		-t objectboxio/edge-support-scheduler:$(DOCKER_TAG) \
 		.
 
 docker_sys_mgmt_agent:
@@ -177,6 +177,6 @@ docker_sys_mgmt_agent:
 		-f cmd/sys-mgmt-agent/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/docker-sys-mgmt-agent-go:$(GIT_SHA) \
-		-t objectboxio/docker-sys-mgmt-agent-go:$(DOCKER_TAG) \
+		-t objectboxio/edge-sys-mgmt-agent:$(GIT_SHA) \
+		-t objectboxio/edge-sys-mgmt-agent:$(DOCKER_TAG) \
 		.

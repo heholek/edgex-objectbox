@@ -1,16 +1,12 @@
-# EdgeX Foundry Core Snap
-[![snap store badge](https://raw.githubusercontent.com/snapcore/snap-store-badges/master/EN/%5BEN%5D-snap-store-black-uneditable.png)](https://snapcraft.io/edgexfoundry)
+# EdgeX ObjectBox Snap
+[![snap store badge](https://raw.githubusercontent.com/snapcore/snap-store-badges/master/EN/%5BEN%5D-snap-store-black-uneditable.png)](https://snapcraft.io/edgex-objectbox)
 
 This folder contains snap packaging for the EdgeX Foundry reference implementation.
 
-The snap contains Consul, MongoDB, all of the EdgeX Go-based micro services from
+The snap contains Consul, ObjectBox all of the EdgeX Go-based micro services from
 this repository, device-virtual, as well as Vault, Kong, Cassandra, and the 
 two go-based security micro services. The snap also contains a single OpenJDK 
 JRE used to run device-virtual.
-
-The project maintains a rolling release of the snap on the `edge` channel that is rebuilt and published at least once daily through the jenkins jobs setup for the EdgeX project. You can see the jobs run [here](https://jenkins.edgexfoundry.org/view/Snap/) specifically looking at the `edgex-go-snap-{branch}-stage-snap`.
-
-The snap currently supports running on both `amd64` and `arm64` platforms. Once the project no longer depends on MongoDB as it's primary database, the snap should start working on `armhf` platforms that support snaps as well.
 
 ## Installation
 
@@ -22,38 +18,26 @@ However for full security confinement, the snap should be installed on an
 Ubuntu 16.04 LTS or later Desktop or Server, or a system running Ubuntu Core 16 or later.
 
 ### Installing EdgeX Foundry as a snap
-The snap is published in the snap store at https://snapcraft.io/edgexfoundry.
+The snap is published in the snap store at https://snapcraft.io/edgex-objectbox.
 You can see the current revisions available for your machine's architecture by running the command:
 
 ```bash
-$ snap info edgexfoundry
+$ snap info edgex-objectbox
 ```
 
 The snap can be installed using `snap install`. To install the snap from the edge channel:
 
 ```bash
-$ sudo snap install edgexfoundry --edge
+$ sudo snap install edgex-objectbox --edge
 ```
 
-You can specify install specific releases using the `--channel` option. For example to install the Delhi release of the snap:
-
-```bash
-$ sudo snap install edgexfoundry --channel=delhi
-```
-
-Lastly, on a system supporting it, the snap may be installed using GNOME (or Ubuntu) Software Center by searching for `edgexfoundry`.
-
-**Note** - the snap has only been tested on Ubuntu Desktop/Server versions 18.04 and 16.04, as well as Ubuntu Core versions 16 and 18.
-
-**WARNING** - don't install the EdgeX snap on a system which is already running mongoDB or Consul.
+Lastly, on a system supporting it, the snap may be installed using GNOME (or Ubuntu) Software Center by searching for `edgex-objectbox`.
 
 ## Using the EdgeX snap
 
 Upon installation, the following EdgeX services are automatically and immediately started:
 
 * consul
-* mongod
-* mongo-worker
 * core-data
 * core-command
 * core-metadata
@@ -72,13 +56,13 @@ The following services are disabled by default:
 Any disabled services can be enabled and started up using `snap set`:
 
 ```bash
-$ sudo snap set edgexfoundry support-notifications=on
+$ sudo snap set edgex-objectbox support-notifications=on
 ```
 
 To turn a service off (thereby disabling and immediately stopping it) set the service to off:
 
 ```bash
-$ sudo snap set edgexfoundry support-notifications=off
+$ sudo snap set edgex-objectbox support-notifications=off
 ```
 
 All services which are installed on the system as systemd units, which if enabled will automatically start running when the system boots or reboots.
@@ -88,29 +72,29 @@ All services which are installed on the system as systemd units, which if enable
 All default configuration files are shipped with the snap inside `$SNAP/config`, however because `$SNAP` isn't writable, all of the config files are copied during snap installation (specifically during the install hook, see `snap/hooks/install` in this repository) to `$SNAP_DATA/config`. The configuration files in `$SNAP_DATA` may then be modified. You may wish to restart the snap's services to take configuration into account with:
 
 ```bash
-$ sudo snap restart edgexfoundry
+$ sudo snap restart edgex-objectbox
 ```
 
 ### Viewing logs
 
-Currently, all log files for the snap's can be found inside `$SNAP_COMMON`, which is usually `/var/snap/edgexfoundry/common`. Once all the services are supported as daemons, you can also use `sudo snap logs edgexfoundry` to view logs.
+Currently, all log files for the snap's can be found inside `$SNAP_COMMON`, which is usually `/var/snap/edgex-objectbox/common`. Once all the services are supported as daemons, you can also use `sudo snap logs edgex-objectbox` to view logs.
 
-Additionally, logs can be viewed using the system journal or `snap logs`. To view the logs for all services in the edgexfoundry snap use:
+Additionally, logs can be viewed using the system journal or `snap logs`. To view the logs for all services in the edgex-objectbox snap use:
 
 ```bash
-$ sudo snap logs edgexfoundry
+$ sudo snap logs edgex-objectbox
 ```
 
 Individual service logs may be viewed by specifying the service name:
 
 ```bash
-$ sudo snap logs edgexfoundry.consul
+$ sudo snap logs edgex-objectbox.consul
 ```
 
 Or by using the systemd unit name and `journalctl`:
 
 ```bash
-$ journalctl -u snap.edgexfoundry.consul
+$ journalctl -u snap.edgex-objectbox.consul
 ```
 
 ### Security services
@@ -120,8 +104,8 @@ Currently, the security services are enabled by default. The security services c
  * Vault
  * Cassandra
  * Kong
- * vault-worker (from [security-secret-store](https://github.com/edgexfoundry/security-secret-store))
- * kong-worker (from [security-api-gateway](https://github.com/edgexfoundry/security-api-gateway/))
+ * vault-worker (from [security-secret-store](https://github.com/edgex-objectbox/security-secret-store))
+ * kong-worker (from [security-api-gateway](https://github.com/edgex-objectbox/security-api-gateway/))
 
 All services are currently bundled in the singular service, `security-services` (see issue [#485](https://github.com/edgexfoundry/edgex-go/issues/485) for more details on why). 
 
@@ -130,7 +114,7 @@ When security is enabled, Consul is secured using Vault for secret management, a
 To turn off security, use `snap set`:
 
 ```bash
-$ sudo snap set edgexfoundry security-services=off
+$ sudo snap set edgex-objectbox security-services=off
 ```
 
 ## Limitations
@@ -142,7 +126,7 @@ $ sudo snap set edgexfoundry security-services=off
 The snap is built with [snapcraft](https://snapcraft.io), and the snapcraft.yaml recipe is located within `edgex-go`, so the first step for all build methods involves cloning this repository:
 
 ```bash
-$ git clone https://github.com/edgexfoundry/edgex-go
+$ git clone https://github.com/objectbox/edgex-objectbox
 $ cd edgex-go
 ```
 
@@ -206,8 +190,8 @@ To use multipass to create an Ubuntu 18.04 environment suitable for building the
 ```bash
 $ multipass launch bionic -n edgex-snap-build
 $ multipass shell edgex-snap-build
-multipass@ubuntu:~$ git clone https://github.com/edgexfoundry/edgex-go
-multipass@ubuntu:~$ cd edgex-go
+multipass@ubuntu:~$ git clone https://github.com/objectbox/edgex-objectbox
+multipass@ubuntu:~$ cd edgex-objectbox
 multipass~ubuntu:~$ sudo snap install snapcraft --classic
 multipass~ubuntu:~$ snapcraft --destructive-mode
 ```
@@ -216,24 +200,24 @@ The process should be similar for other VM's such as kvm, VirtualBox, etc. where
 
 ### Developing the snap
 
-After building the snap from one of the above methods, you will have a binary snap package called `edgexfoundry_<latest version>_<arch>.snap`, which can be installed locally with the `--devmode` flag:
+After building the snap from one of the above methods, you will have a binary snap package called `edgex-objectbox_<latest version>_<arch>.snap`, which can be installed locally with the `--devmode` flag:
 
 ```bash
-$ sudo snap install --devmode edgexfoundry*.snap
+$ sudo snap install --devmode edgex*.snap
 ```
 
 Open Consul - http://127.0.0.1:8500
 
-**Note** You can try installing a locally built snap with the `--dangerous` flag (instead of the `--devmode` flag), but there is a race condition with this method. Specifically Cassandra, MongoDB, and other services require accesses not provided by default to the snap, and these are provided by connecting the interfaces detailed below. The race condition occurs because if the services fail to start because the accesses were denied (because the interfaces weren't connected soon enough), the installation may be entirely aborted by snapd.  If you do install with `--dangerous`, it is recommended to perform the connections detailed below in the same shell command to minimize the time between the installation (and hence service startup) and granting of accesses from interface connection. Note this race condition doesn't happen when installing the snap from the store because the interface connection automatically happens before starting the services.
+**Note** You can try installing a locally built snap with the `--dangerous` flag (instead of the `--devmode` flag), but there is a race condition with this method. Specifically Cassandra, and other services require accesses not provided by default to the snap, and these are provided by connecting the interfaces detailed below. The race condition occurs because if the services fail to start because the accesses were denied (because the interfaces weren't connected soon enough), the installation may be entirely aborted by snapd.  If you do install with `--dangerous`, it is recommended to perform the connections detailed below in the same shell command to minimize the time between the installation (and hence service startup) and granting of accesses from interface connection. Note this race condition doesn't happen when installing the snap from the store because the interface connection automatically happens before starting the services.
 
 In addition, if you are using snapcraft with multipass VM's, you can speedup development by not creating a *.snap file and instead running in "try" mode . This is done by running `snapcraft try` which results in a `prime` folder placed in the root project directory that can then be "installed" using `snap try`. For example:
 
 ```bash
 $ snapcraft try # produces prime dir instead of *.snap file
 ...
-You can now run `snap try /home/ubuntu/go/src/github.com/edgexfoundry/edgex-go/prime`.
+You can now run `snap try /home/ubuntu/go/src/github.com/objectbox/edgex-objectbox/prime`.
 $ sudo snap try --devmode prime # snap try works the same as snap install, but expects a directory
-edgexfoundry 1.0.0-20190513+0620a8d1 mounted from /home/ubuntu/go/src/github.com/edgexfoundry/edgex-go/prime
+edgex-objectbox 1.0.0-20190513+0620a8d1 mounted from /home/ubuntu/go/src/github.com/objectbox/edgex-objectbox/prime
 $
 ```
 
@@ -242,14 +226,14 @@ $
 After installing the snap, you will need to connect interfaces and restart the snap. The snap needs the `hardware-observe`, `mount-observe`, and `system-observe` interfaces connected. These are automatically connected using snap store assertions when installing from the store, but when developing the snap and installing a revision locally, use the following commands to connect the interfaces:
 
 ```bash
-$ sudo snap connect edgexfoundry:hardware-observe
-$ sudo snap connect edgexfoundry:system-observe
-$ sudo snap connect edgexfoundry:mount-observe
+$ sudo snap connect edgex-objectbox:hardware-observe
+$ sudo snap connect edgex-objectbox:system-observe
+$ sudo snap connect edgex-objectbox:mount-observe
 ```
 
 After connecting these restart the services in the snap with:
 
 ```bash
-$ sudo snap restart edgexfoundry
+$ sudo snap restart edgex-objectbox
 ```
 

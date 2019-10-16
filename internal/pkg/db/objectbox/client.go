@@ -18,8 +18,8 @@ type ObjectBoxClient struct {
 	*notificationsClient
 }
 
-// use PutAsync where possible
-const asyncPut = true
+// use Async where possible
+const async = true
 
 func NewClient(config db.Configuration) (*ObjectBoxClient, error) {
 	println(VersionInfo())

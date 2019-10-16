@@ -18,6 +18,8 @@ type coreDataClient struct {
 	readingBox         *obx.ReadingBox         // async used
 	valueDescriptorBox *obx.ValueDescriptorBox // no async - a config
 
+	readingAsync *AsyncView
+
 	queries coreDataQueries
 }
 
@@ -71,6 +73,8 @@ func newCoreDataClient(objectBox *objectbox.ObjectBox) (*coreDataClient, error) 
 	client.eventBox = obx.BoxForEvent(client.objectBox)
 	client.readingBox = obx.BoxForReading(client.objectBox)
 	client.valueDescriptorBox = obx.BoxForValueDescriptor(client.objectBox)
+
+	client.readingAsync = newAsyncView(client.readingBox.Box)
 
 	//region Event
 	if err == nil {
@@ -165,8 +169,9 @@ func newCoreDataClient(objectBox *objectbox.ObjectBox) (*coreDataClient, error) 
 }
 
 func (client *coreDataClient) awaitAsync() {
-	if asyncPut {
+	if async {
 		client.objectBox.AwaitAsyncCompletion()
+		client.readingAsync.Clear()
 	}
 }
 
@@ -356,10 +361,12 @@ func (client *coreDataClient) EventsPushed() ([]contract.Event, error) {
 func (client *coreDataClient) ScrubAllEvents() error {
 	client.awaitAsync()
 
-	if err := client.eventBox.RemoveAll(); err != nil {
-		return mapError(err)
-	}
-	return mapError(client.readingBox.RemoveAll())
+	return client.objectBox.RunInWriteTx(func() error {
+		if err := client.eventBox.RemoveAll(); err != nil {
+			return mapError(err)
+		}
+		return mapError(client.readingBox.RemoveAll())
+	})
 }
 
 func (client *coreDataClient) Readings() ([]contract.Reading, error) {
@@ -377,8 +384,8 @@ func (client *coreDataClient) AddReading(r contract.Reading) (string, error) {
 	var id uint64
 	var err error
 
-	if asyncPut {
-		id, err = client.readingBox.PutAsync(&r)
+	if async {
+		id, err = client.readingAsync.Insert(&r)
 	} else {
 		id, err = client.readingBox.Put(&r)
 	}
@@ -387,21 +394,15 @@ func (client *coreDataClient) AddReading(r contract.Reading) (string, error) {
 }
 
 func (client *coreDataClient) UpdateReading(r contract.Reading) error {
-	client.awaitAsync()
-
 	r.Modified = db.MakeTimestamp()
 
-	if id, err := obx.IdFromString(r.Id); err != nil {
+	id, err := obx.IdFromString(r.Id)
+	if err != nil {
 		return mapError(err)
-	} else if exists, err := client.readingBox.Contains(id); err != nil {
-		return mapError(err)
-	} else if !exists {
-		return mapError(db.ErrNotFound)
 	}
 
-	var err error
-	if asyncPut {
-		_, err = client.readingBox.PutAsync(&r)
+	if async {
+		err = client.readingAsync.Update(id, &r)
 	} else {
 		_, err = client.readingBox.Put(&r)
 	}
@@ -431,11 +432,13 @@ func (client *coreDataClient) ReadingCount() (int, error) {
 }
 
 func (client *coreDataClient) DeleteReadingById(idString string) error {
-	client.awaitAsync()
-
 	id, err := obx.IdFromString(idString)
 	if err != nil {
 		return mapError(err)
+	}
+
+	if async {
+		return mapError(client.readingAsync.RemoveId(id))
 	}
 
 	return mapError(client.readingBox.RemoveId(id))

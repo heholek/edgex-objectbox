@@ -85,14 +85,14 @@ var Event_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (event_EntityInfo) GeneratorVersion() int {
-	return 3
+	return 4
 }
 
 // AddToModel is called by ObjectBox during model build
 func (event_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Event", 8, 5261868944228209948)
 	model.Property("ID", 6, 1, 8408127641507867598)
-	model.PropertyFlags(8193)
+	model.PropertyFlags(1)
 	model.Property("Pushed", 6, 2, 5256971571136440340)
 	model.Property("Device", 9, 3, 8701916792943957528)
 	model.Property("Created", 6, 4, 8617743842335964745)
@@ -124,7 +124,7 @@ func (event_EntityInfo) SetId(object interface{}, id uint64) {
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
 func (event_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
-	if err := BoxForEvent(ob).RelationReplace(Event_.Readings, id, object, object.(*Event).Readings); err != nil {
+	if err := BoxForEvent(ob).RelationReplace(Event_.Readings, id, object, object.(*Event).Event.Readings); err != nil {
 		return err
 	}
 
@@ -217,24 +217,21 @@ func (box *EventBox) Put(object *Event) (uint64, error) {
 	return box.Box.Put(object)
 }
 
+// Insert synchronously inserts a single object. As opposed to Put, Insert will fail if given an ID that already exists.
+// In case the Event.ID is not specified, it would be assigned automatically (auto-increment).
+// When inserting, the Event.Event.ID property on the passed object will be assigned the new ID as well.
+func (box *EventBox) Insert(object *Event) (uint64, error) {
+	return box.Box.Insert(object)
+}
+
+// Update synchronously updates a single object.
+// As opposed to Put, Update will fail if an object with the same ID is not found in the database.
+func (box *EventBox) Update(object *Event) error {
+	return box.Box.Update(object)
+}
+
 // PutAsync asynchronously inserts/updates a single object.
-// When inserting, the Event.ID property on the passed object will be assigned the new ID as well.
-//
-// It's executed on a separate internal thread for better performance.
-//
-// There are two main use cases:
-//
-// 1) "Put & Forget:" you gain faster puts as you don't have to wait for the transaction to finish.
-//
-// 2) Many small transactions: if your write load is typically a lot of individual puts that happen in parallel,
-// this will merge small transactions into bigger ones. This results in a significant gain in overall throughput.
-//
-//
-// In situations with (extremely) high async load, this method may be throttled (~1ms) or delayed (<1s).
-// In the unlikely event that the object could not be enqueued after delaying, an error will be returned.
-//
-// Note that this method does not give you hard durability guarantees like the synchronous Put provides.
-// There is a small time window (typically 3 ms) in which the data may not have been committed durably yet.
+// Deprecated: use box.Async().Put() instead
 func (box *EventBox) PutAsync(object *Event) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
@@ -321,6 +318,68 @@ func (box *EventBox) QueryOrError(conditions ...objectbox.Condition) (*EventQuer
 	} else {
 		return &EventQuery{query}, nil
 	}
+}
+
+// Async provides access to the default Async Box for asynchronous operations. See EventAsyncBox for more information.
+func (box *EventBox) Async() *EventAsyncBox {
+	return &EventAsyncBox{AsyncBox: box.Box.Async()}
+}
+
+// EventAsyncBox provides asynchronous operations on Event objects.
+//
+// Asynchronous operations are executed on a separate internal thread for better performance.
+//
+// There are two main use cases:
+//
+// 1) "execute & forget:" you gain faster put/remove operations as you don't have to wait for the transaction to finish.
+//
+// 2) Many small transactions: if your write load is typically a lot of individual puts that happen in parallel,
+// this will merge small transactions into bigger ones. This results in a significant gain in overall throughput.
+//
+// In situations with (extremely) high async load, an async method may be throttled (~1ms) or delayed up to 1 second.
+// In the unlikely event that the object could still not be enqueued (full queue), an error will be returned.
+//
+// Note that async methods do not give you hard durability guarantees like the synchronous Box provides.
+// There is a small time window in which the data may not have been committed durably yet.
+type EventAsyncBox struct {
+	*objectbox.AsyncBox
+}
+
+// AsyncBoxForEvent creates a new async box with the given operation timeout in case an async queue is full.
+// The returned struct must be freed explicitly using the Close() method.
+// It's usually preferable to use EventBox::Async() which takes care of resource management and doesn't require closing.
+func AsyncBoxForEvent(ob *objectbox.ObjectBox, timeoutMs uint64) *EventAsyncBox {
+	var async, err = objectbox.NewAsyncBox(ob, 8, timeoutMs)
+	if err != nil {
+		panic("Could not create async box for entity ID 8: %s" + err.Error())
+	}
+	return &EventAsyncBox{AsyncBox: async}
+}
+
+// Put inserts/updates a single object asynchronously.
+// When inserting a new object, the Event.ID property on the passed object will be assigned the new ID the entity would hold
+// if the insert is ultimately successful. The newly assigned ID may not become valid if the insert fails.
+func (asyncBox *EventAsyncBox) Put(object *Event) (uint64, error) {
+	return asyncBox.AsyncBox.Put(object)
+}
+
+// Insert a single object asynchronously.
+// The Event.ID property on the passed object will be assigned the new ID the entity would hold if the insert is ultimately
+// successful. The newly assigned ID may not become valid if the insert fails.
+// Fails silently if an object with the same ID already exists (this error is not returned).
+func (asyncBox *EventAsyncBox) Insert(object *Event) (id uint64, err error) {
+	return asyncBox.AsyncBox.Insert(object)
+}
+
+// Update a single object asynchronously.
+// The object must already exists or the update fails silently (without an error returned).
+func (asyncBox *EventAsyncBox) Update(object *Event) error {
+	return asyncBox.AsyncBox.Update(object)
+}
+
+// Remove deletes a single object asynchronously.
+func (asyncBox *EventAsyncBox) Remove(object *Event) error {
+	return asyncBox.AsyncBox.Remove(object)
 }
 
 // Query provides a way to search stored objects

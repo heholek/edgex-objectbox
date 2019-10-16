@@ -136,14 +136,14 @@ var Registration_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (registration_EntityInfo) GeneratorVersion() int {
-	return 3
+	return 4
 }
 
 // AddToModel is called by ObjectBox during model build
 func (registration_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Entity("Registration", 13, 8697442173660558194)
 	model.Property("ID", 6, 1, 123887931587262126)
-	model.PropertyFlags(8193)
+	model.PropertyFlags(1)
 	model.Property("Created", 6, 2, 1402964767567004529)
 	model.Property("Modified", 6, 3, 3592048256596347124)
 	model.Property("Origin", 6, 4, 6512940430179949006)
@@ -151,7 +151,7 @@ func (registration_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.PropertyFlags(32)
 	model.PropertyIndex(15, 3183733801868506910)
 	model.Property("Addressable", 11, 6, 8935979958445686361)
-	model.PropertyFlags(8192)
+	model.PropertyFlags(8712)
 	model.PropertyRelation("Addressable", 16, 6932752998076836248)
 	model.Property("Format", 9, 7, 3541213098300435357)
 	model.Property("Filter_DeviceIDs", 30, 8, 2123523082225229536)
@@ -319,24 +319,21 @@ func (box *RegistrationBox) Put(object *Registration) (uint64, error) {
 	return box.Box.Put(object)
 }
 
-// PutAsync asynchronously inserts/updates a single object.
+// Insert synchronously inserts a single object. As opposed to Put, Insert will fail if given an ID that already exists.
+// In case the ID is not specified, it would be assigned automatically (auto-increment).
 // When inserting, the Registration.ID property on the passed object will be assigned the new ID as well.
-//
-// It's executed on a separate internal thread for better performance.
-//
-// There are two main use cases:
-//
-// 1) "Put & Forget:" you gain faster puts as you don't have to wait for the transaction to finish.
-//
-// 2) Many small transactions: if your write load is typically a lot of individual puts that happen in parallel,
-// this will merge small transactions into bigger ones. This results in a significant gain in overall throughput.
-//
-//
-// In situations with (extremely) high async load, this method may be throttled (~1ms) or delayed (<1s).
-// In the unlikely event that the object could not be enqueued after delaying, an error will be returned.
-//
-// Note that this method does not give you hard durability guarantees like the synchronous Put provides.
-// There is a small time window (typically 3 ms) in which the data may not have been committed durably yet.
+func (box *RegistrationBox) Insert(object *Registration) (uint64, error) {
+	return box.Box.Insert(object)
+}
+
+// Update synchronously updates a single object.
+// As opposed to Put, Update will fail if an object with the same ID is not found in the database.
+func (box *RegistrationBox) Update(object *Registration) error {
+	return box.Box.Update(object)
+}
+
+// PutAsync asynchronously inserts/updates a single object.
+// Deprecated: use box.Async().Put() instead
 func (box *RegistrationBox) PutAsync(object *Registration) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
@@ -423,6 +420,68 @@ func (box *RegistrationBox) QueryOrError(conditions ...objectbox.Condition) (*Re
 	} else {
 		return &RegistrationQuery{query}, nil
 	}
+}
+
+// Async provides access to the default Async Box for asynchronous operations. See RegistrationAsyncBox for more information.
+func (box *RegistrationBox) Async() *RegistrationAsyncBox {
+	return &RegistrationAsyncBox{AsyncBox: box.Box.Async()}
+}
+
+// RegistrationAsyncBox provides asynchronous operations on Registration objects.
+//
+// Asynchronous operations are executed on a separate internal thread for better performance.
+//
+// There are two main use cases:
+//
+// 1) "execute & forget:" you gain faster put/remove operations as you don't have to wait for the transaction to finish.
+//
+// 2) Many small transactions: if your write load is typically a lot of individual puts that happen in parallel,
+// this will merge small transactions into bigger ones. This results in a significant gain in overall throughput.
+//
+// In situations with (extremely) high async load, an async method may be throttled (~1ms) or delayed up to 1 second.
+// In the unlikely event that the object could still not be enqueued (full queue), an error will be returned.
+//
+// Note that async methods do not give you hard durability guarantees like the synchronous Box provides.
+// There is a small time window in which the data may not have been committed durably yet.
+type RegistrationAsyncBox struct {
+	*objectbox.AsyncBox
+}
+
+// AsyncBoxForRegistration creates a new async box with the given operation timeout in case an async queue is full.
+// The returned struct must be freed explicitly using the Close() method.
+// It's usually preferable to use RegistrationBox::Async() which takes care of resource management and doesn't require closing.
+func AsyncBoxForRegistration(ob *objectbox.ObjectBox, timeoutMs uint64) *RegistrationAsyncBox {
+	var async, err = objectbox.NewAsyncBox(ob, 13, timeoutMs)
+	if err != nil {
+		panic("Could not create async box for entity ID 13: %s" + err.Error())
+	}
+	return &RegistrationAsyncBox{AsyncBox: async}
+}
+
+// Put inserts/updates a single object asynchronously.
+// When inserting a new object, the ID property on the passed object will be assigned the new ID the entity would hold
+// if the insert is ultimately successful. The newly assigned ID may not become valid if the insert fails.
+func (asyncBox *RegistrationAsyncBox) Put(object *Registration) (uint64, error) {
+	return asyncBox.AsyncBox.Put(object)
+}
+
+// Insert a single object asynchronously.
+// The ID property on the passed object will be assigned the new ID the entity would hold if the insert is ultimately
+// successful. The newly assigned ID may not become valid if the insert fails.
+// Fails silently if an object with the same ID already exists (this error is not returned).
+func (asyncBox *RegistrationAsyncBox) Insert(object *Registration) (id uint64, err error) {
+	return asyncBox.AsyncBox.Insert(object)
+}
+
+// Update a single object asynchronously.
+// The object must already exists or the update fails silently (without an error returned).
+func (asyncBox *RegistrationAsyncBox) Update(object *Registration) error {
+	return asyncBox.AsyncBox.Update(object)
+}
+
+// Remove deletes a single object asynchronously.
+func (asyncBox *RegistrationAsyncBox) Remove(object *Registration) error {
+	return asyncBox.AsyncBox.Remove(object)
 }
 
 // Query provides a way to search stored objects

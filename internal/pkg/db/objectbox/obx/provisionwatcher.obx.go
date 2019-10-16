@@ -95,7 +95,7 @@ var ProvisionWatcher_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (provisionWatcher_EntityInfo) GeneratorVersion() int {
-	return 3
+	return 4
 }
 
 // AddToModel is called by ObjectBox during model build
@@ -105,16 +105,16 @@ func (provisionWatcher_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Modified", 6, 2, 6936168735950790495)
 	model.Property("Origin", 6, 3, 7324362782559730584)
 	model.Property("Id", 6, 4, 4214810142464261408)
-	model.PropertyFlags(8193)
+	model.PropertyFlags(1)
 	model.Property("Name", 9, 5, 1922646737032650250)
 	model.PropertyFlags(32)
 	model.PropertyIndex(12, 8347802915601169150)
 	model.Property("Identifiers", 23, 6, 6659681934816812940)
 	model.Property("Profile", 11, 7, 4488324877991092491)
-	model.PropertyFlags(8192)
+	model.PropertyFlags(8712)
 	model.PropertyRelation("DeviceProfile", 13, 5329856807707561884)
 	model.Property("Service", 11, 8, 6873740026061739530)
-	model.PropertyFlags(8192)
+	model.PropertyFlags(8712)
 	model.PropertyRelation("DeviceService", 14, 3453358122163741587)
 	model.Property("OperatingState", 9, 9, 3437982289020393516)
 	model.EntityLastPropertyId(9, 3437982289020393516)
@@ -284,24 +284,21 @@ func (box *ProvisionWatcherBox) Put(object *ProvisionWatcher) (uint64, error) {
 	return box.Box.Put(object)
 }
 
-// PutAsync asynchronously inserts/updates a single object.
+// Insert synchronously inserts a single object. As opposed to Put, Insert will fail if given an ID that already exists.
+// In case the Id is not specified, it would be assigned automatically (auto-increment).
 // When inserting, the ProvisionWatcher.Id property on the passed object will be assigned the new ID as well.
-//
-// It's executed on a separate internal thread for better performance.
-//
-// There are two main use cases:
-//
-// 1) "Put & Forget:" you gain faster puts as you don't have to wait for the transaction to finish.
-//
-// 2) Many small transactions: if your write load is typically a lot of individual puts that happen in parallel,
-// this will merge small transactions into bigger ones. This results in a significant gain in overall throughput.
-//
-//
-// In situations with (extremely) high async load, this method may be throttled (~1ms) or delayed (<1s).
-// In the unlikely event that the object could not be enqueued after delaying, an error will be returned.
-//
-// Note that this method does not give you hard durability guarantees like the synchronous Put provides.
-// There is a small time window (typically 3 ms) in which the data may not have been committed durably yet.
+func (box *ProvisionWatcherBox) Insert(object *ProvisionWatcher) (uint64, error) {
+	return box.Box.Insert(object)
+}
+
+// Update synchronously updates a single object.
+// As opposed to Put, Update will fail if an object with the same ID is not found in the database.
+func (box *ProvisionWatcherBox) Update(object *ProvisionWatcher) error {
+	return box.Box.Update(object)
+}
+
+// PutAsync asynchronously inserts/updates a single object.
+// Deprecated: use box.Async().Put() instead
 func (box *ProvisionWatcherBox) PutAsync(object *ProvisionWatcher) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
@@ -388,6 +385,68 @@ func (box *ProvisionWatcherBox) QueryOrError(conditions ...objectbox.Condition) 
 	} else {
 		return &ProvisionWatcherQuery{query}, nil
 	}
+}
+
+// Async provides access to the default Async Box for asynchronous operations. See ProvisionWatcherAsyncBox for more information.
+func (box *ProvisionWatcherBox) Async() *ProvisionWatcherAsyncBox {
+	return &ProvisionWatcherAsyncBox{AsyncBox: box.Box.Async()}
+}
+
+// ProvisionWatcherAsyncBox provides asynchronous operations on ProvisionWatcher objects.
+//
+// Asynchronous operations are executed on a separate internal thread for better performance.
+//
+// There are two main use cases:
+//
+// 1) "execute & forget:" you gain faster put/remove operations as you don't have to wait for the transaction to finish.
+//
+// 2) Many small transactions: if your write load is typically a lot of individual puts that happen in parallel,
+// this will merge small transactions into bigger ones. This results in a significant gain in overall throughput.
+//
+// In situations with (extremely) high async load, an async method may be throttled (~1ms) or delayed up to 1 second.
+// In the unlikely event that the object could still not be enqueued (full queue), an error will be returned.
+//
+// Note that async methods do not give you hard durability guarantees like the synchronous Box provides.
+// There is a small time window in which the data may not have been committed durably yet.
+type ProvisionWatcherAsyncBox struct {
+	*objectbox.AsyncBox
+}
+
+// AsyncBoxForProvisionWatcher creates a new async box with the given operation timeout in case an async queue is full.
+// The returned struct must be freed explicitly using the Close() method.
+// It's usually preferable to use ProvisionWatcherBox::Async() which takes care of resource management and doesn't require closing.
+func AsyncBoxForProvisionWatcher(ob *objectbox.ObjectBox, timeoutMs uint64) *ProvisionWatcherAsyncBox {
+	var async, err = objectbox.NewAsyncBox(ob, 12, timeoutMs)
+	if err != nil {
+		panic("Could not create async box for entity ID 12: %s" + err.Error())
+	}
+	return &ProvisionWatcherAsyncBox{AsyncBox: async}
+}
+
+// Put inserts/updates a single object asynchronously.
+// When inserting a new object, the Id property on the passed object will be assigned the new ID the entity would hold
+// if the insert is ultimately successful. The newly assigned ID may not become valid if the insert fails.
+func (asyncBox *ProvisionWatcherAsyncBox) Put(object *ProvisionWatcher) (uint64, error) {
+	return asyncBox.AsyncBox.Put(object)
+}
+
+// Insert a single object asynchronously.
+// The Id property on the passed object will be assigned the new ID the entity would hold if the insert is ultimately
+// successful. The newly assigned ID may not become valid if the insert fails.
+// Fails silently if an object with the same ID already exists (this error is not returned).
+func (asyncBox *ProvisionWatcherAsyncBox) Insert(object *ProvisionWatcher) (id uint64, err error) {
+	return asyncBox.AsyncBox.Insert(object)
+}
+
+// Update a single object asynchronously.
+// The object must already exists or the update fails silently (without an error returned).
+func (asyncBox *ProvisionWatcherAsyncBox) Update(object *ProvisionWatcher) error {
+	return asyncBox.AsyncBox.Update(object)
+}
+
+// Remove deletes a single object asynchronously.
+func (asyncBox *ProvisionWatcherAsyncBox) Remove(object *ProvisionWatcher) error {
+	return asyncBox.AsyncBox.Remove(object)
 }
 
 // Query provides a way to search stored objects

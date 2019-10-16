@@ -115,7 +115,7 @@ var DeviceService_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (deviceService_EntityInfo) GeneratorVersion() int {
-	return 3
+	return 4
 }
 
 // AddToModel is called by ObjectBox during model build
@@ -126,7 +126,7 @@ func (deviceService_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Timestamps_Origin", 6, 3, 5493121179345774275)
 	model.Property("Description", 9, 4, 8372447212547125896)
 	model.Property("Id", 6, 5, 1139277417242868914)
-	model.PropertyFlags(8193)
+	model.PropertyFlags(1)
 	model.Property("Name", 9, 6, 6755402022460936928)
 	model.PropertyFlags(32)
 	model.PropertyIndex(2, 5111743529621501669)
@@ -135,7 +135,7 @@ func (deviceService_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("OperatingState", 9, 9, 7157873871038944207)
 	model.Property("Labels", 30, 10, 2994616260915039620)
 	model.Property("Addressable", 11, 11, 2640177732493661289)
-	model.PropertyFlags(8192)
+	model.PropertyFlags(8712)
 	model.PropertyRelation("Addressable", 3, 4107923026042948129)
 	model.Property("AdminState", 9, 12, 2249464337832106382)
 	model.EntityLastPropertyId(12, 2249464337832106382)
@@ -285,24 +285,21 @@ func (box *DeviceServiceBox) Put(object *DeviceService) (uint64, error) {
 	return box.Box.Put(object)
 }
 
-// PutAsync asynchronously inserts/updates a single object.
+// Insert synchronously inserts a single object. As opposed to Put, Insert will fail if given an ID that already exists.
+// In case the Id is not specified, it would be assigned automatically (auto-increment).
 // When inserting, the DeviceService.Id property on the passed object will be assigned the new ID as well.
-//
-// It's executed on a separate internal thread for better performance.
-//
-// There are two main use cases:
-//
-// 1) "Put & Forget:" you gain faster puts as you don't have to wait for the transaction to finish.
-//
-// 2) Many small transactions: if your write load is typically a lot of individual puts that happen in parallel,
-// this will merge small transactions into bigger ones. This results in a significant gain in overall throughput.
-//
-//
-// In situations with (extremely) high async load, this method may be throttled (~1ms) or delayed (<1s).
-// In the unlikely event that the object could not be enqueued after delaying, an error will be returned.
-//
-// Note that this method does not give you hard durability guarantees like the synchronous Put provides.
-// There is a small time window (typically 3 ms) in which the data may not have been committed durably yet.
+func (box *DeviceServiceBox) Insert(object *DeviceService) (uint64, error) {
+	return box.Box.Insert(object)
+}
+
+// Update synchronously updates a single object.
+// As opposed to Put, Update will fail if an object with the same ID is not found in the database.
+func (box *DeviceServiceBox) Update(object *DeviceService) error {
+	return box.Box.Update(object)
+}
+
+// PutAsync asynchronously inserts/updates a single object.
+// Deprecated: use box.Async().Put() instead
 func (box *DeviceServiceBox) PutAsync(object *DeviceService) (uint64, error) {
 	return box.Box.PutAsync(object)
 }
@@ -389,6 +386,68 @@ func (box *DeviceServiceBox) QueryOrError(conditions ...objectbox.Condition) (*D
 	} else {
 		return &DeviceServiceQuery{query}, nil
 	}
+}
+
+// Async provides access to the default Async Box for asynchronous operations. See DeviceServiceAsyncBox for more information.
+func (box *DeviceServiceBox) Async() *DeviceServiceAsyncBox {
+	return &DeviceServiceAsyncBox{AsyncBox: box.Box.Async()}
+}
+
+// DeviceServiceAsyncBox provides asynchronous operations on DeviceService objects.
+//
+// Asynchronous operations are executed on a separate internal thread for better performance.
+//
+// There are two main use cases:
+//
+// 1) "execute & forget:" you gain faster put/remove operations as you don't have to wait for the transaction to finish.
+//
+// 2) Many small transactions: if your write load is typically a lot of individual puts that happen in parallel,
+// this will merge small transactions into bigger ones. This results in a significant gain in overall throughput.
+//
+// In situations with (extremely) high async load, an async method may be throttled (~1ms) or delayed up to 1 second.
+// In the unlikely event that the object could still not be enqueued (full queue), an error will be returned.
+//
+// Note that async methods do not give you hard durability guarantees like the synchronous Box provides.
+// There is a small time window in which the data may not have been committed durably yet.
+type DeviceServiceAsyncBox struct {
+	*objectbox.AsyncBox
+}
+
+// AsyncBoxForDeviceService creates a new async box with the given operation timeout in case an async queue is full.
+// The returned struct must be freed explicitly using the Close() method.
+// It's usually preferable to use DeviceServiceBox::Async() which takes care of resource management and doesn't require closing.
+func AsyncBoxForDeviceService(ob *objectbox.ObjectBox, timeoutMs uint64) *DeviceServiceAsyncBox {
+	var async, err = objectbox.NewAsyncBox(ob, 3, timeoutMs)
+	if err != nil {
+		panic("Could not create async box for entity ID 3: %s" + err.Error())
+	}
+	return &DeviceServiceAsyncBox{AsyncBox: async}
+}
+
+// Put inserts/updates a single object asynchronously.
+// When inserting a new object, the Id property on the passed object will be assigned the new ID the entity would hold
+// if the insert is ultimately successful. The newly assigned ID may not become valid if the insert fails.
+func (asyncBox *DeviceServiceAsyncBox) Put(object *DeviceService) (uint64, error) {
+	return asyncBox.AsyncBox.Put(object)
+}
+
+// Insert a single object asynchronously.
+// The Id property on the passed object will be assigned the new ID the entity would hold if the insert is ultimately
+// successful. The newly assigned ID may not become valid if the insert fails.
+// Fails silently if an object with the same ID already exists (this error is not returned).
+func (asyncBox *DeviceServiceAsyncBox) Insert(object *DeviceService) (id uint64, err error) {
+	return asyncBox.AsyncBox.Insert(object)
+}
+
+// Update a single object asynchronously.
+// The object must already exists or the update fails silently (without an error returned).
+func (asyncBox *DeviceServiceAsyncBox) Update(object *DeviceService) error {
+	return asyncBox.AsyncBox.Update(object)
+}
+
+// Remove deletes a single object asynchronously.
+func (asyncBox *DeviceServiceAsyncBox) Remove(object *DeviceService) error {
+	return asyncBox.AsyncBox.Remove(object)
 }
 
 // Query provides a way to search stored objects

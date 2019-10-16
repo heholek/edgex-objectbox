@@ -3,26 +3,22 @@
 set -euo pipefail
 
 obxmodels=internal/pkg/db/objectbox/models #source
-obxmodels2=internal/pkg/db/objectbox/models/correlation #source
+# obxmodels=internal/pkg/db/objectbox/models/correlation #source
 obxbindings=internal/pkg/db/objectbox/obx  #target
 
 generator="go run github.com/objectbox/objectbox-go/cmd/objectbox-gogen -byValue -persist ${obxbindings}/objectbox-model.json"
 
 # cleanup if there was a failed generation previously
 rm ${obxmodels}/*.obx.go -f
-#rm ${obxmodels2}/*.obx.go -f
 
 # generate
-for f in "${obxmodels}"/*.go; do if [[ ${f: -8} != ".skip.go" ]]; then ${generator} -source "${f}"; fi; done
-#for f in "${obxmodels2}"/*.go; do if [[ ${f: -8} != ".skip.go" ]]; then ${generator} -source "${f}"; fi; done
+for f in "${obxmodels}"/*.go; do if [[ ${f: -8} != ".skip.go" ]]; then ${generator} "${f}"; fi; done
 
 # fix import path
 for f in "${obxmodels}"/*.obx.go; do sed -i 's/import (/import (\n\t. "github.com\/edgexfoundry\/go-mod-core-contracts\/models"/g' "$f"; done
-#for f in "${obxmodels2}"/*.obx.go; do sed -i 's/import (/import (\n\t. "github.com\/edgexfoundry\/go-mod-core-contracts\/models"/g' "$f"; done
 
 # move to the output folder
-#mv "${obxmodels}"/*.obx.go "${obxbindings}/"
-#mv "${obxmodels2}"/*.obx.go "${obxbindings}/"
+mv "${obxmodels}"/*.obx.go "${obxbindings}/"
 
 # fix package name on generated files and objectbox-model.go
 for f in "${obxbindings}"/*.go; do sed -i 's/package models/package obx/g' "$f"; done

@@ -24,8 +24,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/objectbox/edgex-objectbox/internal/core/data/interfaces"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/interfaces"
 )
 
 type BenchmarkContext struct {
@@ -127,6 +127,7 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 		reading := contract.Reading{}
 		reading.Name = "test" + strconv.Itoa(ctx.I)
 		reading.Device = "device" + strconv.Itoa(ctx.I%deviceCount)
+		reading.Value = "1"
 		ctx.StartClock()
 		id, err := db.AddReading(reading)
 		if durable && ctx.I == count-1 {

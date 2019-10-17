@@ -10,7 +10,6 @@ mkdir -p benchmark
 
 TESTDIR=$PWD
 WIPE_DATADIR=false
-OBJECTBOX_DB_DIR=benchmark-test
 
 
 export GIT_TERMINAL_PROMPT=1
@@ -405,20 +404,21 @@ function execute() {
 
 
 function run_objectbox() {
+    DBDIR=$TMPDIR/objectbox
     set -e
     cd $TMPDIR
     if ${WIPE_DATADIR}; then
         log "Remove objectbox/..."
-        rm -rf ${OBJECTBOX_DB_DIR}
+        rm -rf ${DBDIR}
     fi
     log "Starting objectbox test... "
     execute objectbox $OBJECTBOX_TESTBIN
-    du -sm ${OBJECTBOX_DB_DIR} >> $DATADIR/$ENGINE.datasize || die "No objectbox directory ${OBJECTBOX_DB_DIR} found"
+    du -sm ${DBDIR} >> $DATADIR/$ENGINE.datasize || die "No objectbox directory ${DBDIR} found"
     cd -
 }
 
 function run_redis() {
-    DBDIR=$TMPDIR/redisdb
+    DBDIR=$TMPDIR/redis
     
     du -h $DBDIR || true
     if ${WIPE_DATADIR}
@@ -459,16 +459,16 @@ function waitForTcpOpen() {
 
 function run_mongo() {
     #DBD="$(sed -n 's/dbpath=//p' mongodb.conf)"
-    DBPATH=$TMPDIR/mongodb-$USER
-    DBPATH_TARBALL=$TMPDIR/mongodb-$USER.tar
-
+    DBPATH=$TMPDIR/mongodb
+    DBPATH_TARBALL=$TMPDIR/mongodb.tar
+    mongoServer="mongod --unixSocketPrefix=/tmp --dbpath=$DBPATH"
     rm -rf $DBPATH
     mkdir -vp $DBPATH
     if ${WIPE_DATADIR} && { [ ! -f $DBPATH_TARBALL ] || ! tar xavf $DBPATH_TARBALL -C $DBPATH ; }
     then
         log "Initializing Mongo, only FIRST TIME ... ===================="
         rm -f $DBPATH_TARBALL
-        \time -vao mongo-setup.times -- mongod   --smallfiles --unixSocketPrefix=/tmp  --dbpath=$DBPATH & MONGO_PID=$!
+        \time -vao mongo-setup.times -- ${mongoServer} & MONGO_PID=$!
         trap "kill $MONGO_PID" EXIT
         waitForTcpOpen 27017 60
         pgrep -P $MONGO_PID |xargs -r kill || log "Mongo server not there"
@@ -483,7 +483,7 @@ function run_mongo() {
         cd -
     fi
 
-    \time -vao $DATADIR/mongo-server.times -- mongod   --smallfiles --unixSocketPrefix=/tmp  --dbpath=$DBPATH >& $DATADIR/mongo-server.${EXECUTION_SEQ_ID}.log & MONGO_PID=$!
+    \time -vao $DATADIR/mongo-server.times -- ${mongoServer} >& $DATADIR/mongo-server.${EXECUTION_SEQ_ID}.log & MONGO_PID=$!
     trap "kill $MONGO_PID" EXIT
     waitForTcpOpen 27017 60
     if ! kill -0 $MONGO_PID ; then

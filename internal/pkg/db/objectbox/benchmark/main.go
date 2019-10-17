@@ -11,7 +11,7 @@ import (
 
 func main() {
 	config := db.Configuration{
-		DatabaseName: "benchmark-test",
+		DatabaseName: "objectbox",
 	}
 	client, err := objectbox.NewClient(config)
 	if err != nil {

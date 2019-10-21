@@ -170,7 +170,7 @@ func newCoreDataClient(objectBox *objectbox.ObjectBox) (*coreDataClient, error) 
 
 func (client *coreDataClient) awaitAsync() {
 	if async {
-		client.objectBox.AwaitAsyncCompletion()
+		client.readingAsync.async.AwaitSubmitted()
 		client.readingAsync.Clear()
 	}
 }

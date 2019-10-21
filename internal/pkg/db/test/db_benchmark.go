@@ -121,15 +121,7 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 	ids := make([]string, count)
 	var readings []contract.Reading
 
-	// Represents C (create) in CRUD.
-	// Called `count` times, each time creating a item.
-	RunBenchmarkN(db, "Create", count, func(ctx *BenchmarkContext) error {
-		reading := contract.Reading{}
-		reading.Name = "test" + strconv.Itoa(ctx.I)
-		reading.Device = "device" + strconv.Itoa(ctx.I%deviceCount)
-		reading.Value = "1"
-		ctx.StartClock()
-		id, err := db.AddReading(reading)
+	var finalizeWriteAndStopClock = func(ctx *BenchmarkContext) {
 		if durable && ctx.I == count-1 {
 			// Last one; ensure DBs actually made data durable
 			durableStart := time.Now()
@@ -140,6 +132,18 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 		} else {
 			ctx.StopClock()
 		}
+	}
+
+	// Represents C (create) in CRUD.
+	// Called `count` times, each time creating a item.
+	RunBenchmarkN(db, "Create", count, func(ctx *BenchmarkContext) error {
+		reading := contract.Reading{}
+		reading.Name = "test" + strconv.Itoa(ctx.I)
+		reading.Device = "device" + strconv.Itoa(ctx.I%deviceCount)
+		reading.Value = "1"
+		ctx.StartClock()
+		id, err := db.AddReading(reading)
+		finalizeWriteAndStopClock(ctx)
 		ids[ctx.I] = id
 		return err
 	})
@@ -166,7 +170,7 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 		ctx.StartClock()
 		reading.Name = reading.Name + " updated"
 		err := db.UpdateReading(reading)
-		ctx.StopClock()
+		finalizeWriteAndStopClock(ctx)
 		return err
 	})
 
@@ -220,7 +224,7 @@ func benchmarkReadingsN(db interfaces.DBClient, verify bool, durable bool) {
 
 		ctx.StartClock()
 		err := db.DeleteReadingById(id)
-		ctx.StopClock()
+		finalizeWriteAndStopClock(ctx)
 		return err
 	})
 }

@@ -127,7 +127,7 @@ The snap is built with [snapcraft](https://snapcraft.io), and the snapcraft.yaml
 
 ```bash
 $ git clone https://github.com/objectbox/edgex-objectbox
-$ cd edgex-go
+$ cd edgex-objectbox
 ```
 
 ### Installing snapcraft
@@ -150,6 +150,37 @@ To install snapcraft on MacOS, see [this link](https://docs.snapcraft.io/install
 
 To install snapcraft on Windows, you will need to run a Linux VM and follow the above instructions to install snapcraft as a snap. Note that if you are using WSL, only WSL2 with full Linux kernel support will work - you cannot use WSL with snapcraft and snaps. If you like, you can install multipass to launch a Linux VM if your Windows machine has Windows 10 Pro or Enterprise with Hyper-V support. See this [forum post](https://discourse.ubuntu.com/t/installing-multipass-for-windows/9547) for more details.
 
+### Building ARMv6hf on Raspberry Pi 3b
+The following steps apply when running Raspbian. 
+With Ubuntu Core, you may have luck trying one of the generic build options described in folowing chapters.
+
+Adapted from https://snapcraft.io/docs/build-on-lxd
+
+1. Install LXD and initialize it, accepting all the default options (maybe except for size, use e.g. 5 GB instead).
+    ```shell script
+   sudo snap install lxd
+   sudo lxd init
+   sudo usermod -a -G lxd ${USER}
+   newgrp lxd
+    ```
+1. Create a new container, connect to it, install snapcraft:
+    ```shell script
+   lxc launch ubuntu:18.04 mysnapcraft
+   lxc exec mysnapcraft -- /bin/bash
+   snap install snapcraft --classic
+    ```
+   In case you get an `error: cannot communicate with server: ...`, just wait a few seconds and try again.
+1. Clone the repo and build the snap. APT update is necessary for part dependencies package discovery.
+    ```shell script
+   apt update
+   git clone -b branch-name --single-branch https://github.com/objectbox/edgex-objectbox.git
+   cd edgex-objectbox
+   snapcraft --destructive-mode
+    ```
+1. In the host environment, get the snap:
+    ```shell script
+   lxc file pull mysnapcraft/root/edgex-objectbox/edgex*.snap .
+```   
 ### Building with multipass
 
 The easiest way to build the snap is using the multipass VM tool that snapcraft knows to use directly. After [installing multipass](https://multipass.run), just run 

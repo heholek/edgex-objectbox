@@ -21,7 +21,7 @@ require (
 	github.com/magiconair/properties v1.8.0
 	github.com/mattn/go-xmpp v0.0.0-20190124093244-6093f50721ed
 	github.com/mitchellh/consulstructure v0.0.0-20190329231841-56fdc4d2da54
-	github.com/objectbox/objectbox-go v1.1.0-beta.0
+	github.com/objectbox/objectbox-go v1.0.1-0.20191024160648-f15873b5a6b9
 	github.com/pebbe/zmq4 v1.0.0
 	github.com/pelletier/go-toml v1.2.0
 	github.com/pkg/errors v0.8.1
@@ -31,7 +31,5 @@ require (
 	gopkg.in/eapache/queue.v1 v1.1.0
 	gopkg.in/yaml.v2 v2.2.2
 )
-
-replace github.com/objectbox/objectbox-go => ../../objectbox-go
 
 go 1.13

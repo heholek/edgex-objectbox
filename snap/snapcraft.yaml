@@ -343,7 +343,7 @@ parts:
     source: https://github.com/objectbox/objectbox-c.git
     after: [curl]
     override-build: |
-      echo "N" | ./download.sh 0.6.0
+      echo "N" | ./download.sh 0.7.1
       mv lib "$SNAPCRAFT_PART_INSTALL/lib"
     prime:
       - lib/libobjectbox.so

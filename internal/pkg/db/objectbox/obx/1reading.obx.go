@@ -4,6 +4,7 @@
 package obx
 
 import (
+	"errors"
 	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
@@ -114,19 +115,22 @@ func (reading_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (reading_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*Reading); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.Id)
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(Reading).Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(Reading).Id)
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
-func (reading_EntityInfo) SetId(object interface{}, id uint64) {
+func (reading_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*Reading); ok {
-		obj.Id = objectbox.StringIdConvertToEntityProperty(id)
+		var err error
+		obj.Id, err = objectbox.StringIdConvertToEntityProperty(id)
+		return err
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Reading).Id
+		return nil
 	}
 }
 
@@ -166,14 +170,22 @@ func (reading_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, 
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
 func (reading_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
+	if len(bytes) == 0 { // sanity check, should "never" happen
+		return nil, errors.New("can't deserialize an object of type 'Reading' - no data received")
+	}
+
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = table.GetUint64Slot(4, 0)
+
+	propId, err := objectbox.StringIdConvertToEntityProperty(fbutils.GetUint64Slot(table, 4))
+	if err != nil {
+		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on Reading.Id: " + err.Error())
+	}
 
 	return &Reading{
-		Id:          objectbox.StringIdConvertToEntityProperty(id),
+		Id:          propId,
 		Pushed:      fbutils.GetInt64Slot(table, 6),
 		Created:     fbutils.GetInt64Slot(table, 8),
 		Origin:      fbutils.GetInt64Slot(table, 10),
@@ -192,6 +204,9 @@ func (reading_EntityInfo) MakeSlice(capacity int) interface{} {
 
 // AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (reading_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
+	if object == nil {
+		return append(slice.([]Reading), Reading{})
+	}
 	return append(slice.([]Reading), *object.(*Reading))
 }
 
@@ -270,6 +285,15 @@ func (box *ReadingBox) GetMany(ids ...uint64) ([]Reading, error) {
 	return objects.([]Reading), nil
 }
 
+// GetManyExisting reads multiple objects at once, skipping those that do not exist.
+func (box *ReadingBox) GetManyExisting(ids ...uint64) ([]Reading, error) {
+	objects, err := box.Box.GetManyExisting(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Reading), nil
+}
+
 // GetAll reads all stored objects
 func (box *ReadingBox) GetAll() ([]Reading, error) {
 	objects, err := box.Box.GetAll()
@@ -291,8 +315,12 @@ func (box *ReadingBox) Remove(object *Reading) error {
 // you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
 func (box *ReadingBox) RemoveMany(objects ...*Reading) (uint64, error) {
 	var ids = make([]uint64, len(objects))
+	var err error
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Id)
+		ids[k], err = objectbox.StringIdConvertToDatabaseValue(object.Id)
+		if err != nil {
+			return 0, errors.New("converter objectbox.StringIdConvertToDatabaseValue() failed on Reading.Id: " + err.Error())
+		}
 	}
 	return box.Box.RemoveIds(ids...)
 }

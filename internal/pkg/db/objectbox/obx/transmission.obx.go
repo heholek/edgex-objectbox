@@ -4,6 +4,7 @@
 package obx
 
 import (
+	"errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
@@ -142,19 +143,22 @@ func (transmission_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (transmission_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*Transmission); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.ID)
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(Transmission).ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(Transmission).ID)
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
-func (transmission_EntityInfo) SetId(object interface{}, id uint64) {
+func (transmission_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*Transmission); ok {
-		obj.ID = objectbox.StringIdConvertToEntityProperty(id)
+		var err error
+		obj.ID, err = objectbox.StringIdConvertToEntityProperty(id)
+		return err
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Transmission).ID
+		return nil
 	}
 }
 
@@ -183,12 +187,21 @@ func (transmission_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 		obj = &objVal
 	}
 
+	var propRecords []byte
+	{
+		var err error
+		propRecords, err = transmissionRecordsJsonToDatabaseValue(obj.Records)
+		if err != nil {
+			return errors.New("converter transmissionRecordsJsonToDatabaseValue() failed on Transmission.Records: " + err.Error())
+		}
+	}
+
 	var offsetReceiver = fbutils.CreateStringOffset(fbb, obj.Receiver)
 	var offsetChannel_Type = fbutils.CreateStringOffset(fbb, string(obj.Channel.Type))
 	var offsetChannel_MailAddresses = fbutils.CreateStringVectorOffset(fbb, obj.Channel.MailAddresses)
 	var offsetChannel_Url = fbutils.CreateStringOffset(fbb, obj.Channel.Url)
 	var offsetStatus = fbutils.CreateStringOffset(fbb, string(obj.Status))
-	var offsetRecords = fbutils.CreateByteVectorOffset(fbb, transmissionRecordsJsonToDatabaseValue(obj.Records))
+	var offsetRecords = fbutils.CreateByteVectorOffset(fbb, propRecords)
 
 	var rIdNotification uint64
 	if rel := &obj.Notification; rel != nil {
@@ -218,16 +231,31 @@ func (transmission_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
 func (transmission_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
+	if len(bytes) == 0 { // sanity check, should "never" happen
+		return nil, errors.New("can't deserialize an object of type 'Transmission' - no data received")
+	}
+
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = table.GetUint64Slot(10, 0)
+
+	propID, err := objectbox.StringIdConvertToEntityProperty(fbutils.GetUint64Slot(table, 10))
+	if err != nil {
+		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on Transmission.ID: " + err.Error())
+	}
+
+	propRecords, err := transmissionRecordsJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 26))
+	if err != nil {
+		return nil, errors.New("converter transmissionRecordsJsonToEntityProperty() failed on Transmission.Records: " + err.Error())
+	}
 
 	var relNotification *Notification
 	if rId := fbutils.GetUint64Slot(table, 12); rId > 0 {
 		if rObject, err := BoxForNotification(ob).Get(rId); err != nil {
 			return nil, err
+		} else if rObject == nil {
+			relNotification = &Notification{}
 		} else {
 			relNotification = rObject
 		}
@@ -241,7 +269,7 @@ func (transmission_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (inte
 			Modified: fbutils.GetInt64Slot(table, 6),
 			Origin:   fbutils.GetInt64Slot(table, 8),
 		},
-		ID:           objectbox.StringIdConvertToEntityProperty(id),
+		ID:           propID,
 		Notification: *relNotification,
 		Receiver:     fbutils.GetStringSlot(table, 14),
 		Channel: models.Channel{
@@ -251,7 +279,7 @@ func (transmission_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (inte
 		},
 		Status:      models.TransmissionStatus(fbutils.GetStringSlot(table, 22)),
 		ResendCount: fbutils.GetIntSlot(table, 24),
-		Records:     transmissionRecordsJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 26)),
+		Records:     propRecords,
 	}, nil
 }
 
@@ -262,6 +290,9 @@ func (transmission_EntityInfo) MakeSlice(capacity int) interface{} {
 
 // AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (transmission_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
+	if object == nil {
+		return append(slice.([]Transmission), Transmission{})
+	}
 	return append(slice.([]Transmission), *object.(*Transmission))
 }
 
@@ -340,6 +371,15 @@ func (box *TransmissionBox) GetMany(ids ...uint64) ([]Transmission, error) {
 	return objects.([]Transmission), nil
 }
 
+// GetManyExisting reads multiple objects at once, skipping those that do not exist.
+func (box *TransmissionBox) GetManyExisting(ids ...uint64) ([]Transmission, error) {
+	objects, err := box.Box.GetManyExisting(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Transmission), nil
+}
+
 // GetAll reads all stored objects
 func (box *TransmissionBox) GetAll() ([]Transmission, error) {
 	objects, err := box.Box.GetAll()
@@ -361,8 +401,12 @@ func (box *TransmissionBox) Remove(object *Transmission) error {
 // you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
 func (box *TransmissionBox) RemoveMany(objects ...*Transmission) (uint64, error) {
 	var ids = make([]uint64, len(objects))
+	var err error
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.ID)
+		ids[k], err = objectbox.StringIdConvertToDatabaseValue(object.ID)
+		if err != nil {
+			return 0, errors.New("converter objectbox.StringIdConvertToDatabaseValue() failed on Transmission.ID: " + err.Error())
+		}
 	}
 	return box.Box.RemoveIds(ids...)
 }

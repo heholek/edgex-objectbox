@@ -4,6 +4,7 @@
 package obx
 
 import (
+	"errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
@@ -125,19 +126,22 @@ func (subscription_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (subscription_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*Subscription); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.ID)
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(Subscription).ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(Subscription).ID)
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
-func (subscription_EntityInfo) SetId(object interface{}, id uint64) {
+func (subscription_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*Subscription); ok {
-		obj.ID = objectbox.StringIdConvertToEntityProperty(id)
+		var err error
+		obj.ID, err = objectbox.StringIdConvertToEntityProperty(id)
+		return err
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Subscription).ID
+		return nil
 	}
 }
 
@@ -156,12 +160,30 @@ func (subscription_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 		obj = &objVal
 	}
 
+	var propSubscribedCategories []string
+	{
+		var err error
+		propSubscribedCategories, err = notificationsCategoryToDatabaseValue(obj.SubscribedCategories)
+		if err != nil {
+			return errors.New("converter notificationsCategoryToDatabaseValue() failed on Subscription.SubscribedCategories: " + err.Error())
+		}
+	}
+
+	var propChannels []byte
+	{
+		var err error
+		propChannels, err = channelsJsonToDatabaseValue(obj.Channels)
+		if err != nil {
+			return errors.New("converter channelsJsonToDatabaseValue() failed on Subscription.Channels: " + err.Error())
+		}
+	}
+
 	var offsetSlug = fbutils.CreateStringOffset(fbb, obj.Slug)
 	var offsetReceiver = fbutils.CreateStringOffset(fbb, obj.Receiver)
 	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.Description)
-	var offsetSubscribedCategories = fbutils.CreateStringVectorOffset(fbb, notificationsCategoryToDatabaseValue(obj.SubscribedCategories))
+	var offsetSubscribedCategories = fbutils.CreateStringVectorOffset(fbb, propSubscribedCategories)
 	var offsetSubscribedLabels = fbutils.CreateStringVectorOffset(fbb, obj.SubscribedLabels)
-	var offsetChannels = fbutils.CreateByteVectorOffset(fbb, channelsJsonToDatabaseValue(obj.Channels))
+	var offsetChannels = fbutils.CreateByteVectorOffset(fbb, propChannels)
 
 	// build the FlatBuffers object
 	fbb.StartObject(10)
@@ -180,11 +202,29 @@ func (subscription_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
 func (subscription_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
+	if len(bytes) == 0 { // sanity check, should "never" happen
+		return nil, errors.New("can't deserialize an object of type 'Subscription' - no data received")
+	}
+
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = table.GetUint64Slot(10, 0)
+
+	propID, err := objectbox.StringIdConvertToEntityProperty(fbutils.GetUint64Slot(table, 10))
+	if err != nil {
+		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on Subscription.ID: " + err.Error())
+	}
+
+	propSubscribedCategories, err := notificationsCategoryToEntityProperty(fbutils.GetStringVectorSlot(table, 18))
+	if err != nil {
+		return nil, errors.New("converter notificationsCategoryToEntityProperty() failed on Subscription.SubscribedCategories: " + err.Error())
+	}
+
+	propChannels, err := channelsJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 22))
+	if err != nil {
+		return nil, errors.New("converter channelsJsonToEntityProperty() failed on Subscription.Channels: " + err.Error())
+	}
 
 	return &Subscription{
 		Timestamps: models.Timestamps{
@@ -192,13 +232,13 @@ func (subscription_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (inte
 			Modified: fbutils.GetInt64Slot(table, 6),
 			Origin:   fbutils.GetInt64Slot(table, 8),
 		},
-		ID:                   objectbox.StringIdConvertToEntityProperty(id),
+		ID:                   propID,
 		Slug:                 fbutils.GetStringSlot(table, 12),
 		Receiver:             fbutils.GetStringSlot(table, 14),
 		Description:          fbutils.GetStringSlot(table, 16),
-		SubscribedCategories: notificationsCategoryToEntityProperty(fbutils.GetStringVectorSlot(table, 18)),
+		SubscribedCategories: propSubscribedCategories,
 		SubscribedLabels:     fbutils.GetStringVectorSlot(table, 20),
-		Channels:             channelsJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 22)),
+		Channels:             propChannels,
 	}, nil
 }
 
@@ -209,6 +249,9 @@ func (subscription_EntityInfo) MakeSlice(capacity int) interface{} {
 
 // AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (subscription_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
+	if object == nil {
+		return append(slice.([]Subscription), Subscription{})
+	}
 	return append(slice.([]Subscription), *object.(*Subscription))
 }
 
@@ -287,6 +330,15 @@ func (box *SubscriptionBox) GetMany(ids ...uint64) ([]Subscription, error) {
 	return objects.([]Subscription), nil
 }
 
+// GetManyExisting reads multiple objects at once, skipping those that do not exist.
+func (box *SubscriptionBox) GetManyExisting(ids ...uint64) ([]Subscription, error) {
+	objects, err := box.Box.GetManyExisting(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Subscription), nil
+}
+
 // GetAll reads all stored objects
 func (box *SubscriptionBox) GetAll() ([]Subscription, error) {
 	objects, err := box.Box.GetAll()
@@ -308,8 +360,12 @@ func (box *SubscriptionBox) Remove(object *Subscription) error {
 // you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
 func (box *SubscriptionBox) RemoveMany(objects ...*Subscription) (uint64, error) {
 	var ids = make([]uint64, len(objects))
+	var err error
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.ID)
+		ids[k], err = objectbox.StringIdConvertToDatabaseValue(object.ID)
+		if err != nil {
+			return 0, errors.New("converter objectbox.StringIdConvertToDatabaseValue() failed on Subscription.ID: " + err.Error())
+		}
 	}
 	return box.Box.RemoveIds(ids...)
 }

@@ -4,6 +4,7 @@
 package obx
 
 import (
+	"errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
@@ -168,19 +169,22 @@ func (registration_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (registration_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*Registration); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.ID)
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(Registration).ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(Registration).ID)
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
-func (registration_EntityInfo) SetId(object interface{}, id uint64) {
+func (registration_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*Registration); ok {
-		obj.ID = objectbox.StringIdConvertToEntityProperty(id)
+		var err error
+		obj.ID, err = objectbox.StringIdConvertToEntityProperty(id)
+		return err
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Registration).ID
+		return nil
 	}
 }
 
@@ -250,16 +254,26 @@ func (registration_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
 func (registration_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
+	if len(bytes) == 0 { // sanity check, should "never" happen
+		return nil, errors.New("can't deserialize an object of type 'Registration' - no data received")
+	}
+
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = table.GetUint64Slot(4, 0)
+
+	propID, err := objectbox.StringIdConvertToEntityProperty(fbutils.GetUint64Slot(table, 4))
+	if err != nil {
+		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on Registration.ID: " + err.Error())
+	}
 
 	var relAddressable *Addressable
 	if rId := fbutils.GetUint64Slot(table, 14); rId > 0 {
 		if rObject, err := BoxForAddressable(ob).Get(rId); err != nil {
 			return nil, err
+		} else if rObject == nil {
+			relAddressable = &Addressable{}
 		} else {
 			relAddressable = rObject
 		}
@@ -268,7 +282,7 @@ func (registration_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (inte
 	}
 
 	return &Registration{
-		ID:          objectbox.StringIdConvertToEntityProperty(id),
+		ID:          propID,
 		Created:     fbutils.GetInt64Slot(table, 6),
 		Modified:    fbutils.GetInt64Slot(table, 8),
 		Origin:      fbutils.GetInt64Slot(table, 10),
@@ -297,6 +311,9 @@ func (registration_EntityInfo) MakeSlice(capacity int) interface{} {
 
 // AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (registration_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
+	if object == nil {
+		return append(slice.([]Registration), Registration{})
+	}
 	return append(slice.([]Registration), *object.(*Registration))
 }
 
@@ -375,6 +392,15 @@ func (box *RegistrationBox) GetMany(ids ...uint64) ([]Registration, error) {
 	return objects.([]Registration), nil
 }
 
+// GetManyExisting reads multiple objects at once, skipping those that do not exist.
+func (box *RegistrationBox) GetManyExisting(ids ...uint64) ([]Registration, error) {
+	objects, err := box.Box.GetManyExisting(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Registration), nil
+}
+
 // GetAll reads all stored objects
 func (box *RegistrationBox) GetAll() ([]Registration, error) {
 	objects, err := box.Box.GetAll()
@@ -396,8 +422,12 @@ func (box *RegistrationBox) Remove(object *Registration) error {
 // you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
 func (box *RegistrationBox) RemoveMany(objects ...*Registration) (uint64, error) {
 	var ids = make([]uint64, len(objects))
+	var err error
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.ID)
+		ids[k], err = objectbox.StringIdConvertToDatabaseValue(object.ID)
+		if err != nil {
+			return 0, errors.New("converter objectbox.StringIdConvertToDatabaseValue() failed on Registration.ID: " + err.Error())
+		}
 	}
 	return box.Box.RemoveIds(ids...)
 }

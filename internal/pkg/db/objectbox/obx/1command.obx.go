@@ -4,6 +4,7 @@
 package obx
 
 import (
+	"errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
@@ -139,19 +140,22 @@ func (command_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (command_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*Command); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.Id)
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(Command).Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(Command).Id)
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
-func (command_EntityInfo) SetId(object interface{}, id uint64) {
+func (command_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*Command); ok {
-		obj.Id = objectbox.StringIdConvertToEntityProperty(id)
+		var err error
+		obj.Id, err = objectbox.StringIdConvertToEntityProperty(id)
+		return err
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Command).Id
+		return nil
 	}
 }
 
@@ -170,12 +174,30 @@ func (command_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, 
 		obj = &objVal
 	}
 
+	var propGet_Responses []byte
+	{
+		var err error
+		propGet_Responses, err = responsesJsonToDatabaseValue(obj.Get.Action.Responses)
+		if err != nil {
+			return errors.New("converter responsesJsonToDatabaseValue() failed on Command.Get.Action.Responses: " + err.Error())
+		}
+	}
+
+	var propPut_Responses []byte
+	{
+		var err error
+		propPut_Responses, err = responsesJsonToDatabaseValue(obj.Put.Action.Responses)
+		if err != nil {
+			return errors.New("converter responsesJsonToDatabaseValue() failed on Command.Put.Action.Responses: " + err.Error())
+		}
+	}
+
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetGet_Path = fbutils.CreateStringOffset(fbb, obj.Get.Action.Path)
-	var offsetGet_Responses = fbutils.CreateByteVectorOffset(fbb, responsesJsonToDatabaseValue(obj.Get.Action.Responses))
+	var offsetGet_Responses = fbutils.CreateByteVectorOffset(fbb, propGet_Responses)
 	var offsetGet_URL = fbutils.CreateStringOffset(fbb, obj.Get.Action.URL)
 	var offsetPut_Path = fbutils.CreateStringOffset(fbb, obj.Put.Action.Path)
-	var offsetPut_Responses = fbutils.CreateByteVectorOffset(fbb, responsesJsonToDatabaseValue(obj.Put.Action.Responses))
+	var offsetPut_Responses = fbutils.CreateByteVectorOffset(fbb, propPut_Responses)
 	var offsetPut_URL = fbutils.CreateStringOffset(fbb, obj.Put.Action.URL)
 	var offsetPut_ParameterNames = fbutils.CreateStringVectorOffset(fbb, obj.Put.ParameterNames)
 
@@ -198,11 +220,29 @@ func (command_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, 
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
 func (command_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
+	if len(bytes) == 0 { // sanity check, should "never" happen
+		return nil, errors.New("can't deserialize an object of type 'Command' - no data received")
+	}
+
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = table.GetUint64Slot(10, 0)
+
+	propId, err := objectbox.StringIdConvertToEntityProperty(fbutils.GetUint64Slot(table, 10))
+	if err != nil {
+		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on Command.Id: " + err.Error())
+	}
+
+	propGet_Responses, err := responsesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 16))
+	if err != nil {
+		return nil, errors.New("converter responsesJsonToEntityProperty() failed on Command.Get.Action.Responses: " + err.Error())
+	}
+
+	propPut_Responses, err := responsesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 22))
+	if err != nil {
+		return nil, errors.New("converter responsesJsonToEntityProperty() failed on Command.Put.Action.Responses: " + err.Error())
+	}
 
 	return &Command{
 		Timestamps: models.Timestamps{
@@ -210,19 +250,19 @@ func (command_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface
 			Modified: fbutils.GetInt64Slot(table, 6),
 			Origin:   fbutils.GetInt64Slot(table, 8),
 		},
-		Id:   objectbox.StringIdConvertToEntityProperty(id),
+		Id:   propId,
 		Name: fbutils.GetStringSlot(table, 12),
 		Get: Get{
 			Action: Action{
 				Path:      fbutils.GetStringSlot(table, 14),
-				Responses: responsesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 16)),
+				Responses: propGet_Responses,
 				URL:       fbutils.GetStringSlot(table, 18),
 			},
 		},
 		Put: Put{
 			Action: Action{
 				Path:      fbutils.GetStringSlot(table, 20),
-				Responses: responsesJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 22)),
+				Responses: propPut_Responses,
 				URL:       fbutils.GetStringSlot(table, 24),
 			},
 			ParameterNames: fbutils.GetStringVectorSlot(table, 26),
@@ -237,6 +277,9 @@ func (command_EntityInfo) MakeSlice(capacity int) interface{} {
 
 // AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (command_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
+	if object == nil {
+		return append(slice.([]Command), Command{})
+	}
 	return append(slice.([]Command), *object.(*Command))
 }
 
@@ -315,6 +358,15 @@ func (box *CommandBox) GetMany(ids ...uint64) ([]Command, error) {
 	return objects.([]Command), nil
 }
 
+// GetManyExisting reads multiple objects at once, skipping those that do not exist.
+func (box *CommandBox) GetManyExisting(ids ...uint64) ([]Command, error) {
+	objects, err := box.Box.GetManyExisting(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Command), nil
+}
+
 // GetAll reads all stored objects
 func (box *CommandBox) GetAll() ([]Command, error) {
 	objects, err := box.Box.GetAll()
@@ -336,8 +388,12 @@ func (box *CommandBox) Remove(object *Command) error {
 // you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
 func (box *CommandBox) RemoveMany(objects ...*Command) (uint64, error) {
 	var ids = make([]uint64, len(objects))
+	var err error
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Id)
+		ids[k], err = objectbox.StringIdConvertToDatabaseValue(object.Id)
+		if err != nil {
+			return 0, errors.New("converter objectbox.StringIdConvertToDatabaseValue() failed on Command.Id: " + err.Error())
+		}
 	}
 	return box.Box.RemoveIds(ids...)
 }

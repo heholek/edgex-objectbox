@@ -4,6 +4,7 @@
 package obx
 
 import (
+	"errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
@@ -149,19 +150,22 @@ func (notification_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (notification_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*Notification); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.ID)
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(Notification).ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(Notification).ID)
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
-func (notification_EntityInfo) SetId(object interface{}, id uint64) {
+func (notification_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*Notification); ok {
-		obj.ID = objectbox.StringIdConvertToEntityProperty(id)
+		var err error
+		obj.ID, err = objectbox.StringIdConvertToEntityProperty(id)
+		return err
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Notification).ID
+		return nil
 	}
 }
 
@@ -210,11 +214,19 @@ func (notification_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
 func (notification_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
+	if len(bytes) == 0 { // sanity check, should "never" happen
+		return nil, errors.New("can't deserialize an object of type 'Notification' - no data received")
+	}
+
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = table.GetUint64Slot(10, 0)
+
+	propID, err := objectbox.StringIdConvertToEntityProperty(fbutils.GetUint64Slot(table, 10))
+	if err != nil {
+		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on Notification.ID: " + err.Error())
+	}
 
 	return &Notification{
 		Timestamps: models.Timestamps{
@@ -222,7 +234,7 @@ func (notification_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (inte
 			Modified: fbutils.GetInt64Slot(table, 6),
 			Origin:   fbutils.GetInt64Slot(table, 8),
 		},
-		ID:          objectbox.StringIdConvertToEntityProperty(id),
+		ID:          propID,
 		Slug:        fbutils.GetStringSlot(table, 12),
 		Sender:      fbutils.GetStringSlot(table, 14),
 		Category:    models.NotificationsCategory(fbutils.GetStringSlot(table, 16)),
@@ -242,6 +254,9 @@ func (notification_EntityInfo) MakeSlice(capacity int) interface{} {
 
 // AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (notification_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
+	if object == nil {
+		return append(slice.([]Notification), Notification{})
+	}
 	return append(slice.([]Notification), *object.(*Notification))
 }
 
@@ -320,6 +335,15 @@ func (box *NotificationBox) GetMany(ids ...uint64) ([]Notification, error) {
 	return objects.([]Notification), nil
 }
 
+// GetManyExisting reads multiple objects at once, skipping those that do not exist.
+func (box *NotificationBox) GetManyExisting(ids ...uint64) ([]Notification, error) {
+	objects, err := box.Box.GetManyExisting(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Notification), nil
+}
+
 // GetAll reads all stored objects
 func (box *NotificationBox) GetAll() ([]Notification, error) {
 	objects, err := box.Box.GetAll()
@@ -341,8 +365,12 @@ func (box *NotificationBox) Remove(object *Notification) error {
 // you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
 func (box *NotificationBox) RemoveMany(objects ...*Notification) (uint64, error) {
 	var ids = make([]uint64, len(objects))
+	var err error
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.ID)
+		ids[k], err = objectbox.StringIdConvertToDatabaseValue(object.ID)
+		if err != nil {
+			return 0, errors.New("converter objectbox.StringIdConvertToDatabaseValue() failed on Notification.ID: " + err.Error())
+		}
 	}
 	return box.Box.RemoveIds(ids...)
 }

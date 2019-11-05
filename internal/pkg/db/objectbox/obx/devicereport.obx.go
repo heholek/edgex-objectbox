@@ -4,6 +4,7 @@
 package obx
 
 import (
+	"errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
@@ -109,19 +110,22 @@ func (deviceReport_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (deviceReport_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*DeviceReport); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.Id)
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(DeviceReport).Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(DeviceReport).Id)
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
-func (deviceReport_EntityInfo) SetId(object interface{}, id uint64) {
+func (deviceReport_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*DeviceReport); ok {
-		obj.Id = objectbox.StringIdConvertToEntityProperty(id)
+		var err error
+		obj.Id, err = objectbox.StringIdConvertToEntityProperty(id)
+		return err
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(DeviceReport).Id
+		return nil
 	}
 }
 
@@ -160,11 +164,19 @@ func (deviceReport_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Buil
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
 func (deviceReport_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
+	if len(bytes) == 0 { // sanity check, should "never" happen
+		return nil, errors.New("can't deserialize an object of type 'DeviceReport' - no data received")
+	}
+
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = table.GetUint64Slot(10, 0)
+
+	propId, err := objectbox.StringIdConvertToEntityProperty(fbutils.GetUint64Slot(table, 10))
+	if err != nil {
+		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on DeviceReport.Id: " + err.Error())
+	}
 
 	return &DeviceReport{
 		Timestamps: models.Timestamps{
@@ -172,7 +184,7 @@ func (deviceReport_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (inte
 			Modified: fbutils.GetInt64Slot(table, 6),
 			Origin:   fbutils.GetInt64Slot(table, 8),
 		},
-		Id:       objectbox.StringIdConvertToEntityProperty(id),
+		Id:       propId,
 		Name:     fbutils.GetStringSlot(table, 12),
 		Device:   fbutils.GetStringSlot(table, 14),
 		Action:   fbutils.GetStringSlot(table, 16),
@@ -187,6 +199,9 @@ func (deviceReport_EntityInfo) MakeSlice(capacity int) interface{} {
 
 // AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (deviceReport_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
+	if object == nil {
+		return append(slice.([]DeviceReport), DeviceReport{})
+	}
 	return append(slice.([]DeviceReport), *object.(*DeviceReport))
 }
 
@@ -265,6 +280,15 @@ func (box *DeviceReportBox) GetMany(ids ...uint64) ([]DeviceReport, error) {
 	return objects.([]DeviceReport), nil
 }
 
+// GetManyExisting reads multiple objects at once, skipping those that do not exist.
+func (box *DeviceReportBox) GetManyExisting(ids ...uint64) ([]DeviceReport, error) {
+	objects, err := box.Box.GetManyExisting(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]DeviceReport), nil
+}
+
 // GetAll reads all stored objects
 func (box *DeviceReportBox) GetAll() ([]DeviceReport, error) {
 	objects, err := box.Box.GetAll()
@@ -286,8 +310,12 @@ func (box *DeviceReportBox) Remove(object *DeviceReport) error {
 // you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
 func (box *DeviceReportBox) RemoveMany(objects ...*DeviceReport) (uint64, error) {
 	var ids = make([]uint64, len(objects))
+	var err error
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Id)
+		ids[k], err = objectbox.StringIdConvertToDatabaseValue(object.Id)
+		if err != nil {
+			return 0, errors.New("converter objectbox.StringIdConvertToDatabaseValue() failed on DeviceReport.Id: " + err.Error())
+		}
 	}
 	return box.Box.RemoveIds(ids...)
 }

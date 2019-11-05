@@ -4,6 +4,7 @@
 package obx
 
 import (
+	"errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	. "github.com/objectbox/edgex-objectbox/internal/pkg/correlation/models"
@@ -106,19 +107,22 @@ func (event_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (event_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*Event); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.Event.ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.Event.ID)
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(Event).Event.ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(Event).Event.ID)
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
-func (event_EntityInfo) SetId(object interface{}, id uint64) {
+func (event_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*Event); ok {
-		obj.Event.ID = objectbox.StringIdConvertToEntityProperty(id)
+		var err error
+		obj.Event.ID, err = objectbox.StringIdConvertToEntityProperty(id)
+		return err
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Event).Event.ID
+		return nil
 	}
 }
 
@@ -158,16 +162,25 @@ func (event_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, id
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
 func (event_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
+	if len(bytes) == 0 { // sanity check, should "never" happen
+		return nil, errors.New("can't deserialize an object of type 'Event' - no data received")
+	}
+
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = table.GetUint64Slot(4, 0)
+	var id = fbutils.GetUint64Slot(table, 4)
+
+	propID, err := objectbox.StringIdConvertToEntityProperty(id)
+	if err != nil {
+		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on Event.Event.ID: " + err.Error())
+	}
 
 	var relReadings []models.Reading
 	if rIds, err := BoxForEvent(ob).RelationIds(Event_.Readings, id); err != nil {
 		return nil, err
-	} else if rSlice, err := BoxForReading(ob).GetMany(rIds...); err != nil {
+	} else if rSlice, err := BoxForReading(ob).GetManyExisting(rIds...); err != nil {
 		return nil, err
 	} else {
 		relReadings = rSlice
@@ -177,7 +190,7 @@ func (event_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}
 		Checksum: fbutils.GetStringSlot(table, 16),
 	}
 
-	result.Event.ID = objectbox.StringIdConvertToEntityProperty(id)
+	result.Event.ID = propID
 	result.Event.Pushed = fbutils.GetInt64Slot(table, 6)
 	result.Event.Device = fbutils.GetStringSlot(table, 8)
 	result.Event.Created = fbutils.GetInt64Slot(table, 10)
@@ -195,6 +208,9 @@ func (event_EntityInfo) MakeSlice(capacity int) interface{} {
 
 // AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (event_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
+	if object == nil {
+		return append(slice.([]Event), Event{})
+	}
 	return append(slice.([]Event), *object.(*Event))
 }
 
@@ -273,6 +289,15 @@ func (box *EventBox) GetMany(ids ...uint64) ([]Event, error) {
 	return objects.([]Event), nil
 }
 
+// GetManyExisting reads multiple objects at once, skipping those that do not exist.
+func (box *EventBox) GetManyExisting(ids ...uint64) ([]Event, error) {
+	objects, err := box.Box.GetManyExisting(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Event), nil
+}
+
 // GetAll reads all stored objects
 func (box *EventBox) GetAll() ([]Event, error) {
 	objects, err := box.Box.GetAll()
@@ -294,8 +319,12 @@ func (box *EventBox) Remove(object *Event) error {
 // you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
 func (box *EventBox) RemoveMany(objects ...*Event) (uint64, error) {
 	var ids = make([]uint64, len(objects))
+	var err error
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Event.ID)
+		ids[k], err = objectbox.StringIdConvertToDatabaseValue(object.Event.ID)
+		if err != nil {
+			return 0, errors.New("converter objectbox.StringIdConvertToDatabaseValue() failed on Event.Event.ID: " + err.Error())
+		}
 	}
 	return box.Box.RemoveIds(ids...)
 }

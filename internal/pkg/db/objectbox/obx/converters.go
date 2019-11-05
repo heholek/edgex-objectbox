@@ -2,8 +2,8 @@ package obx
 
 import (
 	"encoding/json"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"strconv"
 )
 
@@ -30,82 +30,67 @@ func IdFromString(id string) (uint64, error) {
 	return result, nil
 }
 
-func interfaceJsonToEntityProperty(dbValue []byte) interface{} {
+func interfaceJsonToEntityProperty(dbValue []byte) (interface{}, error) {
 	if dbValue == nil {
-		return nil
+		return nil, nil
 	}
 
 	var value interface{}
 	if err := json.Unmarshal(dbValue, &value); err != nil {
-		panic(err)
-	} else {
-		return value
+		return nil, err
 	}
+	return value, nil
 }
 
-func interfaceJsonToDatabaseValue(goValue interface{}) []byte {
+func interfaceJsonToDatabaseValue(goValue interface{}) ([]byte, error) {
 	if goValue == nil {
-		return nil
+		return nil, nil
 	}
 
-	if bytes, err := json.Marshal(goValue); err != nil {
-		panic(err)
-	} else {
-		return bytes
-	}
+	return json.Marshal(goValue)
 }
 
-func mapStringStringJsonToEntityProperty(dbValue []byte) (result map[string]string) {
+func mapStringStringJsonToEntityProperty(dbValue []byte) (result map[string]string, err error) {
 	if dbValue == nil {
-		return nil
+		return nil, nil
 	}
 
 	if err := json.Unmarshal(dbValue, &result); err != nil {
-		panic(err)
-	} else {
-		return result
+		return nil, err
 	}
+	return result, nil
 }
 
-func mapStringStringJsonToDatabaseValue(goValue map[string]string) []byte {
+func mapStringStringJsonToDatabaseValue(goValue map[string]string) ([]byte, error) {
 	if goValue == nil {
-		return nil
+		return nil, nil
 	}
 
-	if bytes, err := json.Marshal(goValue); err != nil {
-		panic(err)
-	} else {
-		return bytes
-	}
+	return json.Marshal(goValue)
 }
 
-func mapStringProtocolPropertiesJsonToEntityProperty(dbValue []byte) (result map[string]models.ProtocolProperties) {
+func mapStringProtocolPropertiesJsonToEntityProperty(dbValue []byte) (result map[string]models.ProtocolProperties, err error) {
 	if dbValue == nil {
-		return nil
+		return nil, nil
 	}
 
 	if err := json.Unmarshal(dbValue, &result); err != nil {
-		panic(err)
-	} else {
-		return result
+		return nil, err
 	}
+	return result, nil
 }
 
-func mapStringProtocolPropertiesJsonToDatabaseValue(goValue map[string]models.ProtocolProperties) []byte {
+func mapStringProtocolPropertiesJsonToDatabaseValue(goValue map[string]models.ProtocolProperties) ([]byte, error) {
 	if goValue == nil {
-		return nil
+		return nil, nil
 	}
 
-	if bytes, err := json.Marshal(goValue); err != nil {
-		panic(err)
-	} else {
-		return bytes
-	}
+	return json.Marshal(goValue)
 }
 
-func notificationsCategoryToDatabaseValue(goValue []models.NotificationsCategory) []string {
+func notificationsCategoryToDatabaseValue(goValue []models.NotificationsCategory) ([]string, error) {
 	if goValue == nil {
-		return nil
+		return nil, nil
 	}
 
 	var result = make([]string, len(goValue))
@@ -114,12 +99,12 @@ func notificationsCategoryToDatabaseValue(goValue []models.NotificationsCategory
 		result[k] = string(v)
 	}
 
-	return result
+	return result, nil
 }
 
-func notificationsCategoryToEntityProperty(dbValue []string) []models.NotificationsCategory {
+func notificationsCategoryToEntityProperty(dbValue []string) ([]models.NotificationsCategory, error) {
 	if dbValue == nil {
-		return nil
+		return nil, nil
 	}
 
 	var result = make([]models.NotificationsCategory, len(dbValue))
@@ -128,125 +113,125 @@ func notificationsCategoryToEntityProperty(dbValue []string) []models.Notificati
 		result[k] = models.NotificationsCategory(v)
 	}
 
-	return result
+	return result, nil
 }
 
-func responsesJsonToEntityProperty(dbValue []byte) (result []models.Response) {
-	if dbValue != nil {
-		if err := json.Unmarshal(dbValue, &result); err != nil {
-			panic(err)
-		}
+func responsesJsonToEntityProperty(dbValue []byte) (result []models.Response, err error) {
+	if dbValue == nil {
+		return nil, nil
 	}
 
-	return
+	if err := json.Unmarshal(dbValue, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
-func responsesJsonToDatabaseValue(goValue []models.Response) []byte {
+func responsesJsonToDatabaseValue(goValue []models.Response) ([]byte, error) {
 	if goValue == nil {
-		return nil
-	} else if bytes, err := json.Marshal(goValue); err != nil {
-		panic(err)
-	} else {
-		return bytes
-	}
-}
-
-func channelsJsonToEntityProperty(dbValue []byte) (result []models.Channel) {
-	if dbValue != nil {
-		if err := json.Unmarshal(dbValue, &result); err != nil {
-			panic(err)
-		}
+		return nil, nil
 	}
 
-	return
+	return json.Marshal(goValue)
 }
 
-func channelsJsonToDatabaseValue(goValue []models.Channel) []byte {
+func channelsJsonToEntityProperty(dbValue []byte) (result []models.Channel, err error) {
+	if dbValue == nil {
+		return nil, nil
+	}
+
+	if err := json.Unmarshal(dbValue, &result); err != nil {
+		return nil, err
+	}
+
+	return result, err
+}
+
+func channelsJsonToDatabaseValue(goValue []models.Channel) ([]byte, error) {
 	if goValue == nil {
-		return nil
-	} else if bytes, err := json.Marshal(goValue); err != nil {
-		panic(err)
-	} else {
-		return bytes
-	}
-}
-
-func transmissionRecordsJsonToEntityProperty(dbValue []byte) (result []models.TransmissionRecord) {
-	if dbValue != nil {
-		if err := json.Unmarshal(dbValue, &result); err != nil {
-			panic(err)
-		}
+		return nil, nil
 	}
 
-	return
+	return json.Marshal(goValue)
 }
 
-func transmissionRecordsJsonToDatabaseValue(goValue []models.TransmissionRecord) []byte {
+func transmissionRecordsJsonToEntityProperty(dbValue []byte) (result []models.TransmissionRecord, err error) {
+	if dbValue == nil {
+		return nil, nil
+	}
+
+	if err := json.Unmarshal(dbValue, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func transmissionRecordsJsonToDatabaseValue(goValue []models.TransmissionRecord) ([]byte, error) {
 	if goValue == nil {
-		return nil
-	} else if bytes, err := json.Marshal(goValue); err != nil {
-		panic(err)
-	} else {
-		return bytes
-	}
-}
-
-func deviceResourcesJsonToEntityProperty(dbValue []byte) (result []models.DeviceResource) {
-	if dbValue != nil {
-		if err := json.Unmarshal(dbValue, &result); err != nil {
-			panic(err)
-		}
+		return nil, nil
 	}
 
-	return
+	return json.Marshal(goValue)
 }
 
-func deviceResourcesJsonToDatabaseValue(goValue []models.DeviceResource) []byte {
+func deviceResourcesJsonToEntityProperty(dbValue []byte) (result []models.DeviceResource, err error) {
+	if dbValue == nil {
+		return nil, nil
+	}
+
+	if err := json.Unmarshal(dbValue, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func deviceResourcesJsonToDatabaseValue(goValue []models.DeviceResource) ([]byte, error) {
 	if goValue == nil {
-		return nil
-	} else if bytes, err := json.Marshal(goValue); err != nil {
-		panic(err)
-	} else {
-		return bytes
-	}
-}
-
-func autoEventsJsonToEntityProperty(dbValue []byte) (result []models.AutoEvent) {
-	if dbValue != nil {
-		if err := json.Unmarshal(dbValue, &result); err != nil {
-			panic(err)
-		}
+		return nil, nil
 	}
 
-	return
+	return json.Marshal(goValue)
 }
 
-func autoEventsJsonToDatabaseValue(goValue []models.AutoEvent) []byte {
+func autoEventsJsonToEntityProperty(dbValue []byte) (result []models.AutoEvent, err error) {
+	if dbValue == nil {
+		return nil, nil
+	}
+
+	if err := json.Unmarshal(dbValue, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func autoEventsJsonToDatabaseValue(goValue []models.AutoEvent) ([]byte, error) {
 	if goValue == nil {
-		return nil
-	} else if bytes, err := json.Marshal(goValue); err != nil {
-		panic(err)
-	} else {
-		return bytes
-	}
-}
-
-func profileResourcesJsonToEntityProperty(dbValue []byte) (result []models.ProfileResource) {
-	if dbValue != nil {
-		if err := json.Unmarshal(dbValue, &result); err != nil {
-			panic(err)
-		}
+		return nil, nil
 	}
 
-	return
+	return json.Marshal(goValue)
 }
 
-func profileResourcesJsonToDatabaseValue(goValue []models.ProfileResource) []byte {
+func profileResourcesJsonToEntityProperty(dbValue []byte) (result []models.ProfileResource, err error) {
+	if dbValue == nil {
+		return nil, nil
+	}
+
+	if err := json.Unmarshal(dbValue, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func profileResourcesJsonToDatabaseValue(goValue []models.ProfileResource) ([]byte, error) {
 	if goValue == nil {
-		return nil
-	} else if bytes, err := json.Marshal(goValue); err != nil {
-		panic(err)
-	} else {
-		return bytes
+		return nil, nil
 	}
+
+	return json.Marshal(goValue)
 }

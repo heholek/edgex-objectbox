@@ -4,6 +4,7 @@
 package obx
 
 import (
+	"errors"
 	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
@@ -148,19 +149,22 @@ func (valueDescriptor_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (valueDescriptor_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*ValueDescriptor); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.Id)
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(ValueDescriptor).Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(ValueDescriptor).Id)
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
-func (valueDescriptor_EntityInfo) SetId(object interface{}, id uint64) {
+func (valueDescriptor_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*ValueDescriptor); ok {
-		obj.Id = objectbox.StringIdConvertToEntityProperty(id)
+		var err error
+		obj.Id, err = objectbox.StringIdConvertToEntityProperty(id)
+		return err
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(ValueDescriptor).Id
+		return nil
 	}
 }
 
@@ -179,11 +183,38 @@ func (valueDescriptor_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.B
 		obj = &objVal
 	}
 
+	var propMin []byte
+	{
+		var err error
+		propMin, err = interfaceJsonToDatabaseValue(obj.Min)
+		if err != nil {
+			return errors.New("converter interfaceJsonToDatabaseValue() failed on ValueDescriptor.Min: " + err.Error())
+		}
+	}
+
+	var propMax []byte
+	{
+		var err error
+		propMax, err = interfaceJsonToDatabaseValue(obj.Max)
+		if err != nil {
+			return errors.New("converter interfaceJsonToDatabaseValue() failed on ValueDescriptor.Max: " + err.Error())
+		}
+	}
+
+	var propDefaultValue []byte
+	{
+		var err error
+		propDefaultValue, err = interfaceJsonToDatabaseValue(obj.DefaultValue)
+		if err != nil {
+			return errors.New("converter interfaceJsonToDatabaseValue() failed on ValueDescriptor.DefaultValue: " + err.Error())
+		}
+	}
+
 	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.Description)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
-	var offsetMin = fbutils.CreateByteVectorOffset(fbb, interfaceJsonToDatabaseValue(obj.Min))
-	var offsetMax = fbutils.CreateByteVectorOffset(fbb, interfaceJsonToDatabaseValue(obj.Max))
-	var offsetDefaultValue = fbutils.CreateByteVectorOffset(fbb, interfaceJsonToDatabaseValue(obj.DefaultValue))
+	var offsetMin = fbutils.CreateByteVectorOffset(fbb, propMin)
+	var offsetMax = fbutils.CreateByteVectorOffset(fbb, propMax)
+	var offsetDefaultValue = fbutils.CreateByteVectorOffset(fbb, propDefaultValue)
 	var offsetType = fbutils.CreateStringOffset(fbb, obj.Type)
 	var offsetUomLabel = fbutils.CreateStringOffset(fbb, obj.UomLabel)
 	var offsetFormatting = fbutils.CreateStringOffset(fbb, obj.Formatting)
@@ -209,22 +240,45 @@ func (valueDescriptor_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.B
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
 func (valueDescriptor_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
+	if len(bytes) == 0 { // sanity check, should "never" happen
+		return nil, errors.New("can't deserialize an object of type 'ValueDescriptor' - no data received")
+	}
+
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = table.GetUint64Slot(4, 0)
+
+	propId, err := objectbox.StringIdConvertToEntityProperty(fbutils.GetUint64Slot(table, 4))
+	if err != nil {
+		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on ValueDescriptor.Id: " + err.Error())
+	}
+
+	propMin, err := interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 16))
+	if err != nil {
+		return nil, errors.New("converter interfaceJsonToEntityProperty() failed on ValueDescriptor.Min: " + err.Error())
+	}
+
+	propMax, err := interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 18))
+	if err != nil {
+		return nil, errors.New("converter interfaceJsonToEntityProperty() failed on ValueDescriptor.Max: " + err.Error())
+	}
+
+	propDefaultValue, err := interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 20))
+	if err != nil {
+		return nil, errors.New("converter interfaceJsonToEntityProperty() failed on ValueDescriptor.DefaultValue: " + err.Error())
+	}
 
 	return &ValueDescriptor{
-		Id:           objectbox.StringIdConvertToEntityProperty(id),
+		Id:           propId,
 		Created:      fbutils.GetInt64Slot(table, 6),
 		Description:  fbutils.GetStringSlot(table, 8),
 		Modified:     fbutils.GetInt64Slot(table, 10),
 		Origin:       fbutils.GetInt64Slot(table, 12),
 		Name:         fbutils.GetStringSlot(table, 14),
-		Min:          interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 16)),
-		Max:          interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 18)),
-		DefaultValue: interfaceJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 20)),
+		Min:          propMin,
+		Max:          propMax,
+		DefaultValue: propDefaultValue,
 		Type:         fbutils.GetStringSlot(table, 22),
 		UomLabel:     fbutils.GetStringSlot(table, 24),
 		Formatting:   fbutils.GetStringSlot(table, 26),
@@ -239,6 +293,9 @@ func (valueDescriptor_EntityInfo) MakeSlice(capacity int) interface{} {
 
 // AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (valueDescriptor_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
+	if object == nil {
+		return append(slice.([]ValueDescriptor), ValueDescriptor{})
+	}
 	return append(slice.([]ValueDescriptor), *object.(*ValueDescriptor))
 }
 
@@ -317,6 +374,15 @@ func (box *ValueDescriptorBox) GetMany(ids ...uint64) ([]ValueDescriptor, error)
 	return objects.([]ValueDescriptor), nil
 }
 
+// GetManyExisting reads multiple objects at once, skipping those that do not exist.
+func (box *ValueDescriptorBox) GetManyExisting(ids ...uint64) ([]ValueDescriptor, error) {
+	objects, err := box.Box.GetManyExisting(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]ValueDescriptor), nil
+}
+
 // GetAll reads all stored objects
 func (box *ValueDescriptorBox) GetAll() ([]ValueDescriptor, error) {
 	objects, err := box.Box.GetAll()
@@ -338,8 +404,12 @@ func (box *ValueDescriptorBox) Remove(object *ValueDescriptor) error {
 // you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
 func (box *ValueDescriptorBox) RemoveMany(objects ...*ValueDescriptor) (uint64, error) {
 	var ids = make([]uint64, len(objects))
+	var err error
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Id)
+		ids[k], err = objectbox.StringIdConvertToDatabaseValue(object.Id)
+		if err != nil {
+			return 0, errors.New("converter objectbox.StringIdConvertToDatabaseValue() failed on ValueDescriptor.Id: " + err.Error())
+		}
 	}
 	return box.Box.RemoveIds(ids...)
 }

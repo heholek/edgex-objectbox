@@ -4,6 +4,7 @@
 package obx
 
 import (
+	"errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
@@ -123,19 +124,22 @@ func (provisionWatcher_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (provisionWatcher_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*ProvisionWatcher); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.Id)
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(ProvisionWatcher).Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(ProvisionWatcher).Id)
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
-func (provisionWatcher_EntityInfo) SetId(object interface{}, id uint64) {
+func (provisionWatcher_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*ProvisionWatcher); ok {
-		obj.Id = objectbox.StringIdConvertToEntityProperty(id)
+		var err error
+		obj.Id, err = objectbox.StringIdConvertToEntityProperty(id)
+		return err
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(ProvisionWatcher).Id
+		return nil
 	}
 }
 
@@ -174,8 +178,17 @@ func (provisionWatcher_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.
 		obj = &objVal
 	}
 
+	var propIdentifiers []byte
+	{
+		var err error
+		propIdentifiers, err = mapStringStringJsonToDatabaseValue(obj.Identifiers)
+		if err != nil {
+			return errors.New("converter mapStringStringJsonToDatabaseValue() failed on ProvisionWatcher.Identifiers: " + err.Error())
+		}
+	}
+
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
-	var offsetIdentifiers = fbutils.CreateByteVectorOffset(fbb, mapStringStringJsonToDatabaseValue(obj.Identifiers))
+	var offsetIdentifiers = fbutils.CreateByteVectorOffset(fbb, propIdentifiers)
 	var offsetOperatingState = fbutils.CreateStringOffset(fbb, string(obj.OperatingState))
 
 	var rIdProfile uint64
@@ -212,16 +225,31 @@ func (provisionWatcher_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
 func (provisionWatcher_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
+	if len(bytes) == 0 { // sanity check, should "never" happen
+		return nil, errors.New("can't deserialize an object of type 'ProvisionWatcher' - no data received")
+	}
+
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = table.GetUint64Slot(10, 0)
+
+	propId, err := objectbox.StringIdConvertToEntityProperty(fbutils.GetUint64Slot(table, 10))
+	if err != nil {
+		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on ProvisionWatcher.Id: " + err.Error())
+	}
+
+	propIdentifiers, err := mapStringStringJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 14))
+	if err != nil {
+		return nil, errors.New("converter mapStringStringJsonToEntityProperty() failed on ProvisionWatcher.Identifiers: " + err.Error())
+	}
 
 	var relProfile *DeviceProfile
 	if rId := fbutils.GetUint64Slot(table, 16); rId > 0 {
 		if rObject, err := BoxForDeviceProfile(ob).Get(rId); err != nil {
 			return nil, err
+		} else if rObject == nil {
+			relProfile = &DeviceProfile{}
 		} else {
 			relProfile = rObject
 		}
@@ -233,6 +261,8 @@ func (provisionWatcher_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (
 	if rId := fbutils.GetUint64Slot(table, 18); rId > 0 {
 		if rObject, err := BoxForDeviceService(ob).Get(rId); err != nil {
 			return nil, err
+		} else if rObject == nil {
+			relService = &DeviceService{}
 		} else {
 			relService = rObject
 		}
@@ -246,9 +276,9 @@ func (provisionWatcher_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (
 			Modified: fbutils.GetInt64Slot(table, 6),
 			Origin:   fbutils.GetInt64Slot(table, 8),
 		},
-		Id:             objectbox.StringIdConvertToEntityProperty(id),
+		Id:             propId,
 		Name:           fbutils.GetStringSlot(table, 12),
-		Identifiers:    mapStringStringJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 14)),
+		Identifiers:    propIdentifiers,
 		Profile:        *relProfile,
 		Service:        *relService,
 		OperatingState: models.OperatingState(fbutils.GetStringSlot(table, 20)),
@@ -262,6 +292,9 @@ func (provisionWatcher_EntityInfo) MakeSlice(capacity int) interface{} {
 
 // AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (provisionWatcher_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
+	if object == nil {
+		return append(slice.([]ProvisionWatcher), ProvisionWatcher{})
+	}
 	return append(slice.([]ProvisionWatcher), *object.(*ProvisionWatcher))
 }
 
@@ -340,6 +373,15 @@ func (box *ProvisionWatcherBox) GetMany(ids ...uint64) ([]ProvisionWatcher, erro
 	return objects.([]ProvisionWatcher), nil
 }
 
+// GetManyExisting reads multiple objects at once, skipping those that do not exist.
+func (box *ProvisionWatcherBox) GetManyExisting(ids ...uint64) ([]ProvisionWatcher, error) {
+	objects, err := box.Box.GetManyExisting(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]ProvisionWatcher), nil
+}
+
 // GetAll reads all stored objects
 func (box *ProvisionWatcherBox) GetAll() ([]ProvisionWatcher, error) {
 	objects, err := box.Box.GetAll()
@@ -361,8 +403,12 @@ func (box *ProvisionWatcherBox) Remove(object *ProvisionWatcher) error {
 // you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
 func (box *ProvisionWatcherBox) RemoveMany(objects ...*ProvisionWatcher) (uint64, error) {
 	var ids = make([]uint64, len(objects))
+	var err error
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Id)
+		ids[k], err = objectbox.StringIdConvertToDatabaseValue(object.Id)
+		if err != nil {
+			return 0, errors.New("converter objectbox.StringIdConvertToDatabaseValue() failed on ProvisionWatcher.Id: " + err.Error())
+		}
 	}
 	return box.Box.RemoveIds(ids...)
 }

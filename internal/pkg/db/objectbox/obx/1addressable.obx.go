@@ -4,6 +4,7 @@
 package obx
 
 import (
+	"errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
@@ -157,19 +158,22 @@ func (addressable_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (addressable_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*Addressable); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.Id)
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(Addressable).Id), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(Addressable).Id)
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
-func (addressable_EntityInfo) SetId(object interface{}, id uint64) {
+func (addressable_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*Addressable); ok {
-		obj.Id = objectbox.StringIdConvertToEntityProperty(id)
+		var err error
+		obj.Id, err = objectbox.StringIdConvertToEntityProperty(id)
+		return err
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(Addressable).Id
+		return nil
 	}
 }
 
@@ -219,11 +223,19 @@ func (addressable_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Build
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
 func (addressable_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
+	if len(bytes) == 0 { // sanity check, should "never" happen
+		return nil, errors.New("can't deserialize an object of type 'Addressable' - no data received")
+	}
+
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = table.GetUint64Slot(10, 0)
+
+	propId, err := objectbox.StringIdConvertToEntityProperty(fbutils.GetUint64Slot(table, 10))
+	if err != nil {
+		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on Addressable.Id: " + err.Error())
+	}
 
 	return &Addressable{
 		Timestamps: models.Timestamps{
@@ -231,7 +243,7 @@ func (addressable_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (inter
 			Modified: fbutils.GetInt64Slot(table, 40),
 			Origin:   fbutils.GetInt64Slot(table, 42),
 		},
-		Id:         objectbox.StringIdConvertToEntityProperty(id),
+		Id:         propId,
 		Name:       fbutils.GetStringSlot(table, 12),
 		Protocol:   fbutils.GetStringSlot(table, 14),
 		HTTPMethod: fbutils.GetStringSlot(table, 16),
@@ -252,6 +264,9 @@ func (addressable_EntityInfo) MakeSlice(capacity int) interface{} {
 
 // AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (addressable_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
+	if object == nil {
+		return append(slice.([]Addressable), Addressable{})
+	}
 	return append(slice.([]Addressable), *object.(*Addressable))
 }
 
@@ -330,6 +345,15 @@ func (box *AddressableBox) GetMany(ids ...uint64) ([]Addressable, error) {
 	return objects.([]Addressable), nil
 }
 
+// GetManyExisting reads multiple objects at once, skipping those that do not exist.
+func (box *AddressableBox) GetManyExisting(ids ...uint64) ([]Addressable, error) {
+	objects, err := box.Box.GetManyExisting(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]Addressable), nil
+}
+
 // GetAll reads all stored objects
 func (box *AddressableBox) GetAll() ([]Addressable, error) {
 	objects, err := box.Box.GetAll()
@@ -351,8 +375,12 @@ func (box *AddressableBox) Remove(object *Addressable) error {
 // you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
 func (box *AddressableBox) RemoveMany(objects ...*Addressable) (uint64, error) {
 	var ids = make([]uint64, len(objects))
+	var err error
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.Id)
+		ids[k], err = objectbox.StringIdConvertToDatabaseValue(object.Id)
+		if err != nil {
+			return 0, errors.New("converter objectbox.StringIdConvertToDatabaseValue() failed on Addressable.Id: " + err.Error())
+		}
 	}
 	return box.Box.RemoveIds(ids...)
 }

@@ -4,6 +4,7 @@
 package obx
 
 import (
+	"errors"
 	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
 	"github.com/objectbox/objectbox-go/objectbox"
@@ -180,19 +181,22 @@ func (intervalAction_EntityInfo) AddToModel(model *objectbox.Model) {
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
 func (intervalAction_EntityInfo) GetId(object interface{}) (uint64, error) {
 	if obj, ok := object.(*IntervalAction); ok {
-		return objectbox.StringIdConvertToDatabaseValue(obj.ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(obj.ID)
 	} else {
-		return objectbox.StringIdConvertToDatabaseValue(object.(IntervalAction).ID), nil
+		return objectbox.StringIdConvertToDatabaseValue(object.(IntervalAction).ID)
 	}
 }
 
 // SetId is called by ObjectBox during Put to update an ID on an object that has just been inserted
-func (intervalAction_EntityInfo) SetId(object interface{}, id uint64) {
+func (intervalAction_EntityInfo) SetId(object interface{}, id uint64) error {
 	if obj, ok := object.(*IntervalAction); ok {
-		obj.ID = objectbox.StringIdConvertToEntityProperty(id)
+		var err error
+		obj.ID, err = objectbox.StringIdConvertToEntityProperty(id)
+		return err
 	} else {
 		// NOTE while this can't update, it will at least behave consistently (panic in case of a wrong type)
 		_ = object.(IntervalAction).ID
+		return nil
 	}
 }
 
@@ -248,14 +252,22 @@ func (intervalAction_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bu
 
 // Load is called by ObjectBox to load an object from a FlatBuffer
 func (intervalAction_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface{}, error) {
+	if len(bytes) == 0 { // sanity check, should "never" happen
+		return nil, errors.New("can't deserialize an object of type 'IntervalAction' - no data received")
+	}
+
 	var table = &flatbuffers.Table{
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = table.GetUint64Slot(4, 0)
+
+	propID, err := objectbox.StringIdConvertToEntityProperty(fbutils.GetUint64Slot(table, 4))
+	if err != nil {
+		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on IntervalAction.ID: " + err.Error())
+	}
 
 	return &IntervalAction{
-		ID:         objectbox.StringIdConvertToEntityProperty(id),
+		ID:         propID,
 		Created:    fbutils.GetInt64Slot(table, 6),
 		Modified:   fbutils.GetInt64Slot(table, 8),
 		Origin:     fbutils.GetInt64Slot(table, 10),
@@ -282,6 +294,9 @@ func (intervalAction_EntityInfo) MakeSlice(capacity int) interface{} {
 
 // AppendToSlice is called by ObjectBox to fill the slice of the read objects
 func (intervalAction_EntityInfo) AppendToSlice(slice interface{}, object interface{}) interface{} {
+	if object == nil {
+		return append(slice.([]IntervalAction), IntervalAction{})
+	}
 	return append(slice.([]IntervalAction), *object.(*IntervalAction))
 }
 
@@ -360,6 +375,15 @@ func (box *IntervalActionBox) GetMany(ids ...uint64) ([]IntervalAction, error) {
 	return objects.([]IntervalAction), nil
 }
 
+// GetManyExisting reads multiple objects at once, skipping those that do not exist.
+func (box *IntervalActionBox) GetManyExisting(ids ...uint64) ([]IntervalAction, error) {
+	objects, err := box.Box.GetManyExisting(ids...)
+	if err != nil {
+		return nil, err
+	}
+	return objects.([]IntervalAction), nil
+}
+
 // GetAll reads all stored objects
 func (box *IntervalActionBox) GetAll() ([]IntervalAction, error) {
 	objects, err := box.Box.GetAll()
@@ -381,8 +405,12 @@ func (box *IntervalActionBox) Remove(object *IntervalAction) error {
 // you can execute multiple box.Contains() and box.Remove() inside a single write transaction.
 func (box *IntervalActionBox) RemoveMany(objects ...*IntervalAction) (uint64, error) {
 	var ids = make([]uint64, len(objects))
+	var err error
 	for k, object := range objects {
-		ids[k] = objectbox.StringIdConvertToDatabaseValue(object.ID)
+		ids[k], err = objectbox.StringIdConvertToDatabaseValue(object.ID)
+		if err != nil {
+			return 0, errors.New("converter objectbox.StringIdConvertToDatabaseValue() failed on IntervalAction.ID: " + err.Error())
+		}
 	}
 	return box.Box.RemoveIds(ids...)
 }

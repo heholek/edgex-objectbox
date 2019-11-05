@@ -15,21 +15,28 @@ package data
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
-	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gorilla/mux"
 
 	"github.com/objectbox/edgex-objectbox/internal/core/data/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/operators/reading"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/operators/value_descriptor"
+	"github.com/objectbox/edgex-objectbox/internal/pkg"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation/models"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/errorconcept"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 )
+
+// ValueDescriptorUsageReadLimit limit of readings obtained for a given value descriptor to determine if the value
+// descriptor is in use.
+var ValueDescriptorUsageReadLimit = 1
 
 func LoadRestRoutes() *mux.Router {
 	r := mux.NewRouter()
@@ -43,45 +50,65 @@ func LoadRestRoutes() *mux.Router {
 	// Metrics
 	r.HandleFunc(clients.ApiMetricsRoute, metricsHandler).Methods(http.MethodGet)
 
+	// Version
+	r.HandleFunc(clients.ApiVersionRoute, pkg.VersionHandler).Methods(http.MethodGet)
+
 	// Events
 	r.HandleFunc(clients.ApiEventRoute, eventHandler).Methods(http.MethodGet, http.MethodPut, http.MethodPost)
 	e := r.PathPrefix(clients.ApiEventRoute).Subrouter()
-	e.HandleFunc("/scrub", scrubHandler).Methods(http.MethodDelete)
-	e.HandleFunc("/scruball", scrubAllHandler).Methods(http.MethodDelete)
-	e.HandleFunc("/count", eventCountHandler).Methods(http.MethodGet)
-	e.HandleFunc("/count/{deviceId}", eventCountByDeviceIdHandler).Methods(http.MethodGet)
-	e.HandleFunc("/{id}", getEventByIdHandler).Methods(http.MethodGet)
-	e.HandleFunc("/id/{id}", eventIdHandler).Methods(http.MethodDelete, http.MethodPut)
-	e.HandleFunc("/checksum/{checksum}", putEventChecksumHandler).Methods(http.MethodPut)
-	e.HandleFunc("/device/{deviceId}/{limit:[0-9]+}", getEventByDeviceHandler).Methods(http.MethodGet)
-	e.HandleFunc("/device/{deviceId}", deleteByDeviceIdHandler).Methods(http.MethodDelete)
-	e.HandleFunc("/removeold/age/{age:[0-9]+}", eventByAgeHandler).Methods(http.MethodDelete)
-	e.HandleFunc("/{start:[0-9]+}/{end:[0-9]+}/{limit:[0-9]+}", eventByCreationTimeHandler).Methods(http.MethodGet)
+	e.HandleFunc("/"+SCRUB, scrubHandler).Methods(http.MethodDelete)
+	e.HandleFunc("/"+SCRUBALL, scrubAllHandler).Methods(http.MethodDelete)
+	e.HandleFunc("/"+COUNT, eventCountHandler).Methods(http.MethodGet)
+	e.HandleFunc("/"+COUNT+"/{"+DEVICEID_PARAM+"}", eventCountByDeviceIdHandler).Methods(http.MethodGet)
+	e.HandleFunc("/{"+ID+"}", getEventByIdHandler).Methods(http.MethodGet)
+	e.HandleFunc("/"+ID+"/{"+ID+"}", eventIdHandler).Methods(http.MethodDelete, http.MethodPut)
+	e.HandleFunc("/"+CHECKSUM+"/{"+CHECKSUM+"}", putEventChecksumHandler).Methods(http.MethodPut)
+	e.HandleFunc(
+		"/"+DEVICE+"/{"+DEVICEID_PARAM+"}/{"+LIMIT+":[0-9]+}",
+		getEventByDeviceHandler).Methods(http.MethodGet)
+	e.HandleFunc("/"+DEVICE+"/{"+DEVICEID_PARAM+"}", deleteByDeviceIdHandler).Methods(http.MethodDelete)
+	e.HandleFunc("/"+REMOVEOLD+"/"+AGE+"/{"+AGE+":[0-9]+}", eventByAgeHandler).Methods(http.MethodDelete)
+	e.HandleFunc(
+		"/{"+START+":[0-9]+}/{"+END+":[0-9]+}/{"+LIMIT+":[0-9]+}",
+		eventByCreationTimeHandler).Methods(http.MethodGet)
 
 	// Readings
 	r.HandleFunc(clients.ApiReadingRoute, readingHandler).Methods(http.MethodGet, http.MethodPut, http.MethodPost)
 	rd := r.PathPrefix(clients.ApiReadingRoute).Subrouter()
-	rd.HandleFunc("/count", readingCountHandler).Methods(http.MethodGet)
-	rd.HandleFunc("/id/{id}", deleteReadingByIdHandler).Methods(http.MethodDelete)
-	rd.HandleFunc("/{id}", getReadingByIdHandler).Methods(http.MethodGet)
-	rd.HandleFunc("/device/{deviceId}/{limit:[0-9]+}", readingByDeviceHandler).Methods(http.MethodGet)
-	rd.HandleFunc("/name/{name}/{limit:[0-9]+}", readingbyValueDescriptorHandler).Methods(http.MethodGet)
-	rd.HandleFunc("/uomlabel/{uomLabel}/{limit:[0-9]+}", readingByUomLabelHandler).Methods(http.MethodGet)
-	rd.HandleFunc("/label/{label}/{limit:[0-9]+}", readingByLabelHandler).Methods(http.MethodGet)
-	rd.HandleFunc("/type/{type}/{limit:[0-9]+}", readingByTypeHandler).Methods(http.MethodGet)
-	rd.HandleFunc("/{start:[0-9]+}/{end:[0-9]+}/{limit:[0-9]+}", readingByCreationTimeHandler).Methods(http.MethodGet)
-	rd.HandleFunc("/name/{name}/device/{device}/{limit:[0-9]+}", readingByValueDescriptorAndDeviceHandler).Methods(http.MethodGet)
+	rd.HandleFunc("/"+COUNT, readingCountHandler).Methods(http.MethodGet)
+	rd.HandleFunc("/"+ID+"/{"+ID+"}", deleteReadingByIdHandler).Methods(http.MethodDelete)
+	rd.HandleFunc("/{"+ID+"}", getReadingByIdHandler).Methods(http.MethodGet)
+	rd.HandleFunc(
+		"/"+DEVICE+"/{"+DEVICEID_PARAM+"}/{"+LIMIT+":[0-9]+}",
+		readingByDeviceHandler).Methods(http.MethodGet)
+	rd.HandleFunc(
+		"/"+NAME+"/{"+NAME+"}/{"+LIMIT+":[0-9]+}",
+		readingbyValueDescriptorHandler).Methods(http.MethodGet)
+	rd.HandleFunc(
+		"/"+UOMLABEL+"/{"+UOMLABEL_PARAM+"}/{"+LIMIT+":[0-9]+}",
+		readingByUomLabelHandler).Methods(http.MethodGet)
+	rd.HandleFunc("/"+LABEL+"/{"+LABEL+"}/{"+LIMIT+":[0-9]+}", readingByLabelHandler).Methods(http.MethodGet)
+	rd.HandleFunc("/"+TYPE+"/{"+TYPE+"}/{"+LIMIT+":[0-9]+}", readingByTypeHandler).Methods(http.MethodGet)
+	rd.HandleFunc(
+		"/{"+START+":[0-9]+}/{"+END+":[0-9]+}/{"+LIMIT+":[0-9]+}",
+		readingByCreationTimeHandler).Methods(http.MethodGet)
+	rd.HandleFunc(
+		"/"+NAME+"/{"+NAME+"}/"+DEVICE+"/{"+DEVICE+"}/{"+LIMIT+":[0-9]+}",
+		readingByValueDescriptorAndDeviceHandler).Methods(http.MethodGet)
 
 	// Value descriptors
-	r.HandleFunc(clients.ApiValueDescriptorRoute, valueDescriptorHandler).Methods(http.MethodGet, http.MethodPut, http.MethodPost)
+	r.HandleFunc(
+		clients.ApiValueDescriptorRoute,
+		valueDescriptorHandler).Methods(http.MethodGet, http.MethodPut, http.MethodPost)
 	vd := r.PathPrefix(clients.ApiValueDescriptorRoute).Subrouter()
-	vd.HandleFunc("/id/{id}", deleteValueDescriptorByIdHandler).Methods(http.MethodDelete)
-	vd.HandleFunc("/name/{name}", valueDescriptorByNameHandler).Methods(http.MethodGet, http.MethodDelete)
-	vd.HandleFunc("/{id}", valueDescriptorByIdHandler).Methods(http.MethodGet)
-	vd.HandleFunc("/uomlabel/{uomLabel}", valueDescriptorByUomLabelHandler).Methods(http.MethodGet)
-	vd.HandleFunc("/label/{label}", valueDescriptorByLabelHandler).Methods(http.MethodGet)
-	vd.HandleFunc("/devicename/{device}", valueDescriptorByDeviceHandler).Methods(http.MethodGet)
-	vd.HandleFunc("/deviceid/{id}", valueDescriptorByDeviceIdHandler).Methods(http.MethodGet)
+	vd.HandleFunc("/"+USAGE, restValueDescriptorsUsageHandler).Methods(http.MethodGet)
+	vd.HandleFunc("/"+ID+"/{"+ID+"}", deleteValueDescriptorByIdHandler).Methods(http.MethodDelete)
+	vd.HandleFunc("/"+NAME+"/{"+NAME+"}", valueDescriptorByNameHandler).Methods(http.MethodGet, http.MethodDelete)
+	vd.HandleFunc("/{"+ID+"}", valueDescriptorByIdHandler).Methods(http.MethodGet)
+	vd.HandleFunc("/"+UOMLABEL+"/{"+UOMLABEL_PARAM+"}", valueDescriptorByUomLabelHandler).Methods(http.MethodGet)
+	vd.HandleFunc("/"+LABEL+"/{"+LABEL+"}", valueDescriptorByLabelHandler).Methods(http.MethodGet)
+	vd.HandleFunc("/"+DEVICENAME+"/{"+DEVICE+"}", valueDescriptorByDeviceHandler).Methods(http.MethodGet)
+	vd.HandleFunc("/"+DEVICEID+"/{"+ID+"}", valueDescriptorByDeviceIdHandler).Methods(http.MethodGet)
 
 	r.Use(correlation.ManageHeader)
 	r.Use(correlation.OnResponseComplete)
@@ -99,8 +126,7 @@ func eventCountHandler(w http.ResponseWriter, r *http.Request) {
 
 	count, err := countEvents()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 		return
 	}
 
@@ -125,23 +151,17 @@ func eventCountByDeviceIdHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Problem unescaping URL: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	// Check device
 	count, err := countEventsByDevice(id, ctx)
 	if err != nil {
-		LoggingClient.Error(fmt.Sprintf("error checking device %s %v", id, err))
-		switch err := err.(type) {
-		case *types.ErrServiceClient:
-			http.Error(w, err.Error(), err.StatusCode)
-			return
-		default: // return an error on everything else.
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		httpErrorHandler.HandleOneVariant(w,
+			err,
+			errorconcept.NewServiceClientHttpError(err),
+			errorconcept.Default.InternalServerError)
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -157,8 +177,7 @@ func eventByAgeHandler(w http.ResponseWriter, r *http.Request) {
 	age, err := strconv.ParseInt(vars["age"], 10, 64)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error converting the age to an integer")
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
@@ -166,12 +185,11 @@ func eventByAgeHandler(w http.ResponseWriter, r *http.Request) {
 
 	count, err := deleteEventsByAge(age)
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(strconv.Itoa(count)))
 }
@@ -196,12 +214,11 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		events, err := getEvents(Configuration.Service.MaxResultCount)
 		if err != nil {
-			LoggingClient.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 			return
 		}
 
-		encode(events, w)
+		pkg.Encode(events, w, LoggingClient)
 		break
 		// Post a new event
 	case http.MethodPost:
@@ -210,23 +227,20 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 		evt := models.Event{}
 		evt, err := reader.Read(r.Body, &ctx)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			LoggingClient.Error(err.Error())
+			httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 			return
 		}
 		newId, err := addNewEvent(evt, ctx)
 		if err != nil {
-			switch e := err.(type) {
-			case *errors.ErrValueDescriptorNotFound:
-				http.Error(w, err.Error(), http.StatusNotFound)
-			case *errors.ErrValueDescriptorInvalid:
-				http.Error(w, err.Error(), http.StatusBadRequest)
-			case *types.ErrServiceClient:
-				http.Error(w, e.Error(), e.StatusCode)
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
+			httpErrorHandler.HandleManyVariants(
+				w,
+				err,
+				[]errorconcept.ErrorConceptType{
+					errorconcept.ValueDescriptors.NotFound,
+					errorconcept.ValueDescriptors.Invalid,
+					errorconcept.NewServiceClientHttpError(err),
+				},
+				errorconcept.Default.InternalServerError)
 			return
 		}
 
@@ -237,10 +251,7 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPut:
 		contentType := r.Header.Get(clients.ContentType)
 		if contentType == clients.ContentTypeCBOR {
-			errMsg := "CBOR payload is not yet supported"
-			http.Error(w, errMsg, http.StatusNotImplemented)
-			LoggingClient.Error(errMsg)
-
+			httpErrorHandler.Handle(w, errors.ErrCBORNotSupported{}, errorconcept.CBOR.NotSupported)
 			return
 		}
 
@@ -250,25 +261,22 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Problem decoding event
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			LoggingClient.Error("Error decoding the event: " + err.Error())
+			httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 			return
 		}
 
 		LoggingClient.Info("Updating event: " + from.ID)
 		err = updateEvent(from, ctx)
 		if err != nil {
-			switch t := err.(type) {
-			case *errors.ErrEventNotFound:
-				http.Error(w, t.Error(), http.StatusNotFound)
-			default:
-				http.Error(w, t.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
+			httpErrorHandler.HandleOneVariant(
+				w,
+				err,
+				errorconcept.Events.NotFound,
+				errorconcept.Default.InternalServerError)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("true"))
 	}
@@ -283,12 +291,11 @@ func scrubAllHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := deleteAllEvents()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	encode(true, w)
+	pkg.Encode(true, w, LoggingClient)
 }
 
 // GET
@@ -307,18 +314,15 @@ func getEventByIdHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the event
 	e, err := getEventById(id)
 	if err != nil {
-		switch x := err.(type) {
-		case *errors.ErrEventNotFound:
-			http.Error(w, x.Error(), http.StatusNotFound)
-		default:
-			http.Error(w, x.Error(), http.StatusInternalServerError)
-		}
-
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.HandleOneVariant(
+			w,
+			err,
+			errorconcept.Events.NotFound,
+			errorconcept.Default.InternalServerError)
 		return
 	}
 
-	encode(e, w)
+	pkg.Encode(e, w, LoggingClient)
 }
 
 // Get event by device id
@@ -336,48 +340,42 @@ func getEventByDeviceHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Problems unescaping URL
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping URL: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	// Convert limit to int
 	limitNum, err := strconv.Atoi(limit)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error converting to integer: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	// Check device
 	if err := checkDevice(deviceId, ctx); err != nil {
-		LoggingClient.Error(fmt.Sprintf("error checking device %s %v", deviceId, err))
-		switch err := err.(type) {
-		case *types.ErrServiceClient:
-			http.Error(w, err.Error(), err.StatusCode)
-			return
-		default: // return an error on everything else.
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-			return
-		}
+		httpErrorHandler.HandleOneVariant(
+			w,
+			err,
+			errorconcept.NewServiceClientHttpError(err),
+			errorconcept.Default.ServiceUnavailable)
 	}
 
 	switch r.Method {
 	case http.MethodGet:
 		err := checkMaxLimit(limitNum)
 		if err != nil {
-			http.Error(w, maxExceededString, http.StatusRequestEntityTooLarge)
+			httpErrorHandler.Handle(w, err, errorconcept.Common.LimitExceeded)
 			return
 		}
 
 		eventList, err := getEventsByDeviceIdLimit(limitNum, deviceId)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 			return
 		}
 
-		encode(eventList, w)
+		pkg.Encode(eventList, w, LoggingClient)
 	}
 }
 
@@ -399,10 +397,7 @@ func eventIdHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPut:
 		contentType := r.Header.Get(clients.ContentType)
 		if contentType == clients.ContentTypeCBOR {
-			errMsg := "CBOR payload is not yet supported"
-			http.Error(w, errMsg, http.StatusNotImplemented)
-			LoggingClient.Error(errMsg, "eventId", id)
-
+			httpErrorHandler.Handle(w, errors.ErrCBORNotSupported{}, errorconcept.CBOR.NotSupported)
 			return
 		}
 
@@ -410,18 +405,14 @@ func eventIdHandler(w http.ResponseWriter, r *http.Request) {
 
 		err := updateEventPushDate(id, ctx)
 		if err != nil {
-			switch x := err.(type) {
-			case *errors.ErrEventNotFound:
-				http.Error(w, x.Error(), http.StatusNotFound)
-			default:
-				http.Error(w, x.Error(), http.StatusInternalServerError)
-			}
-
-			LoggingClient.Error(err.Error())
+			httpErrorHandler.HandleOneVariant(w,
+				err,
+				errorconcept.Events.NotFound,
+				errorconcept.Default.InternalServerError)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("true"))
 		break
@@ -430,17 +421,14 @@ func eventIdHandler(w http.ResponseWriter, r *http.Request) {
 		LoggingClient.Info("Deleting event: " + id)
 		err := deleteEventById(id)
 		if err != nil {
-			switch x := err.(type) {
-			case *errors.ErrEventNotFound:
-				http.Error(w, x.Error(), http.StatusNotFound)
-			default:
-				http.Error(w, x.Error(), http.StatusInternalServerError)
-			}
-
-			LoggingClient.Error(err.Error())
+			httpErrorHandler.HandleOneVariant(
+				w,
+				err,
+				errorconcept.Events.NotFound,
+				errorconcept.Default.InternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("true"))
 	}
@@ -466,13 +454,11 @@ func putEventChecksumHandler(w http.ResponseWriter, r *http.Request) {
 
 		err := updateEventPushDateByChecksum(checksum, ctx)
 		if err != nil {
-			if err == db.ErrNotFound {
-				http.Error(w, err.Error(), http.StatusNotFound)
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-
-			LoggingClient.Error(err.Error())
+			httpErrorHandler.HandleOneVariant(
+				w,
+				err,
+				errorconcept.Database.NotFound,
+				errorconcept.Default.InternalServerError)
 			return
 		}
 
@@ -494,33 +480,28 @@ func deleteByDeviceIdHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Problems unescaping URL
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping the URL: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	// Check device
 	if err := checkDevice(deviceId, ctx); err != nil {
-		LoggingClient.Error(fmt.Sprintf("error checking device %s %v", deviceId, err))
-		switch err := err.(type) {
-		case *types.ErrServiceClient:
-			http.Error(w, err.Error(), err.StatusCode)
-			return
-		default: // return an error on everything else.
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		httpErrorHandler.HandleOneVariant(
+			w,
+			err,
+			errorconcept.NewServiceClientHttpError(err),
+			errorconcept.Default.InternalServerError)
 	}
 
 	switch r.Method {
 	case http.MethodDelete:
 		count, err := deleteEvents(deviceId)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(strconv.Itoa(count)))
 	}
@@ -539,24 +520,21 @@ func eventByCreationTimeHandler(w http.ResponseWriter, r *http.Request) {
 	start, err := strconv.ParseInt(vars["start"], 10, 64)
 	// Problems converting start time
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Problem converting start time: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	end, err := strconv.ParseInt(vars["end"], 10, 64)
 	// Problems converting end time
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Problem converting end time: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	limit, err := strconv.Atoi(vars["limit"])
 	// Problems converting limit
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Problem converting limit: " + strconv.Itoa(limit))
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
@@ -564,18 +542,18 @@ func eventByCreationTimeHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		err := checkMaxLimit(limit)
 		if err != nil {
-			http.Error(w, maxExceededString, http.StatusRequestEntityTooLarge)
+			httpErrorHandler.Handle(w, err, errorconcept.Common.LimitExceeded)
 			return
 		}
 
 		eventList, err := getEventsByCreationTime(limit, start, end)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 			return
 		}
 
-		encode(eventList, w)
+		pkg.Encode(eventList, w, LoggingClient)
 	}
 }
 
@@ -589,11 +567,11 @@ func scrubHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		count, err := scrubPushedEvents()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(strconv.Itoa(count)))
 	}
@@ -601,12 +579,12 @@ func scrubHandler(w http.ResponseWriter, r *http.Request) {
 
 // Test if the service is working
 func pingHandler(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set(clients.ContentType, clients.ContentTypeText)
 	w.Write([]byte("pong"))
 }
 
 func configHandler(w http.ResponseWriter, r *http.Request) {
-	encode(Configuration, w)
+	pkg.Encode(Configuration, w, LoggingClient)
 }
 
 // Reading handler
@@ -621,57 +599,45 @@ func readingHandler(w http.ResponseWriter, r *http.Request) {
 		r, err := getAllReadings()
 
 		if err != nil {
-			switch err.(type) {
-			case *errors.ErrLimitExceeded:
-				http.Error(w, maxExceededString, http.StatusRequestEntityTooLarge)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleOneVariant(
+				w,
+				err,
+				errorconcept.Common.LimitExceeded,
+				errorconcept.Default.InternalServerError)
 		}
 
-		encode(r, w)
+		pkg.Encode(r, w, LoggingClient)
 	case http.MethodPost:
 		reading, err := decodeReading(r.Body)
 
 		// Problem decoding
 		if err != nil {
-			switch err.(type) {
-			case *errors.ErrJsonDecoding:
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			case *errors.ErrDbNotFound:
-				http.Error(w, "Value descriptor not found for reading", http.StatusConflict)
-				return
-			case *errors.ErrValueDescriptorInvalid:
-				http.Error(w, err.Error(), http.StatusConflict)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleManyVariants(
+				w,
+				err,
+				[]errorconcept.ErrorConceptType{
+					errorconcept.Common.JsonDecoding,
+					errorconcept.ValueDescriptors.NotFoundInDB,
+					errorconcept.ValueDescriptors.Invalid,
+				},
+				errorconcept.Default.InternalServerError)
 		}
 
 		// Check device
 		if reading.Device != "" {
 			if err := checkDevice(reading.Device, ctx); err != nil {
-				LoggingClient.Error(fmt.Sprintf("error checking device %s %v", reading.Device, err))
-				switch err := err.(type) {
-				case *types.ErrServiceClient:
-					http.Error(w, err.Error(), err.StatusCode)
-					return
-				default: // return an error on everything else.
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
+				httpErrorHandler.HandleOneVariant(
+					w,
+					err,
+					errorconcept.NewServiceClientHttpError(err),
+					errorconcept.Default.InternalServerError)
 			}
 		}
 
 		if Configuration.Writable.PersistData {
 			id, err := addReading(reading)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 				return
 			}
 
@@ -679,44 +645,38 @@ func readingHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(id))
 		} else {
 			// Didn't save the reading in the database
-			encode("unsaved", w)
+			pkg.Encode("unsaved", w, LoggingClient)
 		}
 	case http.MethodPut:
 		from, err := decodeReading(r.Body)
 		// Problem decoding
 		if err != nil {
-			switch err.(type) {
-			case *errors.ErrJsonDecoding:
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			case *errors.ErrDbNotFound:
-				http.Error(w, "Value descriptor not found for reading", http.StatusConflict)
-				return
-			case *errors.ErrValueDescriptorInvalid:
-				http.Error(w, err.Error(), http.StatusConflict)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleManyVariants(
+				w,
+				err,
+				[]errorconcept.ErrorConceptType{
+					errorconcept.Common.JsonDecoding,
+					errorconcept.ValueDescriptors.NotFoundInDB,
+					errorconcept.ValueDescriptors.Invalid,
+				},
+				errorconcept.Default.InternalServerError)
+			return
 		}
 
 		err = updateReading(from)
 		if err != nil {
-			switch err.(type) {
-			case *errors.ErrDbNotFound:
-				http.Error(w, "Value descriptor not found for reading", http.StatusNotFound)
-				return
-			case *errors.ErrValueDescriptorInvalid:
-				http.Error(w, err.Error(), http.StatusConflict)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleManyVariants(
+				w,
+				err,
+				[]errorconcept.ErrorConceptType{
+					errorconcept.Database.NotFoundTyped,
+					errorconcept.ValueDescriptors.Invalid,
+				},
+				errorconcept.Default.InternalServerError)
+			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("true"))
 	}
@@ -735,17 +695,14 @@ func getReadingByIdHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		reading, err := getReadingById(id)
 		if err != nil {
-			switch err := err.(type) {
-			case *errors.ErrDbNotFound:
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			default: // return an error on everything else.
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleOneVariant(
+				w,
+				err,
+				errorconcept.Database.NotFoundTyped,
+				errorconcept.Default.InternalServerError)
 		}
 
-		encode(reading, w)
+		pkg.Encode(reading, w, LoggingClient)
 	}
 }
 
@@ -758,7 +715,7 @@ func readingCountHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		count, err := countReadings()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 			return
 		}
 
@@ -782,17 +739,15 @@ func deleteReadingByIdHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		err := deleteReadingById(id)
 		if err != nil {
-			switch err := err.(type) {
-			case *errors.ErrDbNotFound:
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			default: // return an error on everything else.
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleOneVariant(
+				w,
+				err,
+				errorconcept.Database.NotFoundTyped,
+				errorconcept.Default.InternalServerError)
+			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("true"))
 	}
@@ -809,15 +764,13 @@ func readingByDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	limit, err := strconv.Atoi(vars["limit"])
 	// Problems converting limit to int
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error converting the limit to an integer: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 	deviceId, err := url.QueryUnescape(vars["deviceId"])
 	// Problems unescaping URL
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping the device ID: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
@@ -827,23 +780,21 @@ func readingByDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		err := checkMaxLimit(limit)
 		if err != nil {
-			http.Error(w, maxExceededString, http.StatusRequestEntityTooLarge)
+			httpErrorHandler.Handle(w, err, errorconcept.Common.LimitExceeded)
 			return
 		}
 
 		readings, err := getReadingsByDevice(deviceId, limit, ctx)
 		if err != nil {
-			switch err := err.(type) {
-			case *types.ErrServiceClient:
-				http.Error(w, err.Error(), err.StatusCode)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleOneVariant(
+				w,
+				err,
+				errorconcept.NewServiceClientHttpError(err),
+				errorconcept.Default.InternalServerError)
+			return
 		}
 
-		encode(readings, w)
+		pkg.Encode(readings, w, LoggingClient)
 	}
 }
 
@@ -857,25 +808,23 @@ func readingbyValueDescriptorHandler(w http.ResponseWriter, r *http.Request) {
 	name, err := url.QueryUnescape(vars["name"])
 	// Problems with unescaping URL
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping value descriptor name: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 	limit, err := strconv.Atoi(vars["limit"])
 	// Problems converting limit to int
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error converting the limit to an integer: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	read, err := getReadingsByValueDescriptor(name, limit)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	encode(read, w)
+	pkg.Encode(read, w, LoggingClient)
 }
 
 // Return a list of readings based on the UOM label for the value decriptor
@@ -888,30 +837,28 @@ func readingByUomLabelHandler(w http.ResponseWriter, r *http.Request) {
 	uomLabel, err := url.QueryUnescape(vars["uomLabel"])
 	// Problems unescaping URL
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping the UOM Label: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	limit, err := strconv.Atoi(vars["limit"])
 	// Problems converting limit to int
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error converting the limit to an integer: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	// Limit was exceeded
 	err = checkMaxLimit(limit)
 	if err != nil {
-		http.Error(w, maxExceededString, http.StatusRequestEntityTooLarge)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.LimitExceeded)
 		return
 	}
 
 	// Get the value descriptors
 	vList, err := getValueDescriptorsByUomLabel(uomLabel)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 		return
 	}
 
@@ -922,11 +869,11 @@ func readingByUomLabelHandler(w http.ResponseWriter, r *http.Request) {
 
 	readings, err := getReadingsByValueDescriptorNames(vNames, limit)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	encode(readings, w)
+	pkg.Encode(readings, w, LoggingClient)
 }
 
 // Get readings by the value descriptor (specified by the label)
@@ -939,29 +886,27 @@ func readingByLabelHandler(w http.ResponseWriter, r *http.Request) {
 	label, err := url.QueryUnescape(vars["label"])
 	// Problem unescaping
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping the label of the value descriptor: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 	limit, err := strconv.Atoi(vars["limit"])
 	// Problems converting to int
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error converting the limit to an integer: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	// Limit is too large
 	err = checkMaxLimit(limit)
 	if err != nil {
-		http.Error(w, maxExceededString, http.StatusRequestEntityTooLarge)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.LimitExceeded)
 		return
 	}
 
 	// Get the value descriptors
 	vdList, err := getValueDescriptorsByLabel(label)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 		return
 	}
 	var vdNames []string
@@ -971,11 +916,11 @@ func readingByLabelHandler(w http.ResponseWriter, r *http.Request) {
 
 	readings, err := getReadingsByValueDescriptorNames(vdNames, limit)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	encode(readings, w)
+	pkg.Encode(readings, w, LoggingClient)
 }
 
 // Return a list of readings who's value descriptor has the type
@@ -988,30 +933,27 @@ func readingByTypeHandler(w http.ResponseWriter, r *http.Request) {
 
 	t, err := url.QueryUnescape(vars["type"])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error escaping the type: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	limit, err := strconv.Atoi(vars["limit"])
 	// Problem converting to int
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error converting the limit to an integer: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	err = checkMaxLimit(limit)
 	if err != nil {
-		http.Error(w, maxExceededString, http.StatusRequestEntityTooLarge)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.LimitExceeded)
 		return
 	}
 
 	// Get the value descriptors
 	vdList, err := getValueDescriptorsByType(t)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 		return
 	}
 	var vdNames []string
@@ -1021,12 +963,11 @@ func readingByTypeHandler(w http.ResponseWriter, r *http.Request) {
 
 	readings, err := getReadingsByValueDescriptorNames(vdNames, limit)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	encode(readings, w)
+	pkg.Encode(readings, w, LoggingClient)
 }
 
 // Return a list of readings between the start and end (creation time)
@@ -1035,22 +976,19 @@ func readingByCreationTimeHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	vars := mux.Vars(r)
-	start, err := strconv.ParseInt((vars["start"]), 10, 64)
+	start, err := strconv.ParseInt(vars["start"], 10, 64)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error converting the start time to an integer: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
-	end, err := strconv.ParseInt((vars["end"]), 10, 64)
+	end, err := strconv.ParseInt(vars["end"], 10, 64)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error converting the end time to an integer: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 	limit, err := strconv.Atoi(vars["limit"])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error converting the limit to an integer: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
@@ -1058,17 +996,17 @@ func readingByCreationTimeHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		err = checkMaxLimit(limit)
 		if err != nil {
-			http.Error(w, maxExceededString, http.StatusRequestEntityTooLarge)
+			httpErrorHandler.Handle(w, err, errorconcept.Common.LimitExceeded)
 			return
 		}
 
 		readings, err := getReadingsByCreationTime(start, end, limit)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 			return
 		}
 
-		encode(readings, w)
+		pkg.Encode(readings, w, LoggingClient)
 	}
 }
 
@@ -1084,66 +1022,58 @@ func readingByValueDescriptorAndDeviceHandler(w http.ResponseWriter, r *http.Req
 	// Get the variables from the URL
 	name, err := url.QueryUnescape(vars["name"])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping the value descriptor name: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	device, err := url.QueryUnescape(vars["device"])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping the device: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	limit, err := strconv.Atoi(vars["limit"])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error converting limit to an integer: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	err = checkMaxLimit(limit)
 	if err != nil {
-		http.Error(w, maxExceededString, http.StatusRequestEntityTooLarge)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.LimitExceeded)
 		return
 	}
 
 	// Check device
 	if err := checkDevice(device, ctx); err != nil {
-		LoggingClient.Error(fmt.Sprintf("error checking device %s %v", device, err))
-		switch err := err.(type) {
-		case *types.ErrServiceClient:
-			http.Error(w, err.Error(), err.StatusCode)
-			return
-		default: // return an error on everything else.
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		httpErrorHandler.HandleOneVariant(
+			w,
+			err,
+			errorconcept.NewServiceClientHttpError(err),
+			errorconcept.Default.InternalServerError)
+		return
 	}
 
 	// Check for value descriptor
 	if Configuration.Writable.ValidateCheck {
 		_, err = getValueDescriptorByName(name)
 		if err != nil {
-			switch err.(type) {
-			case *errors.ErrDbNotFound:
-				http.Error(w, "Value descriptor not found for reading", http.StatusConflict)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleOneVariant(
+				w,
+				err,
+				errorconcept.ValueDescriptors.NotFoundInDB,
+				errorconcept.Default.InternalServerError)
+			return
 		}
 	}
 
 	readings, err := getReadingsByDeviceAndValueDescriptor(device, name, limit)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	encode(readings, w)
+	pkg.Encode(readings, w, LoggingClient)
 }
 
 // Value Descriptors
@@ -1157,47 +1087,44 @@ func valueDescriptorHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		vList, err := getAllValueDescriptors()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 			return
 		}
 
 		// Check the limit
 		err = checkMaxLimit(len(vList))
 		if err != nil {
-			http.Error(w, maxExceededString, http.StatusRequestEntityTooLarge)
+			httpErrorHandler.Handle(w, err, errorconcept.Common.LimitExceeded)
 			return
 		}
 
-		encode(vList, w)
+		pkg.Encode(vList, w, LoggingClient)
 	case http.MethodPost:
 		v, err := decodeValueDescriptor(r.Body)
 		if err != nil {
-			switch err.(type) {
-			case *errors.ErrJsonDecoding:
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			case *errors.ErrValueDescriptorInvalid:
-				http.Error(w, err.Error(), http.StatusConflict)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleManyVariants(
+				w,
+				err,
+				[]errorconcept.ErrorConceptType{
+					errorconcept.Common.JsonDecoding,
+					errorconcept.ValueDescriptors.Invalid,
+				},
+				errorconcept.Default.InternalServerError)
+			return
 		}
 
 		id, err := addValueDescriptor(v)
 		if err != nil {
-			switch err.(type) {
-			case *errors.ErrValueDescriptorInUse:
-				http.Error(w, err.Error(), http.StatusConflict)
-				return
-			case *errors.ErrDuplicateValueDescriptorName:
-				http.Error(w, err.Error(), http.StatusConflict)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleManyVariants(
+				w,
+				err,
+				[]errorconcept.ErrorConceptType{
+					errorconcept.ValueDescriptors.SingleInUse,
+					errorconcept.ValueDescriptors.MultipleInUse,
+					errorconcept.ValueDescriptors.DuplicateName,
+				},
+				errorconcept.Default.InternalServerError)
+			return
 		}
 
 		w.WriteHeader(http.StatusOK)
@@ -1205,38 +1132,33 @@ func valueDescriptorHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPut:
 		vd, err := decodeValueDescriptor(r.Body)
 		if err != nil {
-			switch err.(type) {
-			case *errors.ErrJsonDecoding:
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			case *errors.ErrValueDescriptorInvalid:
-				http.Error(w, err.Error(), http.StatusConflict)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleManyVariants(
+				w,
+				err,
+				[]errorconcept.ErrorConceptType{
+					errorconcept.Common.JsonDecoding,
+					errorconcept.ValueDescriptors.Invalid,
+				},
+				errorconcept.Default.InternalServerError)
+			return
 		}
 
 		err = updateValueDescriptor(vd)
 		if err != nil {
-			switch err.(type) {
-			case *errors.ErrDbNotFound:
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			case *errors.ErrValueDescriptorInvalid:
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			case *errors.ErrValueDescriptorInUse:
-				http.Error(w, "Data integrity issue. Value Descriptor still in use by readings", http.StatusConflict)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleManyVariants(
+				w,
+				err,
+				[]errorconcept.ErrorConceptType{
+					errorconcept.Database.NotFoundTyped,
+					errorconcept.ValueDescriptors.Invalid,
+					errorconcept.ValueDescriptors.SingleInUse,
+					errorconcept.ValueDescriptors.MultipleInUse,
+				},
+				errorconcept.Default.InternalServerError)
+			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("true"))
 	}
@@ -1254,26 +1176,21 @@ func deleteValueDescriptorByIdHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := deleteValueDescriptorById(id)
 	if err != nil {
-		switch err.(type) {
-		case *errors.ErrDbNotFound:
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		case *errors.ErrValueDescriptorInvalid:
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		case *errors.ErrValueDescriptorInUse:
-			http.Error(w, "Data integrity issue. Value Descriptor still in use by readings", http.StatusConflict)
-			return
-		case *errors.ErrInvalidId:
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		default:
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		httpErrorHandler.HandleManyVariants(
+			w,
+			err,
+			[]errorconcept.ErrorConceptType{
+				errorconcept.Database.NotFoundTyped,
+				errorconcept.ValueDescriptors.Invalid,
+				errorconcept.ValueDescriptors.SingleInUse,
+				errorconcept.ValueDescriptors.MultipleInUse,
+				errorconcept.Common.InvalidID,
+			},
+			errorconcept.Default.InternalServerError)
+		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("true"))
 }
@@ -1288,8 +1205,7 @@ func valueDescriptorByNameHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Problems unescaping
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping the value descriptor name: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
@@ -1297,35 +1213,30 @@ func valueDescriptorByNameHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		v, err := dbClient.ValueDescriptorByName(name)
 		if err != nil {
-			switch err := err.(type) {
-			case *types.ErrServiceClient:
-				http.Error(w, err.Error(), err.StatusCode)
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
+			httpErrorHandler.HandleOneVariant(
+				w,
+				err,
+				errorconcept.NewServiceClientHttpError(err),
+				errorconcept.Default.InternalServerError)
 			return
 		}
-		encode(v, w)
+		pkg.Encode(v, w, LoggingClient)
 	case http.MethodDelete:
 		if err = deleteValueDescriptorByName(name); err != nil {
-			switch err.(type) {
-			case *errors.ErrDbNotFound:
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			case *errors.ErrValueDescriptorInvalid:
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			case *errors.ErrValueDescriptorInUse:
-				http.Error(w, "Data integrity issue. Value Descriptor still in use by readings", http.StatusConflict)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleManyVariants(
+				w,
+				err,
+				[]errorconcept.ErrorConceptType{
+					errorconcept.Database.NotFoundTyped,
+					errorconcept.ValueDescriptors.Invalid,
+					errorconcept.ValueDescriptors.SingleInUse,
+					errorconcept.ValueDescriptors.MultipleInUse,
+				},
+				errorconcept.Default.InternalServerError)
+			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("true"))
 	}
@@ -1344,17 +1255,15 @@ func valueDescriptorByIdHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		vd, err := getValueDescriptorById(id)
 		if err != nil {
-			switch err.(type) {
-			case *errors.ErrDbNotFound:
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleOneVariant(
+				w,
+				err,
+				errorconcept.Database.NotFoundTyped,
+				errorconcept.Default.InternalServerError)
+			return
 		}
 
-		encode(vd, w)
+		pkg.Encode(vd, w, LoggingClient)
 	}
 }
 
@@ -1368,8 +1277,7 @@ func valueDescriptorByUomLabelHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Problem unescaping
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping the UOM Label of the value descriptor: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
@@ -1377,17 +1285,15 @@ func valueDescriptorByUomLabelHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		vdList, err := getValueDescriptorsByUomLabel(uomLabel)
 		if err != nil {
-			switch err.(type) {
-			case *errors.ErrDbNotFound:
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleOneVariant(
+				w,
+				err,
+				errorconcept.Database.NotFoundTyped,
+				errorconcept.Default.InternalServerError)
+			return
 		}
 
-		encode(vdList, w)
+		pkg.Encode(vdList, w, LoggingClient)
 	}
 }
 
@@ -1401,8 +1307,7 @@ func valueDescriptorByLabelHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Problem unescaping
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping label for the value descriptor: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
@@ -1410,17 +1315,15 @@ func valueDescriptorByLabelHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		v, err := getValueDescriptorsByLabel(label)
 		if err != nil {
-			switch err.(type) {
-			case *errors.ErrDbNotFound:
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			httpErrorHandler.HandleOneVariant(
+				w,
+				err,
+				errorconcept.Database.NotFoundTyped,
+				errorconcept.Default.InternalServerError)
+			return
 		}
 
-		encode(v, w)
+		pkg.Encode(v, w, LoggingClient)
 	}
 }
 
@@ -1434,8 +1337,7 @@ func valueDescriptorByDeviceHandler(w http.ResponseWriter, r *http.Request) {
 
 	device, err := url.QueryUnescape(vars["device"])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping the device: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
@@ -1443,19 +1345,18 @@ func valueDescriptorByDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the value descriptors
 	vdList, err := getValueDescriptorsByDeviceName(device, ctx)
 	if err != nil {
-		switch err := err.(type) {
-		case *errors.ErrDbNotFound:
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		case *types.ErrServiceClient:
-			http.Error(w, err.Error(), err.StatusCode)
-		default:
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		httpErrorHandler.HandleManyVariants(
+			w,
+			err,
+			[]errorconcept.ErrorConceptType{
+				errorconcept.Database.NotFoundTyped,
+				errorconcept.NewServiceClientHttpError(err),
+			},
+			errorconcept.Default.InternalServerError)
+		return
 	}
 
-	encode(vdList, w)
+	pkg.Encode(vdList, w, LoggingClient)
 }
 
 // Return the value descriptors that are associated with the device specified by the device ID
@@ -1468,8 +1369,7 @@ func valueDescriptorByDeviceIdHandler(w http.ResponseWriter, r *http.Request) {
 
 	deviceId, err := url.QueryUnescape(vars["id"])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error("Error unescaping the device ID: " + err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
@@ -1477,25 +1377,90 @@ func valueDescriptorByDeviceIdHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the value descriptors
 	vdList, err := getValueDescriptorsByDeviceId(deviceId, ctx)
 	if err != nil {
-		switch err := err.(type) {
-		case *types.ErrServiceClient:
-			http.Error(w, err.Error(), err.StatusCode)
-		case *errors.ErrDbNotFound:
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		default:
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		httpErrorHandler.HandleManyVariants(
+			w,
+			err,
+			[]errorconcept.ErrorConceptType{
+				errorconcept.NewServiceClientHttpError(err),
+				errorconcept.Database.NotFoundTyped,
+			},
+			errorconcept.Default.InternalServerError)
+		return
 	}
 
-	encode(vdList, w)
+	pkg.Encode(vdList, w, LoggingClient)
+}
+
+// restValueDescriptorsUsageHandler checks if value descriptors are currently being used.
+// This functionality is useful for determining if a value descriptor can be updated, or deleted.
+// This functionality does not provide any guarantee that the value descriptor will not be in use in the near future.
+// Any functionality using the check to perform updates or deletes is responsible for handling any race conditions which
+// may occur.
+// Returns a map[string]bool where the key is the ValueDescriptor Name and the value is a bool stating if the
+// ValueDescriptor is currently in use.
+func restValueDescriptorsUsageHandler(w http.ResponseWriter, r *http.Request) {
+	qparams, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
+		return
+	}
+
+	namesFilter := qparams[NAMES]
+	var vds []contract.ValueDescriptor
+	var op value_descriptor.GetValueDescriptorsExecutor
+	if len(namesFilter) <= 0 {
+		// We are not filtering so get all the value descriptors
+		op = value_descriptor.NewGetValueDescriptorsExecutor(dbClient, LoggingClient, Configuration.Service)
+	} else {
+		op = value_descriptor.NewGetValueDescriptorsNameExecutor(
+			strings.Split(namesFilter[0], ","),
+			dbClient,
+			LoggingClient,
+			Configuration.Service)
+	}
+
+	vds, err = op.Execute()
+	if err != nil {
+		httpErrorHandler.HandleOneVariant(
+			w,
+			err,
+			errorconcept.ValueDescriptors.LimitExceeded,
+			errorconcept.Default.InternalServerError)
+		return
+	}
+
+	// Use this data structure so that we can obtain the desired JSON format. Please see RAML for response format
+	// information.
+	resp := make([]map[string]bool, 0)
+	var ops reading.GetReadingsExecutor
+	for _, vd := range vds {
+		ops = reading.NewGetReadingsNameExecutor(
+			vd.Name,
+			ValueDescriptorUsageReadLimit,
+			dbClient,
+			LoggingClient,
+			Configuration.Service)
+		r, err := ops.Execute()
+		if err != nil {
+			httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
+			return
+		}
+
+		if len(r) > 0 {
+			resp = append(resp, map[string]bool{vd.Name: true})
+			continue
+		}
+
+		resp = append(resp, map[string]bool{vd.Name: false})
+	}
+
+	pkg.Encode(resp, w, LoggingClient)
 }
 
 func metricsHandler(w http.ResponseWriter, _ *http.Request) {
 	s := telemetry.NewSystemUsage()
 
-	encode(s, w)
+	pkg.Encode(s, w, LoggingClient)
 
 	return
 }

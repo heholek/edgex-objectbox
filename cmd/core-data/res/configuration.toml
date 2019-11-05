@@ -49,3 +49,19 @@ Host = '*'
 Port = 5563
 Type = 'zero'
 Topic = 'events'
+
+[SecretStore]
+Host = 'localhost'
+Port = 8200
+Path = '/v1/secret/edgex/coredata/'
+Protocol = 'https'
+RootCaCertPath = '/vault/config/pki/EdgeXFoundryCA/EdgeXFoundryCA.pem'
+ServerName = 'localhost'
+TokenFile = '/vault/config/assets/resp-init.json'
+  [SecretStore.Authentication]
+  AuthType = 'X-Vault-Token'
+  AuthToken = 'edgex'
+
+[Startup]
+Duration = 30
+Interval = 1

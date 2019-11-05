@@ -37,7 +37,7 @@ File = '/edgex/logs/edgex-support-scheduler.log'
     [Intervals.Midnight]
     Name = 'midnight'
     Start = '20180101T000000'
-    Frequency = 'P1D'
+    Frequency = '24h'
 
 [IntervalActions]
     [IntervalActions.ScrubPushed]
@@ -59,3 +59,18 @@ File = '/edgex/logs/edgex-support-scheduler.log'
     Target = 'core-data'
     Path = '/api/v1/event/removeold/age/604800000'
     Interval = 'midnight'
+
+[SecretStore]
+Host = 'edgex-vault'
+Port = 8200
+Path = '/v1/secret/edgex/scheduler/'
+Protocol = 'https'
+RootCaCertPath = '/vault/config/pki/EdgeXFoundryCA/EdgeXFoundryCA.pem'
+ServerName = 'edgex-vault'
+TokenFile = '/vault/config/assets/resp-init.json'
+  [SecretStore.Authentication]
+  AuthType = 'X-Vault-Token'
+
+[Startup]
+Duration = 30
+Interval = 1

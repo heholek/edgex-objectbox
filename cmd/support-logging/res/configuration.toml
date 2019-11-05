@@ -25,4 +25,24 @@ File = './logs/edgex-support-logging.log'
 [Databases]
   [Databases.Primary]
   Name = 'logging'
-  Type = 'objectbox'
+  Password = ''
+  Port = 27017
+  Username = ''
+  Timeout = 5000
+  Type = 'mongodb'
+
+[SecretStore]
+Host = 'localhost'
+Port = 8200
+Path = '/v1/secret/edgex/logging/'
+Protocol = 'https'
+RootCaCertPath = '/vault/config/pki/EdgeXFoundryCA/EdgeXFoundryCA.pem'
+ServerName = 'localhost'
+TokenFile = '/vault/config/assets/resp-init.json'
+  [SecretStore.Authentication]
+  AuthType = 'X-Vault-Token'
+  AuthToken = 'edgex'
+
+[Startup]
+Duration = 30
+Interval = 1

@@ -150,6 +150,46 @@ To install snapcraft on MacOS, see [this link](https://docs.snapcraft.io/install
 
 To install snapcraft on Windows, you will need to run a Linux VM and follow the above instructions to install snapcraft as a snap. Note that if you are using WSL, only WSL2 with full Linux kernel support will work - you cannot use WSL with snapcraft and snaps. If you like, you can install multipass to launch a Linux VM if your Windows machine has Windows 10 Pro or Enterprise with Hyper-V support. See this [forum post](https://discourse.ubuntu.com/t/installing-multipass-for-windows/9547) for more details.
 
+
+### Building with multipass
+
+The easiest way to build the snap is using the multipass VM tool that snapcraft knows to use directly. After [installing multipass](https://multipass.run), just run 
+
+```bash
+$ snapcraft
+```
+
+### Building with LXD containers
+
+Alternatively, you can instruct snapcraft to use LXD containers instead of multipass VM's. This requires installing LXD as documented [here](https://docs.snapcraft.io/build-on-lxd).
+
+```bash
+$ snapcraft --use-lxd
+```
+
+Note that if you are building on non-amd64 hardware, snapcraft won't be able to use it's default LXD container image, so you can follow the next section to create an LXD container to run snapcraft in destructive-mode natively in the container.
+
+### Building inside external container/VM using native snapcraft
+
+Finally, snapcraft can be run inside a VM, container or other similar build environment to build the snap without having snapcraft manage the environment (such as in a docker container where snaps are not available, or inside a VM launched from a build-farm without using nested VM's). 
+
+This requires creating an Ubuntu 18.04 environment and running snapcraft (from the snap) inside the environment with `--destructive-mode`. 
+
+#### LXD
+
+Snaps run inside LXD containers just like they do outside the container, so all you need to do is launch an Ubuntu 18.04 container, install snapcraft and run snapcraft like follows:
+
+```bash
+$ lxc launch ubuntu:18.04 edgex
+Creating edgex
+Starting edgex
+$ lxc exec edgex /bin/bash
+root@edgex:~# sudo apt update && sudo apt install snapd squashfuse git -y
+root@edgex:~# sudo snap install snapcraft --classic
+root@edgex:~# git clone https://github.com/objectbox/edgex-objectbox
+root@edgex:~# cd edgex-objectbox && snapcraft --destructive-mode
+```
+
 ### Building ARMv6hf on Raspberry Pi 3b
 The following steps apply when running Raspbian. 
 With Ubuntu Core, you may have luck trying one of the generic build options described in folowing chapters.
@@ -188,21 +228,6 @@ The easiest way to build the snap is using the multipass VM tool that snapcraft 
 ```bash
 $ snapcraft
 ```
-
-### Building with LXD containers
-
-Alternatively, you can instruct snapcraft to use LXD containers instead of multipass VM's. This requires installing LXD as documented (here)[https://docs.snapcraft.io/build-on-lxd].
-
-```bash
-$ export SNAPCRAFT_BUILD_ENVIRONMENT=lxd
-$ snapcraft
-```
-
-### Building inside external container/VM using native snapcraft
-
-Finally, snapcraft can be run inside a VM, container or other similar build environment to build the snap without having snapcraft manage the environment (such as in a docker container where snaps are not available, or inside a VM launched from a build-farm without using nested VM's). 
-
-This requires creating an Ubuntu 18.04 environment and running snapcraft (from the snap) inside the environment with `--destructive-mode`. 
 
 #### Docker
 

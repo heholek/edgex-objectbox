@@ -15,9 +15,17 @@ package errors
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 )
+
+type ErrCBORNotSupported struct {
+}
+
+func (e ErrCBORNotSupported) Error() string {
+	return "CBOR payload is not yet supported"
+}
 
 type ErrEventNotFound struct {
 	id string
@@ -28,7 +36,7 @@ func (e ErrEventNotFound) Error() string {
 }
 
 func NewErrEventNotFound(id string) error {
-	return &ErrEventNotFound{id: id}
+	return ErrEventNotFound{id: id}
 }
 
 type ErrValueDescriptorInvalid struct {
@@ -41,7 +49,7 @@ func (b ErrValueDescriptorInvalid) Error() string {
 }
 
 func NewErrValueDescriptorInvalid(name string, err error) error {
-	return &ErrValueDescriptorInvalid{name: name, err: err}
+	return ErrValueDescriptorInvalid{name: name, err: err}
 }
 
 type ErrValueDescriptorNotFound struct {
@@ -53,7 +61,7 @@ func (e ErrValueDescriptorNotFound) Error() string {
 }
 
 func NewErrValueDescriptorNotFound(id string) error {
-	return &ErrValueDescriptorNotFound{id: id}
+	return ErrValueDescriptorNotFound{id: id}
 }
 
 type ErrUnsupportedDatabase struct {
@@ -65,7 +73,7 @@ func (e ErrUnsupportedDatabase) Error() string {
 }
 
 func NewErrUnsupportedDatabase(dbType string) error {
-	return &ErrUnsupportedDatabase{dbType: dbType}
+	return ErrUnsupportedDatabase{dbType: dbType}
 }
 
 type ErrUnsupportedPublisher struct {
@@ -77,7 +85,7 @@ func (e ErrUnsupportedPublisher) Error() string {
 }
 
 func NewErrUnsupportedPublisher(pubType string) error {
-	return &ErrUnsupportedPublisher{pubType: pubType}
+	return ErrUnsupportedPublisher{pubType: pubType}
 }
 
 type ErrValueDescriptorInUse struct {
@@ -89,7 +97,19 @@ func (e ErrValueDescriptorInUse) Error() string {
 }
 
 func NewErrValueDescriptorInUse(name string) error {
-	return &ErrValueDescriptorInUse{name: name}
+	return ErrValueDescriptorInUse{name: name}
+}
+
+type ErrValueDescriptorsInUse struct {
+	names []string
+}
+
+func (e ErrValueDescriptorsInUse) Error() string {
+	return fmt.Sprintf("value descriptors are still referenced by readings: %s", strings.Join(e.names, ","))
+}
+
+func NewErrValueDescriptorsInUse(names []string) error {
+	return ErrValueDescriptorsInUse{names: names}
 }
 
 type ErrDuplicateValueDescriptorName struct {
@@ -101,7 +121,7 @@ func (e ErrDuplicateValueDescriptorName) Error() string {
 }
 
 func NewErrDuplicateValueDescriptorName(name string) error {
-	return &ErrDuplicateValueDescriptorName{name: name}
+	return ErrDuplicateValueDescriptorName{name: name}
 }
 
 type ErrLimitExceeded struct {
@@ -113,7 +133,7 @@ func (e ErrLimitExceeded) Error() string {
 }
 
 func NewErrLimitExceeded(limit int) error {
-	return &ErrLimitExceeded{limit: limit}
+	return ErrLimitExceeded{limit: limit}
 }
 
 type ErrJsonDecoding struct {
@@ -125,7 +145,7 @@ func (e ErrJsonDecoding) Error() string {
 }
 
 func NewErrJsonDecoding(name string) error {
-	return &ErrJsonDecoding{name: name}
+	return ErrJsonDecoding{name: name}
 }
 
 type ErrDbNotFound struct {
@@ -136,7 +156,7 @@ func (e ErrDbNotFound) Error() string {
 }
 
 func NewErrDbNotFound() error {
-	return &ErrDbNotFound{}
+	return ErrDbNotFound{}
 }
 
 type ErrInvalidId struct {
@@ -148,5 +168,5 @@ func (e ErrInvalidId) Error() string {
 }
 
 func NewErrInvalidId(id string) error {
-	return &ErrInvalidId{id: id}
+	return ErrInvalidId{id: id}
 }

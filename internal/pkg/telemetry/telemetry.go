@@ -15,9 +15,14 @@
 package telemetry
 
 import (
+	"context"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/container"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/startup"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
 )
 
 type SystemUsage struct {
@@ -40,10 +45,8 @@ type CpuUsage struct {
 	Total uint64 // reported sum total of all usage
 }
 
-var once sync.Once
 var lastSample CpuUsage
 var usageAvg float64
-var wg sync.WaitGroup
 
 func NewSystemUsage() (s SystemUsage) {
 	// The micro-service is to be considered the System Of Record (SOR) in terms of accurate information.
@@ -68,16 +71,38 @@ func NewSystemUsage() (s SystemUsage) {
 	return s
 }
 
-func StartCpuUsageAverage() {
-	once.Do(func() {
-		for {
-			wg.Add(1)
-			nextUsage := PollCpu()
-			usageAvg = AvgCpuUsage(lastSample, nextUsage)
-			lastSample = nextUsage
-			wg.Done()
+// cpuUsageAverage implements testable cpu usage average cycle implementation.
+func cpuUsageAverage() {
+	nextUsage := PollCpu()
+	usageAvg = AvgCpuUsage(lastSample, nextUsage)
+	lastSample = nextUsage
+}
 
-			time.Sleep(time.Second * 30)
+// BootstrapHandler fulfills the BootstrapHandler contract.  It creates a go routine to periodically sample CPU usage
+// and is intended to supersede the existing StartCpuUsageAverage() function when the new bootstrap package is used
+// by all of the core services.
+func BootstrapHandler(wg *sync.WaitGroup, ctx context.Context, startupTimer startup.Timer, dic *di.Container) bool {
+	loggingClient := container.LoggingClientFrom(dic.Get)
+	loggingClient.Info("Telemetry starting")
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		for {
+			cpuUsageAverage()
+
+			for seconds := 30; seconds > 0; seconds-- {
+				select {
+				case <-ctx.Done():
+					loggingClient.Info("Telemetry stopped")
+					return
+				default:
+					time.Sleep(time.Second)
+				}
+			}
 		}
-	})
+	}()
+
+	return true
 }

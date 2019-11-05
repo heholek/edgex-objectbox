@@ -15,84 +15,61 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"net/http"
-	"os"
-	"os/signal"
-	"strconv"
-	"time"
-
-	"github.com/gorilla/context"
 
 	"github.com/objectbox/edgex-objectbox"
 	"github.com/objectbox/edgex-objectbox/internal"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap"
+	bootstrapContainer "github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/container"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/httpserver"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/message"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/usage"
 	"github.com/objectbox/edgex-objectbox/internal/system/agent"
+	agentConfig "github.com/objectbox/edgex-objectbox/internal/system/agent/config"
+	"github.com/objectbox/edgex-objectbox/internal/system/agent/container"
+	
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
-	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 func main() {
-	start := time.Now()
+	startupTimer := startup.NewStartUpTimer(internal.BootRetrySecondsDefault, internal.BootTimeoutSecondsDefault)
+
 	var useRegistry bool
-	var useProfile string
+	var configDir, profileDir string
 
 	flag.BoolVar(&useRegistry, "registry", false, "Indicates the service should use registry service.")
 	flag.BoolVar(&useRegistry, "r", false, "Indicates the service should use registry service.")
-	flag.StringVar(&useProfile, "profile", "", "Specify a profile other than default.")
-	flag.StringVar(&useProfile, "p", "", "Specify a profile other than default.")
+	flag.StringVar(&profileDir, "profile", "", "Specify a profile other than default.")
+	flag.StringVar(&profileDir, "p", "", "Specify a profile other than default.")
+	flag.StringVar(&configDir, "confdir", "", "Specify local configuration directory")
+
 	flag.Usage = usage.HelpCallback
 	flag.Parse()
 
-	params := startup.BootParams{UseRegistry: useRegistry, UseProfile: useProfile, BootTimeout: internal.BootTimeoutDefault}
-	startup.Bootstrap(params, agent.Retry, logBeforeInit)
-
-	ok := agent.Init(useRegistry)
-	if !ok {
-		logBeforeInit(fmt.Errorf("%s: service bootstrap failed", clients.SystemManagementAgentServiceKey))
-		os.Exit(1)
-	}
-
-	agent.LoggingClient.Info("Service dependencies resolved...")
-	agent.LoggingClient.Info(fmt.Sprintf("Starting %s %s ", clients.SystemManagementAgentServiceKey, edgex.Version))
-
-	http.TimeoutHandler(nil, time.Millisecond*time.Duration(agent.Configuration.Service.Timeout), "Request timed out")
-	agent.LoggingClient.Info(agent.Configuration.Service.StartupMsg)
-
-	errs := make(chan error, 2)
-	listenForInterrupt(errs)
-	startHttpServer(errs, agent.Configuration.Service.Port)
-
-	// Time it took to start service
-	agent.LoggingClient.Info("Service started in: " + time.Since(start).String())
-	agent.LoggingClient.Info("Listening on port: " + strconv.Itoa(agent.Configuration.Service.Port))
-	c := <-errs
-	agent.Destruct()
-	agent.LoggingClient.Warn(fmt.Sprintf("terminating: %v", c))
-
-	os.Exit(0)
-}
-
-func logBeforeInit(err error) {
-	l := logger.NewClient(clients.SystemManagementAgentServiceKey, false, "", models.InfoLog)
-	l.Error(err.Error())
-}
-
-func listenForInterrupt(errChan chan error) {
-	go func() {
-		c := make(chan os.Signal)
-		signal.Notify(c, os.Interrupt)
-		errChan <- fmt.Errorf("%s", <-c)
-	}()
-}
-
-func startHttpServer(errChan chan error, port int) {
-	go func() {
-		correlation.LoggingClient = agent.LoggingClient
-		r := agent.LoadRestRoutes()
-		errChan <- http.ListenAndServe(":"+strconv.Itoa(port), context.ClearHandler(r))
-	}()
+	configuration := &agentConfig.ConfigurationStruct{}
+	dic := di.NewContainer(di.ServiceConstructorMap{
+		container.ConfigurationName: func(get di.Get) interface{} {
+			return configuration
+		},
+		bootstrapContainer.ConfigurationInterfaceName: func(get di.Get) interface{} {
+			return get(container.ConfigurationName)
+		},
+	})
+	httpServer := httpserver.NewBootstrap(agent.LoadRestRoutes(dic))
+	bootstrap.Run(
+		configDir,
+		profileDir,
+		internal.ConfigFileName,
+		useRegistry,
+		clients.SystemManagementAgentServiceKey,
+		configuration,
+		startupTimer,
+		dic,
+		[]interfaces.BootstrapHandler{
+			agent.BootstrapHandler,
+			httpServer.BootstrapHandler,
+			message.NewBootstrap(clients.SystemManagementAgentServiceKey, edgex.Version).BootstrapHandler,
+		})
 }

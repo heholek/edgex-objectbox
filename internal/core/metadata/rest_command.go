@@ -11,74 +11,75 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+
 package metadata
 
 import (
-	"encoding/json"
-	"errors"
 	"net/http"
 	"net/url"
 
-	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/operators/command"
+	"github.com/objectbox/edgex-objectbox/internal/pkg"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/errorconcept"
 	"github.com/gorilla/mux"
 )
 
 func restGetAllCommands(w http.ResponseWriter, _ *http.Request) {
-	results, err := dbClient.GetAllCommands()
+	op := command.NewCommandLoadAll(Configuration.Service, dbClient)
+	cmds, err := op.Execute()
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.HandleOneVariant(w, err, errorconcept.Common.LimitExceeded, errorconcept.Default.InternalServerError)
 		return
 	}
-
-	if len(results) > Configuration.Service.MaxResultCount {
-		LoggingClient.Error("Max limit exceeded")
-		http.Error(w, errors.New("Max limit exceeded").Error(), http.StatusRequestEntityTooLarge)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&results)
+	pkg.Encode(&cmds, w, LoggingClient)
 }
 
 func restGetCommandById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	var did string = vars[ID]
-	res, err := dbClient.GetCommandById(did)
+	cid, err := url.QueryUnescape(vars[ID])
 	if err != nil {
-		if err == db.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
+
+	op := command.NewCommandById(dbClient, cid)
+	cmd, err := op.Execute()
+	if err != nil {
+		httpErrorHandler.HandleOneVariant(w, err, errorconcept.Common.ItemNotFound, errorconcept.Default.InternalServerError)
+		return
+	}
+	pkg.Encode(cmd, w, LoggingClient)
 }
 
-func restGetCommandByName(w http.ResponseWriter, r *http.Request) {
+func restGetCommandsByName(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	n, err := url.QueryUnescape(vars[NAME])
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
-	results, err := dbClient.GetCommandByName(n)
+	op := command.NewCommandsByName(dbClient, n)
+	cmds, err := op.Execute()
 	if err != nil {
-		if err == db.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		httpErrorHandler.Handle(w, err, errorconcept.Common.RetrieveError_StatusInternalServer)
+		return
+	}
+	pkg.Encode(&cmds, w, LoggingClient)
+}
 
-		LoggingClient.Error(err.Error())
+func restGetCommandsByDeviceId(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	did, err := url.QueryUnescape(vars[ID])
+	if err != nil {
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(results)
+	op := command.NewDeviceIdExecutor(dbClient, did)
+	commands, err := op.Execute()
+	if err != nil {
+		httpErrorHandler.HandleOneVariant(w, err, errorconcept.Common.ItemNotFound, errorconcept.Default.InternalServerError)
+		return
+	}
+	pkg.Encode(&commands, w, LoggingClient)
 }

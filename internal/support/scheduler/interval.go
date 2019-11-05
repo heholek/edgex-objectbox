@@ -63,7 +63,8 @@ func addNewInterval(interval contract.Interval) (string, error) {
 	// Validate the Frequency
 	freq := interval.Frequency
 	if freq != "" {
-		if !isFrequencyValid(interval.Frequency) {
+		_, err := parseFrequency(freq)
+		if err != nil {
 			return "", errors.NewErrInvalidFrequencyFormat(freq)
 		}
 	}
@@ -107,7 +108,8 @@ func updateInterval(from contract.Interval) error {
 		to.End = from.End
 	}
 	if from.Frequency != "" {
-		if !isFrequencyValid(from.Frequency) {
+		_, err := parseFrequency(from.Frequency)
+		if err != nil {
 			return errors.NewErrInvalidFrequencyFormat(from.Frequency)
 		}
 		to.Frequency = from.Frequency
@@ -172,56 +174,6 @@ func getIntervalByName(name string) (interval contract.Interval, err error) {
 	}
 	return interval, nil
 }
-func deleteIntervalByName(name string) error {
-
-	// check in memory first
-	inMemory, err := scClient.QueryIntervalByName(name)
-	if err != nil {
-		return errors.NewErrIntervalNotFound(name)
-	}
-	// remove in memory
-	err = scClient.RemoveIntervalInQueue(inMemory.ID)
-	if err != nil {
-		return errors.NewErrDbNotFound()
-	}
-	// check if interval exists
-	interval, err := getIntervalByName(name)
-	if err != nil {
-		return err
-	}
-
-	if err = deleteInterval(interval); err != nil {
-		return err
-	}
-	return nil
-}
-
-func deleteIntervalById(id string) error {
-
-	// check in memory first
-	inMemory, err := scClient.QueryIntervalByID(id)
-	if err != nil {
-		return errors.NewErrIntervalNotFound(id)
-	}
-
-	// check if interval exists
-	interval, err := getIntervalById(id)
-	if err != nil {
-		return err
-	}
-
-	if err = deleteInterval(interval); err != nil {
-		return err
-	}
-
-	// remove in memory
-	err = scClient.RemoveIntervalInQueue(inMemory.ID)
-	if err != nil {
-		return errors.NewErrDbNotFound()
-	}
-
-	return nil
-}
 
 func deleteInterval(interval contract.Interval) error {
 	intervalActions, err := dbClient.IntervalActionsByIntervalName(interval.Name)
@@ -255,15 +207,4 @@ func isIntervalStillInUse(s contract.Interval) (bool, error) {
 	}
 
 	return false, nil
-}
-
-func scrubAll() (int, error) {
-	LoggingClient.Info("Scrubbing All Interval(s) and IntervalAction(s).")
-
-	count, err := dbClient.ScrubAllIntervals()
-	if err != nil {
-		LoggingClient.Error(err.Error())
-		return 0, err
-	}
-	return count, nil
 }

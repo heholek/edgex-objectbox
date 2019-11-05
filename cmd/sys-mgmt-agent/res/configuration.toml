@@ -5,7 +5,11 @@
 # In the first release of the SMA, the manifest will be static.
 # In the future, the manifest may be more dynamic or even provided by some 3rd party orchestrator.
 
-ExecutorPath = '/path/to/the/file'
+ExecutorPath = '../sys-mgmt-executor/sys-mgmt-executor'
+
+# The MetricsMechanism setting can be one of the following options:
+# MetricsMechanism = 'executor'
+MetricsMechanism = 'direct-service'
 
 [Writable]
 ResendLimit = 2
@@ -72,3 +76,7 @@ File = './logs/edgex-sys-mgmt-agent.log'
   Protocol = 'http'
   Host = 'localhost'
   Port = 48070
+
+[Startup]
+Duration = 30
+Interval = 1

@@ -16,86 +16,60 @@
  * @author: Jim White, Dell Technologies
  * @version: 0.5.0
  *******************************************************************************/
+
+// main is the central entry point for the application and calls all the startup logic.
 package main
 
 import (
 	"flag"
-	"fmt"
-	"net/http"
-	"os"
-	"os/signal"
-	"strconv"
-	"time"
 
 	"github.com/objectbox/edgex-objectbox"
 	"github.com/objectbox/edgex-objectbox/internal"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/database"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/httpserver"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/message"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/secret"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/usage"
 	"github.com/objectbox/edgex-objectbox/internal/support/notifications"
+
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
-	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 func main() {
-	start := time.Now()
+	startupTimer := startup.NewStartUpTimer(internal.BootRetrySecondsDefault, internal.BootTimeoutSecondsDefault)
+
 	var useRegistry bool
-	var useProfile string
+	var configDir, profileDir string
 
 	flag.BoolVar(&useRegistry, "registry", false, "Indicates the service should use Registry.")
 	flag.BoolVar(&useRegistry, "r", false, "Indicates the service should use Registry.")
-	flag.StringVar(&useProfile, "profile", "", "Specify a profile other than default.")
-	flag.StringVar(&useProfile, "p", "", "Specify a profile other than default.")
+	flag.StringVar(&profileDir, "profile", "", "Specify a profile other than default.")
+	flag.StringVar(&profileDir, "p", "", "Specify a profile other than default.")
+	flag.StringVar(&configDir, "confdir", "", "Specify local configuration directory")
 	flag.Usage = usage.HelpCallback
 	flag.Parse()
 
-	params := startup.BootParams{UseRegistry: useRegistry, UseProfile: useProfile, BootTimeout: internal.BootTimeoutDefault}
-	startup.Bootstrap(params, notifications.Retry, logBeforeInit)
-
-	ok := notifications.Init(useRegistry)
-	if !ok {
-		logBeforeInit(fmt.Errorf("%s: Service bootstrap failed!", clients.SupportNotificationsServiceKey))
-		os.Exit(1)
-	}
-
-	notifications.LoggingClient.Info("Service dependencies resolved...")
-	notifications.LoggingClient.Info(fmt.Sprintf("Starting %s %s ", clients.SupportNotificationsServiceKey, edgex.Version))
-
-	http.TimeoutHandler(nil, time.Millisecond*time.Duration(notifications.Configuration.Service.Timeout), "Request timed out")
-	notifications.LoggingClient.Info(notifications.Configuration.Service.StartupMsg)
-
-	errs := make(chan error, 2)
-	listenForInterrupt(errs)
-	startHttpServer(errs, notifications.Configuration.Service.Port)
-
-	// Time it took to start service
-	notifications.LoggingClient.Info("Service started in: " + time.Since(start).String())
-	notifications.LoggingClient.Info("Listening on port: " + strconv.Itoa(notifications.Configuration.Service.Port))
-	c := <-errs
-	notifications.Destruct()
-	notifications.LoggingClient.Warn(fmt.Sprintf("terminating: %v", c))
-
-	os.Exit(0)
-}
-
-func logBeforeInit(err error) {
-	l := logger.NewClient(clients.SupportNotificationsServiceKey, false, "", models.InfoLog)
-	l.Error(err.Error())
-}
-
-func listenForInterrupt(errChan chan error) {
-	go func() {
-		c := make(chan os.Signal)
-		signal.Notify(c, os.Interrupt)
-		errChan <- fmt.Errorf("%s", <-c)
-	}()
-}
-
-func startHttpServer(errChan chan error, port int) {
-	go func() {
-		correlation.LoggingClient = notifications.LoggingClient
-		r := notifications.LoadRestRoutes()
-		errChan <- http.ListenAndServe(":"+strconv.Itoa(port), r)
-	}()
+	httpServer := httpserver.NewBootstrap(notifications.LoadRestRoutes())
+	bootstrap.Run(
+		configDir,
+		profileDir,
+		internal.ConfigFileName,
+		useRegistry,
+		clients.SupportNotificationsServiceKey,
+		notifications.Configuration,
+		startupTimer,
+		di.NewContainer(di.ServiceConstructorMap{}),
+		[]interfaces.BootstrapHandler{
+			secret.NewSecret().BootstrapHandler,
+			database.NewDatabase(&httpServer, notifications.Configuration).BootstrapHandler,
+			notifications.BootstrapHandler,
+			telemetry.BootstrapHandler,
+			httpServer.BootstrapHandler,
+			message.NewBootstrap(clients.SupportNotificationsServiceKey, edgex.Version).BootstrapHandler,
+		})
 }

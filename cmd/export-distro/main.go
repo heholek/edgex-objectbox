@@ -11,78 +11,51 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"net/http"
-	"os"
-	"os/signal"
-	"strconv"
-	"time"
-
-	"github.com/edgexfoundry/go-mod-core-contracts/clients"
-	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/models"
 
 	"github.com/objectbox/edgex-objectbox"
 	"github.com/objectbox/edgex-objectbox/internal"
 	"github.com/objectbox/edgex-objectbox/internal/export/distro"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/httpserver"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/message"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/usage"
+
+	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 )
 
 func main() {
+	startupTimer := startup.NewStartUpTimer(internal.BootRetrySecondsDefault, internal.BootTimeoutSecondsDefault)
+
 	var useRegistry bool
-	var useProfile string
-	start := time.Now()
+	var configDir, profileDir string
 
 	flag.BoolVar(&useRegistry, "registry", false, "Indicates the service should use Registry.")
 	flag.BoolVar(&useRegistry, "r", false, "Indicates the service should use Registry.")
-	flag.StringVar(&useProfile, "profile", "", "Specify a profile other than default.")
-	flag.StringVar(&useProfile, "p", "", "Specify a profile other than default.")
+	flag.StringVar(&profileDir, "profile", "", "Specify a profile other than default.")
+	flag.StringVar(&profileDir, "p", "", "Specify a profile other than default.")
+	flag.StringVar(&configDir, "confdir", "", "Specify local configuration directory")
+
 	flag.Usage = usage.HelpCallback
 	flag.Parse()
 
-	params := startup.BootParams{UseRegistry: useRegistry, UseProfile: useProfile, BootTimeout: internal.BootTimeoutDefault}
-	startup.Bootstrap(params, distro.Retry, logBeforeInit)
-
-	if ok := distro.Init(useRegistry); !ok {
-		logBeforeInit(fmt.Errorf("%s: Service bootstrap failed", clients.ExportDistroServiceKey))
-		os.Exit(1)
-	}
-
-	distro.LoggingClient.Info("Service dependencies resolved...")
-	distro.LoggingClient.Info(fmt.Sprintf("Starting %s %s ", clients.ExportDistroServiceKey, edgex.Version))
-
-	http.TimeoutHandler(nil, time.Millisecond*time.Duration(distro.Configuration.Service.Timeout), "Request timed out")
-	distro.LoggingClient.Info(distro.Configuration.Service.StartupMsg)
-
-	errs := make(chan error, 2)
-
-	listenForInterrupt(errs)
-
-	go distro.Loop()
-
-	// Time it took to start service
-	distro.LoggingClient.Info("Service started in: " + time.Since(start).String())
-	distro.LoggingClient.Info("Listening on port: " + strconv.Itoa(distro.Configuration.Service.Port))
-	c := <-errs
-	distro.Destruct()
-	distro.LoggingClient.Warn(fmt.Sprintf("terminating: %v", c))
-
-	close(errs)
-	os.Exit(0)
-}
-
-func logBeforeInit(err error) {
-	l := logger.NewClient(clients.ExportDistroServiceKey, false, "", models.InfoLog)
-	l.Error(err.Error())
-}
-
-func listenForInterrupt(errChan chan error) {
-	go func() {
-		correlation.LoggingClient = distro.LoggingClient
-		c := make(chan os.Signal)
-		signal.Notify(c, os.Interrupt)
-		errChan <- fmt.Errorf("%s", <-c)
-	}()
+	httpServer := httpserver.NewBootstrap(distro.LoadRestRoutes())
+	bootstrap.Run(
+		configDir,
+		profileDir,
+		internal.ConfigFileName,
+		useRegistry,
+		clients.ExportDistroServiceKey,
+		distro.Configuration,
+		startupTimer,
+		di.NewContainer(di.ServiceConstructorMap{}),
+		[]interfaces.BootstrapHandler{
+			distro.BootstrapHandler,
+			telemetry.BootstrapHandler,
+			httpServer.BootstrapHandler,
+			message.NewBootstrap(clients.ExportDistroServiceKey, edgex.Version).BootstrapHandler,
+		})
 }

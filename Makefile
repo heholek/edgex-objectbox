@@ -7,23 +7,24 @@
 
 .PHONY: build clean test docker run
 
-
 GO=CGO_ENABLED=0 GO111MODULE=on go
 GOCGO=CGO_ENABLED=1 GO111MODULE=on go
 
-DOCKERS=docker_build_base docker_volume docker_config_seed docker_export_client docker_export_distro docker_core_data docker_core_metadata docker_core_command docker_support_logging docker_support_notifications docker_sys_mgmt_agent docker_support_scheduler
+DOCKERS=docker_build_base docker_volume docker_config_seed docker_export_client docker_export_distro docker_core_data docker_core_metadata docker_core_command docker_support_logging docker_support_notifications docker_sys_mgmt_agent docker_support_scheduler docker_security_secrets_setup docker_security_proxy_setup docker_security_secretstore_setup
 .PHONY: $(DOCKERS)
 
-MICROSERVICES=cmd/config-seed/config-seed cmd/export-client/export-client cmd/export-distro/export-distro cmd/core-metadata/core-metadata cmd/core-data/core-data cmd/core-command/core-command cmd/support-logging/support-logging cmd/support-notifications/support-notifications cmd/sys-mgmt-executor/sys-mgmt-executor cmd/sys-mgmt-agent/sys-mgmt-agent cmd/support-scheduler/support-scheduler
+MICROSERVICES=cmd/config-seed/config-seed cmd/export-client/export-client cmd/export-distro/export-distro cmd/core-metadata/core-metadata cmd/core-data/core-data cmd/core-command/core-command cmd/support-logging/support-logging cmd/support-notifications/support-notifications cmd/sys-mgmt-executor/sys-mgmt-executor cmd/sys-mgmt-agent/sys-mgmt-agent cmd/support-scheduler/support-scheduler cmd/security-secrets-setup/security-secrets-setup cmd/security-proxy-setup/security-proxy-setup cmd/security-secretstore-setup/security-secretstore-setup
 
 .PHONY: $(MICROSERVICES)
 
 VERSION=$(shell cat ./VERSION)
-DOCKER_TAG=$(VERSION)
+DOCKER_TAG=$(VERSION)-dev
 
 GOFLAGS=-ldflags "-X github.com/objectbox/edgex-objectbox.Version=$(VERSION)"
 
 GIT_SHA=$(shell git rev-parse HEAD)
+
+ARCH=$(shell uname -m)
 
 build: $(MICROSERVICES)
 
@@ -60,6 +61,16 @@ cmd/sys-mgmt-agent/sys-mgmt-agent:
 cmd/support-scheduler/support-scheduler:
 	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/support-scheduler
 
+cmd/security-secrets-setup/security-secrets-setup:
+	$(GO) build $(GOFLAGS) -o ./cmd/security-secrets-setup/security-secrets-setup ./cmd/security-secrets-setup
+
+cmd/security-proxy-setup/security-proxy-setup:
+	$(GO) build $(GOFLAGS) -o ./cmd/security-proxy-setup/security-proxy-setup ./cmd/security-proxy-setup
+
+cmd/security-secretstore-setup/security-secretstore-setup:
+	$(GO) build $(GOFLAGS) -o ./cmd/security-secretstore-setup/security-secretstore-setup ./cmd/security-secretstore-setup
+
+
 clean:
 	rm -f $(MICROSERVICES)
 
@@ -68,6 +79,8 @@ test:
 	GO111MODULE=on go vet ./...
 	gofmt -l .
 	[ "`gofmt -l .`" = "" ]
+	./bin/test-go-mod-tidy.sh
+	./bin/test-attribution-txt.sh
 
 run:
 	cd bin && ./edgex-launch.sh
@@ -180,3 +193,35 @@ docker_sys_mgmt_agent:
 		-t objectboxio/edge-sys-mgmt-agent:$(GIT_SHA) \
 		-t objectboxio/edge-sys-mgmt-agent:$(DOCKER_TAG) \
 		.
+
+docker_security_secrets_setup:
+	# TODO: split this up and rename it when security-secrets-setup is a
+	# different container
+	docker build \
+		-f cmd/security-secrets-setup/Dockerfile \
+		--label "git_sha=$(GIT_SHA)" \
+		-t objectboxio/edge-edgex-secret-store:$(GIT_SHA) \
+		-t objectboxio/edge-edgex-secret-store:$(DOCKER_TAG) \
+		.
+
+docker_security_proxy_setup:
+	docker build \
+		-f cmd/security-proxy-setup/Dockerfile \
+		--label "git_sha=$(GIT_SHA)" \
+		-t objectboxio/edge-edgex-security-proxy-setup:$(GIT_SHA) \
+		-t objectboxio/edge-edgex-security-proxy-setup:$(DOCKER_TAG) \
+		.
+
+docker_security_secretstore_setup:
+		docker build \
+		-f cmd/security-secretstore-setup/Dockerfile \
+		--label "git_sha=$(GIT_SHA)" \
+		-t objectboxio/edge-edgex-security-secretstore-setup:$(GIT_SHA) \
+		-t objectboxio/edge-edgex-security-secretstore-setup:$(DOCKER_TAG) \
+		.
+
+raml_verify:
+	docker run --rm --privileged \
+		-v $(PWD):/raml-verification -w /raml-verification \
+		nexus3.edgexfoundry.org:10003/edgex-docs-builder:$(ARCH) \
+		/scripts/raml-verify.sh

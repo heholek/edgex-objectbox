@@ -11,6 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+
 package errors
 
 import (
@@ -22,23 +23,23 @@ type ErrLimitExceeded struct {
 }
 
 func (e ErrLimitExceeded) Error() string {
-	return fmt.Sprintf("limit %d exceeds configured max", e.limit)
+	return fmt.Sprintf("result count exceeds configured max %d", e.limit)
 }
 
 func NewErrLimitExceeded(limit int) error {
-	return &ErrLimitExceeded{limit: limit}
+	return ErrLimitExceeded{limit: limit}
 }
 
-type ErrDuplicateAddressableName struct {
-	name string
+type ErrDuplicateName struct {
+	msg string
 }
 
-func (e ErrDuplicateAddressableName) Error() string {
-	return fmt.Sprintf("duplicate name for addressable: %s", e.name)
+func (e ErrDuplicateName) Error() string {
+	return e.msg
 }
 
-func NewErrDuplicateAddressableName(name string) error {
-	return &ErrDuplicateAddressableName{name: name}
+func NewErrDuplicateName(message string) error {
+	return ErrDuplicateName{msg: message}
 }
 
 type ErrEmptyAddressableName struct {
@@ -49,7 +50,7 @@ func (e ErrEmptyAddressableName) Error() string {
 }
 
 func NewErrEmptyAddressableName() error {
-	return &ErrEmptyAddressableName{}
+	return ErrEmptyAddressableName{}
 }
 
 type ErrAddressableNotFound struct {
@@ -67,7 +68,7 @@ func (e ErrAddressableNotFound) Error() string {
 }
 
 func NewErrAddressableNotFound(id string, name string) error {
-	return &ErrAddressableNotFound{id: id}
+	return ErrAddressableNotFound{id: id}
 }
 
 type ErrAddressableInUse struct {
@@ -79,5 +80,88 @@ func (e ErrAddressableInUse) Error() string {
 }
 
 func NewErrAddressableInUse(name string) error {
-	return &ErrAddressableInUse{name: name}
+	return ErrAddressableInUse{name: name}
+}
+
+type ErrBadRequest struct {
+	value string
+}
+
+func (e ErrBadRequest) Error() string {
+	return fmt.Sprintf("received value %v is invalid", e.value)
+}
+
+func NewErrBadRequest(invalid string) error {
+	return ErrBadRequest{value: invalid}
+}
+
+type ErrItemNotFound struct {
+	key string
+}
+
+func (e ErrItemNotFound) Error() string {
+	return fmt.Sprintf("no item found for supplied key: %s", e.key)
+}
+
+func NewErrItemNotFound(key string) error {
+	return ErrItemNotFound{key: key}
+}
+
+type ErrDeviceProfileNotFound struct {
+	name string
+	id   string
+}
+
+func (e ErrDeviceProfileNotFound) Error() string {
+	return fmt.Sprintf("device profile not found -- id: '%s' name: '%s'", e.id, e.name)
+}
+
+func NewErrDeviceProfileNotFound(id string, name string) error {
+	return ErrDeviceProfileNotFound{
+		id:   id,
+		name: name,
+	}
+}
+
+type ErrDeviceProfileInvalidState struct {
+	id          string
+	name        string
+	description string
+}
+
+func (e ErrDeviceProfileInvalidState) Error() string {
+	return fmt.Sprintf("device profile invalid state -- id: '%s' name: '%s' description: '%s'", e.id, e.name, e.description)
+}
+
+func NewErrDeviceProfileInvalidState(id string, name string, description string) error {
+	return ErrDeviceProfileInvalidState{
+		id:          id,
+		name:        name,
+		description: description,
+	}
+}
+
+type ErrEmptyDeviceProfileName struct {
+}
+
+func (e ErrEmptyDeviceProfileName) Error() string {
+	return fmt.Sprint("Device profile name cannot be empty")
+}
+
+func NewErrEmptyDeviceProfileName() error {
+	return ErrEmptyDeviceProfileName{}
+}
+
+type ErrEmptyFile struct {
+	fileType string
+}
+
+func (e ErrEmptyFile) Error() string {
+	return fmt.Sprintf("%s file is empty", e.fileType)
+}
+
+func NewErrEmptyFile(fileType string) ErrEmptyFile {
+	return ErrEmptyFile{
+		fileType: fileType,
+	}
 }

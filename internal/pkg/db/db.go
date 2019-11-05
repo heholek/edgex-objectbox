@@ -71,6 +71,7 @@ type Configuration struct {
 	DatabaseName string
 	Username     string
 	Password     string
+	BatchSize    int
 }
 
 func MakeTimestamp() int64 {

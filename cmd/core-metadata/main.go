@@ -15,83 +15,55 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"net/http"
-	"os"
-	"os/signal"
-	"strconv"
-	"time"
 
 	"github.com/objectbox/edgex-objectbox"
 	"github.com/objectbox/edgex-objectbox/internal"
 	"github.com/objectbox/edgex-objectbox/internal/core/metadata"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/database"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/httpserver"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/message"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/secret"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/usage"
+
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
-	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/models"
-	"github.com/gorilla/context"
 )
 
 func main() {
-	start := time.Now()
+	startupTimer := startup.NewStartUpTimer(internal.BootRetrySecondsDefault, internal.BootTimeoutSecondsDefault)
+
 	var useRegistry bool
-	var useProfile string
+	var configDir, profileDir string
 
 	flag.BoolVar(&useRegistry, "registry", false, "Indicates the service should use registry service.")
 	flag.BoolVar(&useRegistry, "r", false, "Indicates the service should use registry service.")
-	flag.StringVar(&useProfile, "profile", "", "Specify a profile other than default.")
-	flag.StringVar(&useProfile, "p", "", "Specify a profile other than default.")
+	flag.StringVar(&profileDir, "profile", "", "Specify a profile other than default.")
+	flag.StringVar(&profileDir, "p", "", "Specify a profile other than default.")
+	flag.StringVar(&configDir, "confdir", "", "Specify local configuration directory")
+
 	flag.Usage = usage.HelpCallback
 	flag.Parse()
 
-	params := startup.BootParams{UseRegistry: useRegistry, UseProfile: useProfile, BootTimeout: internal.BootTimeoutDefault}
-	startup.Bootstrap(params, metadata.Retry, logBeforeInit)
-
-	ok := metadata.Init(useRegistry)
-	if !ok {
-		logBeforeInit(fmt.Errorf("%s: Service bootstrap failed!", clients.CoreMetaDataServiceKey))
-		os.Exit(1)
-	}
-
-	metadata.LoggingClient.Info("Service dependencies resolved...")
-	metadata.LoggingClient.Info(fmt.Sprintf("Starting %s %s ", clients.CoreMetaDataServiceKey, edgex.Version))
-
-	http.TimeoutHandler(nil, time.Millisecond*time.Duration(metadata.Configuration.Service.Timeout), "Request timed out")
-	metadata.LoggingClient.Info(metadata.Configuration.Service.StartupMsg)
-
-	errs := make(chan error, 2)
-	listenForInterrupt(errs)
-	startHttpServer(errs, metadata.Configuration.Service.Port)
-
-	// Time it took to start service
-	metadata.LoggingClient.Info("Service started in: " + time.Since(start).String())
-	metadata.LoggingClient.Info("Listening on port: " + strconv.Itoa(metadata.Configuration.Service.Port))
-	c := <-errs
-	metadata.Destruct()
-	metadata.LoggingClient.Warn(fmt.Sprintf("terminating: %v", c))
-
-	os.Exit(0)
-}
-
-func logBeforeInit(err error) {
-	l := logger.NewClient(clients.CoreMetaDataServiceKey, false, "", models.InfoLog)
-	l.Error(err.Error())
-}
-
-func listenForInterrupt(errChan chan error) {
-	go func() {
-		c := make(chan os.Signal)
-		signal.Notify(c, os.Interrupt)
-		errChan <- fmt.Errorf("%s", <-c)
-	}()
-}
-
-func startHttpServer(errChan chan error, port int) {
-	go func() {
-		correlation.LoggingClient = metadata.LoggingClient //Not thrilled about this, can't think of anything better ATM
-		r := metadata.LoadRestRoutes()
-		errChan <- http.ListenAndServe(":"+strconv.Itoa(port), context.ClearHandler(r))
-	}()
+	httpServer := httpserver.NewBootstrap(metadata.LoadRestRoutes())
+	bootstrap.Run(
+		configDir,
+		profileDir,
+		internal.ConfigFileName,
+		useRegistry,
+		clients.CoreMetaDataServiceKey,
+		metadata.Configuration,
+		startupTimer,
+		di.NewContainer(di.ServiceConstructorMap{}),
+		[]interfaces.BootstrapHandler{
+			secret.NewSecret().BootstrapHandler,
+			database.NewDatabase(&httpServer, metadata.Configuration).BootstrapHandler,
+			metadata.BootstrapHandler,
+			telemetry.BootstrapHandler,
+			httpServer.BootstrapHandler,
+			message.NewBootstrap(clients.CoreMetaDataServiceKey, edgex.Version).BootstrapHandler,
+		})
 }

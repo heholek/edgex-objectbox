@@ -9,10 +9,11 @@ description: |
   services, as well as Consul, Kong, Vault, a JRE for the two
   remaining Java services, and a set of basic device services. The packaging 
   for this snap can be found at: https://github.com/objectbox/edgex-objectbox
+
 icon: snap/local/assets/edgex-snap-icon.png
 
 # delhi is epoch 0, edinburgh epoch 1, etc.
-epoch: 1
+epoch: 2
 
 # TODO: add armhf here when that's supported
 architectures:
@@ -21,7 +22,7 @@ architectures:
 
 # for start-timeout, we need snapd 2.38
 # we need command-chain for the hooks too
-assumes: [snapd2.38, command-chain]
+assumes: [snapd2.42, command-chain]
 
 # Ideally snapcraft would generate this command-chain spec for the hooks
 # automatically, but that doesn't currently work, see
@@ -30,16 +31,26 @@ assumes: [snapd2.38, command-chain]
 # the apps by specifying the full adapter in at least one of the apps, and
 # manually craft the command-chain for the configure hook here to passthrough
 # to the snap.yaml
-# All of this is necessary so we can use jq and other tools from inside the 
+# All of this is necessary so we can use jq and other tools from inside the
 # snap in the configure and install hooks
+# See also https://bugs.launchpad.net/snapcraft/+bug/1848381 for specifying
+# environment for hooks
 passthrough:
+  system-usernames:
+    snap_daemon: shared
   hooks:
     configure:
       command-chain:
-      - snap/command-chain/snapcraft-runner
+        - snap/command-chain/snapcraft-runner
     install:
+      environment:
+        LC_ALL: C.UTF-8
+        LANG: C.UTF-8
+        PGHOST: $SNAP_COMMON/sockets
+        SNAPCRAFT_PRELOAD_REDIRECT_ONLY_SHM: 1
       command-chain:
-      - snap/command-chain/snapcraft-runner
+        - snap/command-chain/snapcraft-runner
+        - bin/snapcraft-preload
 
 # kong runs things through luarocks and luarocks expects it's configuration to
 # be located here and we can't override this at runtime, so map what's in
@@ -48,7 +59,8 @@ layout:
   /etc/luarocks:
     bind: $SNAP/etc/luarocks
 
-grade: stable
+# TODO: upgrade to stable before releasing to beta/candidate/stable
+grade: devel
 confinement: strict
 
 apps:
@@ -67,48 +79,42 @@ apps:
       -confdir $SNAP_DATA/config/config-seed/res
       --props $SNAP_DATA/config/config-seed/res/properties
     daemon: oneshot
-    passthrough:
-      start-timeout: 15m
+    start-timeout: 15m
     plugs: [network, network-bind]
-#  redis:
-#    adapter: full
-#    after: [core-config-seed]
-#    command: bin/redis-server $SNAP_DATA/redis/redis.conf
-#    daemon: simple
-#    plugs: [network, network-bind]
-#  mongod:
-#    adapter: full
-#    after: [core-config-seed]
-#    command: bin/mongod --dbpath $SNAP_DATA/mongo/db --logpath $SNAP_COMMON/mongodb.log --smallfiles
-#    daemon: simple
-#    plugs: [hardware-observe, network, network-bind, system-observe]
-#    stop-command: bin/mongod --shutdown --dbpath $SNAP_DATA/mongo/db
-  cassandra:
+  postgres:
     adapter: full
-    command: bin/cassandra-wrapper.sh
-    daemon: forking
-    passthrough:
-      start-timeout: 15m
+    command: usr/lib/postgresql/10/bin/postgres -D $SNAP_DATA/postgresql/10/main -c $CONFIG_ARG
+    daemon: simple
+    environment:
+      CONFIG_ARG: config_file=$SNAP_DATA/etc/postgresql/10/main/postgresql.conf
+      SNAPCRAFT_PRELOAD_REDIRECT_ONLY_SHM: 1
+    command-chain:
+      - bin/gosu-snap_daemon.sh
+      - bin/snapcraft-preload
     plugs:
       - network
       - network-bind
-      - mount-observe
   kong-daemon:
     adapter: full
     after:
-      - cassandra
+      - postgres
       - pkisetup
     command: bin/kong-daemon.sh
+    command-chain:
+      - bin/perl5lib-launch.sh
+      - bin/kong-launch.sh
     daemon: forking
     environment:
       KONG_CONF: $SNAP_DATA/config/security-api-gateway/kong.conf
+      KONG_LOGS_DIR: $SNAP_COMMON/logs
       KONG_PROXY_ACCESS_LOG: $SNAP_COMMON/logs/kong-proxy-access.log
       KONG_ADMIN_ACCESS_LOG: $SNAP_COMMON/logs/kong-admin-access.log
       KONG_PROXY_ERROR_LOG: $SNAP_COMMON/logs/kong-proxy-error.log
       KONG_ADMIN_ERROR_LOG: $SNAP_COMMON/logs/kong-admin-error.log
       KONG_ADMIN_LISTEN: "0.0.0.0:8001, 0.0.0.0:8444 ssl"
-    passthrough:
-      start-timeout: 15m
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
+    start-timeout: 15m
     plugs:
       - network
       - network-bind
@@ -120,8 +126,7 @@ apps:
     environment:
       PKI_SETUP_VAULT_FILE: $SNAP_DATA/config/security-secret-store/pkisetup-vault.json
       PKI_SETUP_KONG_FILE: $SNAP_DATA/config/security-secret-store/pkisetup-kong.json
-    passthrough:
-      start-timeout: 15m
+    start-timeout: 15m
   vault:
     adapter: none
     after:
@@ -142,8 +147,7 @@ apps:
     after: [vault]
     command: bin/vault-worker-wrapper.sh
     daemon: oneshot
-    passthrough:
-      start-timeout: 15m
+    start-timeout: 15m
     plugs:
       - network
       - network-bind
@@ -154,37 +158,26 @@ apps:
       - kong-daemon
     command: bin/edgexproxy-wrapper.sh
     daemon: oneshot
-    passthrough:
-      start-timeout: 15m
+    start-timeout: 15m
     plugs:
       - network
       - network-bind
-#  mongo-worker:
-#    adapter: full
-#    after: [mongod]
-#    command: bin/mongo-worker-wrapper.sh
-#    daemon: oneshot
-#    passthrough:
-#      start-timeout: 15m
-#    plugs: [network]
   core-data:
     adapter: full
     after:
       - core-config-seed
-#      - mongo-worker
       - edgexproxy
     command: bin/core-data -confdir $SNAP_DATA/config/core-data/res --registry
     daemon: simple
     plugs: [network, network-bind]
     # for now, specify a shorter stop-timeout until services learn how
-    # to handle SIGTERM properly with as per 
+    # to handle SIGTERM properly with as per
     # https://github.com/edgexfoundry/edgex-go/issues/1306
     stop-timeout: 10s
   core-metadata:
-    adapter: full
+    adapter: none
     after:
       - core-config-seed
-#      - mongo-worker
       - edgexproxy
     command: bin/core-metadata -confdir $SNAP_DATA/config/core-metadata/res --registry
     daemon: simple
@@ -194,7 +187,6 @@ apps:
     adapter: none
     after:
       - core-config-seed
-#      - mongo-worker
       - edgexproxy
     command: bin/core-command -confdir $SNAP_DATA/config/core-command/res --registry
     daemon: simple
@@ -204,27 +196,24 @@ apps:
     adapter: none
     after:
       - core-config-seed
-#      - mongo-worker
       - edgexproxy
     command: bin/support-logging -confdir $SNAP_DATA/config/support-logging/res --registry
     daemon: simple
     plugs: [network, network-bind]
     stop-timeout: 10s
   support-notifications:
-    adapter: full
+    adapter: none
     after:
       - core-config-seed
-#      - mongo-worker
       - edgexproxy
     command: bin/support-notifications -confdir $SNAP_DATA/config/support-notifications/res --registry
     daemon: simple
     plugs: [network, network-bind]
     stop-timeout: 10s
   support-scheduler:
-    adapter: full
+    adapter: none
     after:
       - core-config-seed
-#      - mongo-worker
       - edgexproxy
     command: bin/support-scheduler -confdir $SNAP_DATA/config/support-scheduler/res --registry
     daemon: simple
@@ -235,16 +224,16 @@ apps:
     after:
       - export-client
       - core-config-seed
-#      - mongo-worker
+      - edgex-mongo
       - edgexproxy
     command: bin/support-rulesengine-wrapper.sh
     daemon: simple
     plugs: [network, network-bind]
   export-client:
-    adapter: full
+    adapter: none
     after:
       - core-config-seed
-#      - mongo-worker
+      - edgex-mongo
       - edgexproxy
     command: bin/export-client -confdir $SNAP_DATA/config/export-client/res --registry
     daemon: simple
@@ -254,7 +243,7 @@ apps:
     adapter: full
     after:
       - core-config-seed
-#      - mongo-worker
+      - edgex-mongo
       - edgexproxy
     command: bin/export-distro -confdir $SNAP_DATA/config/export-distro/res --registry
     daemon: simple
@@ -264,7 +253,7 @@ apps:
     adapter: none
     after:
       - core-config-seed
-#      - mongo-worker
+      - edgex-mongo
       - edgexproxy
     command: bin/sys-mgmt-agent -confdir $SNAP_DATA/config/sys-mgmt-agent/res --registry
     daemon: simple
@@ -273,7 +262,7 @@ apps:
     adapter: none
     after:
       - core-config-seed
-#      - mongo-worker
+      - edgex-mongo
       - edgexproxy
       - core-data
       - core-metadata
@@ -287,7 +276,7 @@ apps:
     adapter: none
     after:
       - core-config-seed
-#      - mongo-worker
+      - edgex-mongo
       - edgexproxy
       - core-data
       - core-metadata
@@ -299,26 +288,10 @@ apps:
     plugs: [network, network-bind]
 
   # helper commands the snap exposes
-#  redis-cli:
-#    adapter: full
-#    command: bin/redis-cli
-#    plugs: [home, removable-media, network]
   push-config:
     adapter: full
     command: bin/push-config.sh
     plugs: [network, network-bind]
-#  mongo:
-#    adapter: full
-#    command: bin/mongo
-#    plugs: [home, removable-media, network]
-#  mongostat:
-#    adapter: full
-#    command: bin/mongostat
-#    plugs: [network]
-#  mongodump:
-#    adapter: full
-#    command: bin/mongodump
-#    plugs: [network]
   consul-cli:
     adapter: none
     command: bin/consul
@@ -333,9 +306,66 @@ apps:
     plugs: [home, removable-media]
   kong:
     adapter: full
-    command: bin/kong-wrapper.sh
-    plugs:
-      - network-bind
+    command: bin/kong
+    command-chain:
+      - bin/perl5lib-launch.sh
+      - bin/kong-launch.sh
+    environment:
+      KONG_LOGS_DIR: $SNAP_COMMON/logs
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
+    plugs: [home, removable-media, network, network-bind]
+  psql:
+    adapter: full
+    command: usr/bin/psql
+    environment:
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
+      PGHOST: $SNAP_COMMON/sockets
+      PGDATABASE: kong
+    command-chain:
+      - bin/perl5lib-launch.sh
+      # createuser should be run as the snap_daemon user, which is the user
+      # who is initially created as a role with postgres
+      - bin/gosu-snap_daemon.sh
+    plugs: [home, removable-media, network]
+  psql-any:
+    adapter: full
+    command: usr/bin/psql
+    environment:
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
+      PGHOST: $SNAP_COMMON/sockets
+      PSQLRC: $SNAP_USER_COMMON/.psqlrc
+    command-chain:
+      - bin/perl5lib-launch.sh
+    plugs: [home, removable-media, network]
+  createuser:
+    adapter: full
+    command: usr/bin/createuser
+    environment:
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
+      PGHOST: $SNAP_COMMON/sockets
+    command-chain:
+      - bin/perl5lib-launch.sh
+      # createuser should be run as the snap_daemon user, which is the user
+      # who is initially created as a role with postgres
+      - bin/gosu-snap_daemon.sh
+    plugs: [home, removable-media, network]
+  createdb:
+    adapter: full
+    command: usr/bin/createdb
+    environment:
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
+      PGHOST: $SNAP_COMMON/sockets
+    command-chain:
+      - bin/perl5lib-launch.sh
+      # createdb should be run as the snap_daemon user, which is the user
+      # who is initially created as a role with postgres
+      - bin/gosu-snap_daemon.sh
+    plugs: [home, removable-media, network]
 
 parts:
   objectbox-c:
@@ -372,6 +402,68 @@ parts:
     source: snap/local/build-helpers
     stage-packages:
       - curl
+
+  # snapcraft-preload is necessary to make postgres just use a different
+  # lockfile location in /dev/shm
+  # snapcraft-preload defines LD_PRELOAD to be a dynamic library compiled here
+  # which will redirect things like open() that are being called with absolute
+  # paths such as /dev/shm/some-dir to snap-specific, confinement supported
+  # paths like /dev/shm/$SNAP_INSTANCE_NAME.some-dir before being passed to the
+  # actual open() implementation
+  # this prevents re-compiling or patching certain applications like postgres
+  # to use snap security confinement friendly paths
+  # NOTE: if this ever breaks in really scary ways when compiling with lots of
+  # warnings, see the comment on the kong part, tldr probably some other C/C++
+  # part in the build broke snapcraft-preload by running before
+  # snapcraft-preload
+  snapcraft-preload:
+    source: https://github.com/sergiusens/snapcraft-preload.git
+    source-depth: 1
+    # unfortunately no tags or releases we can rely on, so just hard-code
+    # master at the time of writing for this
+    source-commit: d654bbe8a5add5a4bea14d96342b656990c5c818
+    plugin: cmake
+    build-packages:
+      - to arm64:
+          - g++-multilib-arm-linux-gnueabihf
+          - gcc-multilib-arm-linux-gnueabihf
+      - else:
+          - gcc-multilib
+          - g++-multilib
+    stage-packages:
+      - to amd64:
+          - lib32stdc++6
+  gosu:
+    source: https://github.com/tianon/gosu.git
+    source-tag: "1.11"
+    plugin: go
+    go-importpath: github.com/tianon/gosu
+    build-snaps: []
+    after: [go]
+    build-environment:
+      - CGO_ENABLED: "0"
+  postgres:
+    plugin: nil
+    source: snap/local/build-helpers
+    override-build: |
+      snapcraftctl build
+      # the perl package for postgres hard-codes the bin dir as /usr/lib/postgresql
+      # so we need to prepend that with /snap/$SNAP_NAME/current/ before it will
+      # work
+      if [ -z "$SNAPCRAFT_PROJECT_NAME" ]; then
+        echo "SNAPCRAFT_PROJECT_NAME is undefined, snapcraft upstream change?"
+        exit 1
+      fi
+      sed -i -e \
+        's@our $binroot = \"/usr/lib/postgresql/\"@our $binroot = \"/snap/'$SNAPCRAFT_PROJECT_NAME'/current/usr/lib/postgresql/\";@' \
+        $SNAPCRAFT_PART_INSTALL/usr/share/perl5/PgCommon.pm
+    stage-packages:
+      # note: version of postgres in core18 that this resolves to is version 10
+      - postgresql
+      - postgresql-contrib
+      - postgresql-client
+      - perl
+
   go-build-helper:
     plugin: dump
     # see comment for curl part about specifying a source part here
@@ -396,20 +488,20 @@ parts:
       # note - we specifically don't use arch
       case "$(dpkg --print-architecture)" in
         amd64)
-          FILE_NAME=go1.11.9.linux-amd64.tar.gz
-          FILE_HASH=e88aa3e39104e3ba6a95a4e05629348b4a1ec82791fb3c941a493ca349730608
+          FILE_NAME=go1.12.5.linux-amd64.tar.gz
+          FILE_HASH=aea86e3c73495f205929cfebba0d63f1382c8ac59be081b6351681415f4063cf
           ;;
         arm64)
-          FILE_NAME=go1.11.9.linux-arm64.tar.gz
-          FILE_HASH=892ab6c2510c4caa5905b3b1b6a1d4c6f04e384841fec50881ca2be7e8accf05
+          FILE_NAME=go1.12.5.linux-arm64.tar.gz
+          FILE_HASH=ff09f34935cd189a4912f3f308ec83e4683c309304144eae9cf60ebc552e7cd8
           ;;
         armhf)
-          FILE_NAME=go1.11.9.linux-armv6l.tar.gz
-          FILE_HASH=f0d7b039cae61efdc346669f3459460e3dc03b6c6de528ca107fc53970cba0d1
+          FILE_NAME=go1.12.5.linux-armv6l.tar.gz
+          FILE_HASH=311f5e76c7cec1ec752474a61d837e474b8e750b8e3eed267911ab57c0e5da9a
           ;;
         i386)
-          FILE_NAME=go1.11.9.linux-386.tar.gz
-          FILE_HASH=0fa4001fcf1ef0644e261bf6dde02fc9f10ae4df6d74fda61fc4d3c3cbef1d79
+          FILE_NAME=go1.12.5.linux-386.tar.gz
+          FILE_HASH=146605e13bf337ff3aacd941a816c5d97a8fef8b5817e07fcec4540632085980
           ;;
       esac
       # download the archive, failing on ssl cert problems
@@ -464,31 +556,6 @@ parts:
       - make
       - zip
 
-#  mongodb:
-#    plugin: dump
-#    source:
-#      - on amd64: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1604-3.4.10.tgz
-#      - else:
-#          - on arm64: https://fastdl.mongodb.org/linux/mongodb-linux-arm64-ubuntu1604-3.4.10.tgz
-#      - else fail
-#    organize:
-#      GNU-AGPL-3.0: usr/share/doc/mongodb/GNU-AGPL-3.0
-#      MPL-2: usr/share/doc/mongodb/MPL-2
-#      README: usr/share/doc/mongodb/README
-#      THIRD-PARTY-NOTICES: usr/share/doc/mongodb/THIRD-PARTY-NOTICES
-#    stage-packages:
-#      - libssl1.0.0
-#    stage:
-#      - -bin/bsondump
-#      - -bin/mongoexport
-#      - -bin/mongofiles
-#      - -bin/mongoimport
-#      - -bin/mongooplog
-#      - -bin/mongoperf
-#      - -bin/mongoreplay
-#      - -bin/mongorestore
-#      - -bin/mongos
-#      - -bin/mongotop
   remarshal:
     plugin: python
     source: https://github.com/dbohdan/remarshal.git
@@ -496,52 +563,20 @@ parts:
     source-depth: 1
     organize:
       LICENSE: usr/share/doc/remarshal/LICENSE
-#  redis:
-#    source: https://github.com/antirez/redis.git
-#    source-tag: "5.0.4"
-#    source-depth: 1
-#    plugin: make
-#    make-install-var: PREFIX
-#    override-build: |
-#      snapcraftctl build
-#      # process the config file to specify the working directory for redis
-#      # as $SNAP_DATA/redis
-#      cd $SNAPCRAFT_PART_SRC
-#      mkdir -p $SNAPCRAFT_PART_INSTALL/config/redis
-#      sed -e s@'dir ./'@'dir \$SNAP_DATA/redis'@ \
-#        redis.conf > $SNAPCRAFT_PART_INSTALL/config/redis/redis.conf
-#  mongo-config:
-#    source: https://github.com/edgexfoundry/docker-edgex-mongo.git
-#    source-branch: edinburgh
-#    source-depth: 1
-#    plugin: dump
-#    # NOTE - both the mongo-config & go install README.md to root-dir of the snap
-#    # which breaks when 'stage' runs.  The only workaround so far is
-#    # is to not stage these files.  This needs a better solution long-term.
-#    stage:
-#      - -README.md
-#      - -Dockerfile*
-#      - -VERSION
-#    override-build: |
-#      snapcraftctl build
-#      echo "Installing mongo-config files"
-#      echo "DIR=`pwd`"
-#      echo "SNAPCRAFT_PART_INSTALL=$SNAPCRAFT_PART_INSTALL"
-#      install -d "$SNAPCRAFT_PART_INSTALL/mongo"
-#      cat ./launch-edgex-mongo.sh | \
-#        sed -e s/\$SLEEP_TIME_BEFORE_CONFIG/10/ \
-#            -e s:mongod:mongod\ --dbpath\ \$SNAP_DATA/mongo/db\ --logpath\ \$SNAP_COMMON/mongodb.log: \
-#            -e '/wait/ d' \
-#            -e s:/edgex/mongo/config/:\$SNAP/mongo/: > \
-#         "$SNAPCRAFT_PART_INSTALL/mongo/launch-edgex-mongo.sh"
-#      mv "$SNAPCRAFT_PART_INSTALL/init_mongo.js" \
-#         "$SNAPCRAFT_PART_INSTALL/mongo/init_mongo.js"
-#      chmod 755 "$SNAPCRAFT_PART_INSTALL/mongo/launch-edgex-mongo.sh"
-#      install -DT "./LICENSE-2.0.TXT" \
-#         "$SNAPCRAFT_PART_INSTALL/usr/share/doc/mongo-config/LICENSE-2.0.TXT"
-#    prime:
-#      - -launch-edgex-mongo.sh
-#      - -LICENSE-2.0.TXT
+  redis:
+    source: https://github.com/antirez/redis.git
+    source-tag: "5.0.4"
+    source-depth: 1
+    plugin: make
+    make-install-var: PREFIX
+    override-build: |
+      snapcraftctl build
+      # process the config file to specify the working directory for redis
+      # as $SNAP_DATA/redis
+      cd $SNAPCRAFT_PART_SRC
+      mkdir -p $SNAPCRAFT_PART_INSTALL/config/redis
+      sed -e s@'dir ./'@'dir \$SNAP_DATA/redis'@ \
+        redis.conf > $SNAPCRAFT_PART_INSTALL/config/redis/redis.conf
 
   edgex-go:
     source: .
@@ -617,8 +652,8 @@ parts:
         sed -e s:./logs/edgex-export-distro.log:\$SNAP_COMMON/export-distro.log: \
             -e s:'http\://localhost\:48061/api/v1/logs':: > \
        "$SNAPCRAFT_PART_INSTALL/config/export-distro/res/configuration.toml"
-      
-      # for support-logging we also want the default persistence to be on a 
+
+      # for support-logging we also want the default persistence to be on a
       # file so that we can use redis (which isn't supported with support-logging)
       # in the snap by default
       cat "./cmd/support-logging/res/configuration.toml" | \
@@ -701,7 +736,7 @@ parts:
 
   support-rulesengine:
     source: https://github.com/edgexfoundry/support-rulesengine.git
-    source-branch: edinburgh
+    source-branch: "master"
     source-depth: 1
     plugin: maven
     maven-options: ["-Dmaven.test.skip=true"]
@@ -745,45 +780,6 @@ parts:
       - -usr/share/fonts
       - -usr/share/alsa
 
-  cassandra:
-    plugin: dump
-    source: http://archive.apache.org/dist/cassandra/3.11.4/apache-cassandra-3.11.4-bin.tar.gz
-    stage-packages:
-      # Copy some packages into the stage directory to steal their
-      # pre-built binaries.
-      - mawk
-      - grep
-      # For free(1)
-      - procps
-      - openjdk-8-jdk
-    organize:
-      # Rename directories into their expected locations. Analogous to
-      # Debian's .install files.
-      conf: etc/cassandra
-      bin/cassandra: usr/sbin/cassandra
-      lib: usr/share/cassandra/lib
-      # Rename mawk to awk instead of shipping a symlink.
-      usr/bin/mawk: usr/bin/awk
-    override-prime: |
-      snapcraftctl prime
-      # since we only use cassandra for kong, we severly limit the amount of 
-      # RAM that cassandra uses since it's a big of a RAM hog, by default
-      # attempting to use half of your RAM for itself...
-      echo "-Xms64M" >> $SNAPCRAFT_PART_INSTALL/etc/cassandra/jvm.options
-      echo "-Xmx512M" >> $SNAPCRAFT_PART_INSTALL/etc/cassandra/jvm.options
-      echo "-Xmn64M" >> $SNAPCRAFT_PART_INSTALL/etc/cassandra/jvm.options
-    prime:
-      # Files from the stage directory to include in the snap.
-      - bin/nodetool
-      - etc/cassandra
-      - usr/sbin/cassandra
-      - usr/share/cassandra/lib/*.jar
-      - usr/lib/jvm
-      # awk, grep, and free are needed by cassandra-env.sh
-      - usr/bin/awk
-      - bin/grep
-      - usr/bin/free
-
   # KONG + OPENRESTY PARTS
   openresty-kong-patches:
     plugin: dump
@@ -794,7 +790,9 @@ parts:
     stage: [openresty-kong-patches]
     prime: [-*]
   openresty:
-    after: [openresty-kong-patches]
+    # see comment on kong's after spec for why we order after snapcraft-preload
+    # here
+    after: [openresty-kong-patches, snapcraft-preload]
     plugin: autotools
     source: https://openresty.org/download/openresty-1.13.6.2.tar.gz
     install-via: prefix
@@ -834,10 +832,22 @@ parts:
       # TODO: make this use $SNAP as an env var directly rather than
       # hard-coding /snap/edgexfoundry/current as $SNAP
       sed -i \
-        -e s@$SNAPCRAFT_PART_INSTALL/nginx/sbin/nginx@/snap/edgex-objectbox/current/nginx/sbin/nginx@ \
+        -e s@$SNAPCRAFT_PART_INSTALL/nginx/sbin/nginx@/snap/edgexfoundry/current/nginx/sbin/nginx@ \
         resty
 
   kong:
+    # order this part after snapcraft-preload because there are include paths
+    # that snapcraft will generate for this parts to auto-include in the
+    # compile options for later parts if the part is C-based (i.e. some deps of
+    # kong), but these include paths will break compiling snapcraft-preload in
+    # very nasty ways
+    # note that it seems only kong breaks snapcraft-preload, but do openresty
+    # too just for good measure until we have a better resolution for this
+    # see also https://github.com/sergiusens/snapcraft-preload/issues/38
+    # ideally this would just be a "before: " on the snapcraft-preload part, but
+    # snapcraft doesn't support that, see
+    # https://bugs.launchpad.net/snapcraft/+bug/1848493
+    after: [snapcraft-preload]
     source: https://github.com/kong/kong.git
     plugin: nil
     source-tag: 1.0.3
@@ -950,19 +960,19 @@ parts:
 
   security-secret-store:
     source: https://github.com/edgexfoundry/security-secret-store.git
-    source-branch: edinburgh
+    source-branch: master
     source-depth: 1
     plugin: make
     override-build: |
       cd $SNAPCRAFT_PART_SRC
       make build
 
-      install -DT pkisetup/pkisetup "$SNAPCRAFT_PART_INSTALL/bin/pkisetup"
-      install -DT core/edgex-vault-worker "$SNAPCRAFT_PART_INSTALL/bin/vault-worker"
+      install -DT cmd/pkisetup/pkisetup "$SNAPCRAFT_PART_INSTALL/bin/pkisetup"
+      install -DT cmd/vaultworker/edgex-vault-worker "$SNAPCRAFT_PART_INSTALL/bin/vault-worker"
 
       # modify the configuration file for the vault-worker
       install -d "$SNAPCRAFT_PART_INSTALL/config/security-secret-store/res/"
-      cat "core/res/configuration.toml" | \
+      cat "cmd/vaultworker/res/configuration.toml" | \
         sed -e "s@tokenpath = \"res\\\\\\\\resp-init.json\"@tokenpath = \"res/resp-init.json\"@" \
             -e "s@\"/vault/config/pki/@\"\$SNAP_DATA/vault/pki/@g" \
             -e "s@EdgeXFoundryCA/edgex-vault.pem@EdgeXFoundryCA/localhost.pem@" \
@@ -971,12 +981,12 @@ parts:
         > "$SNAPCRAFT_PART_INSTALL/config/security-secret-store/res/configuration.toml"
 
       # install the hcl files too for vault accesses
-      install -DT "core/res/vault-policy-admin.hcl" "$SNAPCRAFT_PART_INSTALL/config/security-secret-store/res/vault-policy-admin.hcl"
-      install -DT "core/res/vault-policy-kong.hcl" "$SNAPCRAFT_PART_INSTALL/config/security-secret-store/res/vault-policy-kong.hcl"
+      install -DT "cmd/vaultworker/res/vault-policy-admin.hcl" "$SNAPCRAFT_PART_INSTALL/config/security-secret-store/res/vault-policy-admin.hcl"
+      install -DT "cmd/vaultworker/res/vault-policy-kong.hcl" "$SNAPCRAFT_PART_INSTALL/config/security-secret-store/res/vault-policy-kong.hcl"
 
       # also install the pki config files
-      install -DT pkisetup/pkisetup-kong.json "$SNAPCRAFT_PART_INSTALL/config/security-secret-store/pkisetup-kong.json"
-      install -DT pkisetup/pkisetup-vault.json "$SNAPCRAFT_PART_INSTALL/config/security-secret-store/pkisetup-vault.json"
+      install -DT configs/pkisetup-kong.json "$SNAPCRAFT_PART_INSTALL/config/security-secret-store/pkisetup-kong.json"
+      install -DT configs/pkisetup-vault.json "$SNAPCRAFT_PART_INSTALL/config/security-secret-store/pkisetup-vault.json"
     prime:
       - bin/*
       - config/*
@@ -984,7 +994,7 @@ parts:
   security-api-gateway:
     after: [go]
     source: https://github.com/edgexfoundry/security-api-gateway.git
-    source-branch: edinburgh
+    source-branch: master
     source-depth: 1
     plugin: make
     stage-packages:
@@ -998,13 +1008,13 @@ parts:
       cd $SNAPCRAFT_PART_SRC
       make build
 
-      install -DT core/edgexproxy "$SNAPCRAFT_PART_INSTALL/bin/edgexproxy"
+      install -DT cmd/edgexproxy/edgexproxy "$SNAPCRAFT_PART_INSTALL/bin/edgexproxy"
 
       # also modify the configuration file to use "/" instead of "\" in the file
       # and set the snis by default to be localhost so that https works when using the certificate authority 
       # file generated and a url like "https://localhost:8443/{svc}" etc. for kong
       mkdir -p $SNAPCRAFT_PART_INSTALL/config/security-api-gateway/res
-      cp core/res/configuration.toml $SNAPCRAFT_PART_INSTALL/config/security-api-gateway/res/configuration.toml
+      cp cmd/edgexproxy/res/configuration.toml $SNAPCRAFT_PART_INSTALL/config/security-api-gateway/res/configuration.toml
       sed -i \
         -e "s@tokenpath = \"res\\\\\\\\resp-init.json\"@tokenpath = \"\$SNAP_DATA/config/security-api-gateway/res/kong-token.json\"@" \
         -e "s:snis = \"edgex.com\":snis = \"localhost\":" \
@@ -1022,7 +1032,7 @@ parts:
   device-virtual-go:
     source: https://github.com/edgexfoundry/device-virtual-go.git
     source-depth: 1
-    source-branch: edinburgh
+    source-branch: master
     plugin: make
     after: [go]
     override-build: |
@@ -1054,7 +1064,7 @@ parts:
   device-random:
     source: https://github.com/edgexfoundry/device-random.git
     source-depth: 1
-    source-branch: edinburgh
+    source-branch: master
     plugin: make
     after: [go]
     override-build: |

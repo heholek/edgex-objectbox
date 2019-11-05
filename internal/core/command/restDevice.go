@@ -18,6 +18,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/gorilla/mux"
 )
 
@@ -42,12 +43,12 @@ func issueDeviceCommand(w http.ResponseWriter, r *http.Request, isPutCommand boo
 	}
 
 	ctx := r.Context()
-	body, status := commandByDeviceID(did, cid, string(b), isPutCommand, ctx)
+	body, status := commandByDeviceID(did, cid, string(b), r.URL.RawQuery, isPutCommand, ctx)
 	if status != http.StatusOK {
 		http.Error(w, body, status)
 	} else {
 		if len(body) > 0 {
-			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 		}
 		w.Write([]byte(body))
 	}
@@ -75,13 +76,13 @@ func issueDeviceCommandByNames(w http.ResponseWriter, r *http.Request, isPutComm
 		LoggingClient.Error(err.Error())
 		return
 	}
-	body, status := commandByNames(dn, cn, string(b), isPutCommand, ctx)
+	body, status := commandByNames(dn, cn, string(b), r.URL.RawQuery, isPutCommand, ctx)
 
 	if status != http.StatusOK {
 		http.Error(w, body, status)
 	} else {
 		if len(body) > 0 {
-			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 		}
 		w.Write([]byte(body))
 	}
@@ -100,7 +101,7 @@ func restGetCommandsByDeviceID(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(status)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	json.NewEncoder(w).Encode(&device)
 }
 
@@ -117,7 +118,7 @@ func restGetCommandsByDeviceName(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(status)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	json.NewEncoder(w).Encode(&devices)
 }
 
@@ -131,6 +132,6 @@ func restGetAllCommands(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(status)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	json.NewEncoder(w).Encode(devices)
 }

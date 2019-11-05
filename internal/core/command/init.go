@@ -15,228 +15,50 @@
 package command
 
 import (
-	"errors"
-	"fmt"
-	"os"
-	"os/signal"
+	"context"
 	"sync"
-	"syscall"
-	"time"
+
+	"github.com/objectbox/edgex-objectbox/internal/core/command/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/container"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/endpoint"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/errorconcept"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/metadata"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
-	registryTypes "github.com/edgexfoundry/go-mod-registry/pkg/types"
-	"github.com/edgexfoundry/go-mod-registry/registry"
-
-	"github.com/objectbox/edgex-objectbox/internal"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 )
 
-var Configuration *ConfigurationStruct
+// Global variables
+var Configuration = &ConfigurationStruct{}
 var LoggingClient logger.LoggingClient
+
 var mdc metadata.DeviceClient
-var cc metadata.CommandClient
-var registryClient registry.Client
-var registryErrors chan error        //A channel for "config wait errors" sourced from Registry
-var registryUpdates chan interface{} //A channel for "config updates" sourced from Registry
+var dbClient interfaces.DBClient
 
-func Retry(useRegistry bool, useProfile string, timeout int, wait *sync.WaitGroup, ch chan error) {
-	now := time.Now()
-	until := now.Add(time.Millisecond * time.Duration(timeout))
-	for time.Now().Before(until) {
-		var err error
-		//When looping, only handle configuration if it hasn't already been set.
-		if Configuration == nil {
-			Configuration, err = initializeConfiguration(useRegistry, useProfile)
-			if err != nil {
-				ch <- err
-				if !useRegistry {
-					//Error occurred when attempting to read from local filesystem. Fail fast.
-					close(ch)
-					wait.Done()
-					return
-				}
-			} else {
-				//Check against boot timeout default
-				if Configuration.Service.BootTimeout != timeout {
-					until = now.Add(time.Millisecond * time.Duration(Configuration.Service.BootTimeout))
-				}
-				// Setup Logging
-				logTarget := setLoggingTarget()
-				LoggingClient = logger.NewClient(clients.CoreCommandServiceKey, Configuration.Logging.EnableRemote, logTarget, Configuration.Writable.LogLevel)
+// Global ErrorConcept variables
+var httpErrorHandler errorconcept.ErrorHandler
 
-				//Initialize service clients
-				initializeClients(useRegistry)
-			}
-		}
+// BootstrapHandler fulfills the BootstrapHandler contract and performs initialization needed by the command service.
+func BootstrapHandler(wg *sync.WaitGroup, ctx context.Context, startupTimer startup.Timer, dic *di.Container) bool {
+	// update global variables.
+	LoggingClient = container.LoggingClientFrom(dic.Get)
+	httpErrorHandler = errorconcept.NewErrorHandler(LoggingClient)
+	dbClient = container.DBClientFrom(dic.Get)
 
-		if Configuration != nil {
-			break
-		}
-		time.Sleep(time.Second * time.Duration(1))
-	}
-	close(ch)
-	wait.Done()
-
-	return
-}
-
-func Init(useRegistry bool) bool {
-	if Configuration == nil {
-		return false
-	}
-
-	if useRegistry {
-		registryErrors = make(chan error)
-		registryUpdates = make(chan interface{})
-		go listenForConfigChanges()
-	}
-
-	go telemetry.StartCpuUsageAverage()
+	// initialize clients required by service.
+	registryClient := container.RegistryFrom(dic.Get)
+	mdc = metadata.NewDeviceClient(
+		types.EndpointParams{
+			ServiceKey:  clients.CoreMetaDataServiceKey,
+			Path:        clients.ApiDeviceRoute,
+			UseRegistry: registryClient != nil,
+			Url:         Configuration.Clients["Metadata"].Url() + clients.ApiDeviceRoute,
+			Interval:    Configuration.Service.ClientMonitor,
+		},
+		endpoint.Endpoint{RegistryClient: &registryClient})
 
 	return true
-}
-
-func Destruct() {
-	if registryErrors != nil {
-		close(registryErrors)
-	}
-
-	if registryUpdates != nil {
-		close(registryUpdates)
-	}
-}
-
-func initializeConfiguration(useRegistry bool, useProfile string) (*ConfigurationStruct, error) {
-	//We currently have to load configuration from filesystem first in order to obtain RegistryHost/Port
-	configuration := &ConfigurationStruct{}
-	err := config.LoadFromFile(useProfile, configuration)
-	if err != nil {
-		return nil, err
-	}
-
-	if useRegistry {
-		err = connectToRegistry(configuration)
-		if err != nil {
-			return nil, err
-		}
-
-		rawConfig, err := registryClient.GetConfiguration(configuration)
-		if err != nil {
-			return nil, fmt.Errorf("could not get configuration from Registry: %v", err.Error())
-		}
-
-		actual, ok := rawConfig.(*ConfigurationStruct)
-		if !ok {
-			return nil, fmt.Errorf("configuration from Registry failed type check")
-		}
-
-		configuration = actual
-
-		// Check that information was successfully read from Registry
-		client, ok := configuration.Clients["Logging"]
-		if !ok {
-			return nil, errors.New("error reading configuration from Registry")
-		}
-		if client.Port == 0 {
-			return nil, errors.New("error reading configuration from Registry")
-		}
-	}
-
-	return configuration, nil
-}
-
-func connectToRegistry(conf *ConfigurationStruct) error {
-	var err error
-	registryConfig := registryTypes.Config{
-		Host:            conf.Registry.Host,
-		Port:            conf.Registry.Port,
-		Type:            conf.Registry.Type,
-		ServiceKey:      clients.CoreCommandServiceKey,
-		ServiceHost:     conf.Service.Host,
-		ServicePort:     conf.Service.Port,
-		ServiceProtocol: conf.Service.Protocol,
-		CheckInterval:   conf.Service.CheckInterval,
-		CheckRoute:      clients.ApiPingRoute,
-		Stem:            internal.ConfigRegistryStem,
-	}
-
-	registryClient, err = registry.NewRegistryClient(registryConfig)
-	if err != nil {
-		return fmt.Errorf("connection to Registry could not be made: %v", err.Error())
-	}
-
-	// Check if registry service is running
-	if !registryClient.IsAlive() {
-		return fmt.Errorf("registry is not available")
-	}
-
-	// Register the service with Registry
-	err = registryClient.Register()
-	if err != nil {
-		return fmt.Errorf("could not register service with Registry: %v", err.Error())
-	}
-
-	return nil
-}
-
-func listenForConfigChanges() {
-	if registryClient == nil {
-		LoggingClient.Error("listenForConfigChanges() registry client not set")
-		return
-	}
-
-	registryClient.WatchForChanges(registryUpdates, registryErrors, &WritableInfo{}, internal.WritableKey)
-
-	signals := make(chan os.Signal)
-	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-
-	for {
-		select {
-		case <-signals:
-			// Quietly and gracefully stop when SIGINT/SIGTERM received
-			return
-		case ex := <-registryErrors:
-			LoggingClient.Error(ex.Error())
-		case raw, ok := <-registryUpdates:
-			if ok {
-				actual, ok := raw.(*WritableInfo)
-				if !ok {
-					LoggingClient.Error("listenForConfigChanges() type check failed")
-				}
-				Configuration.Writable = *actual
-				LoggingClient.Info("Writeable configuration has been updated from the Registry")
-				LoggingClient.SetLogLevel(Configuration.Writable.LogLevel)
-			} else {
-				return
-			}
-		}
-	}
-}
-
-func initializeClients(useRegistry bool) {
-	// Create metadata clients
-	params := types.EndpointParams{
-		ServiceKey:  clients.CoreMetaDataServiceKey,
-		Path:        clients.ApiDeviceRoute,
-		UseRegistry: useRegistry,
-		Url:         Configuration.Clients["Metadata"].Url() + clients.ApiDeviceRoute,
-		Interval:    Configuration.Service.ClientMonitor,
-	}
-
-	mdc = metadata.NewDeviceClient(params, startup.Endpoint{RegistryClient: &registryClient})
-	params.Path = clients.ApiCommandRoute
-	params.Url = Configuration.Clients["Metadata"].Url() + clients.ApiCommandRoute
-	cc = metadata.NewCommandClient(params, startup.Endpoint{RegistryClient: &registryClient})
-}
-
-func setLoggingTarget() string {
-	if Configuration.Logging.EnableRemote {
-		return Configuration.Clients["Logging"].Url() + clients.ApiLoggingRoute
-	}
-	return Configuration.Logging.File
 }

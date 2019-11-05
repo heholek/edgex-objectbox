@@ -64,13 +64,15 @@ type DeviceResource struct {
 }
 
 type ResourceOperation struct {
-	Index     string            `bson:"index"`
-	Operation string            `bson:"operation"`
-	Object    string            `bson:"object"`
-	Parameter string            `bson:"parameter"`
-	Resource  string            `bson:"resource"`
-	Secondary []string          `bson:"secondary"`
-	Mappings  map[string]string `bson:"mappings"`
+	Index          string            `bson:"index"`
+	Operation      string            `bson:"operation"`
+	Object         string            `bson:"object"`
+	DeviceResource string            `bson:"deviceresource"`
+	Parameter      string            `bson:"parameter"`
+	Resource       string            `bson:"resource"`
+	DeviceCommand  string            `bson:"devicecommand"`
+	Secondary      []string          `bson:"secondary"`
+	Mappings       map[string]string `bson:"mappings"`
 }
 
 type ProfileResource struct {
@@ -92,10 +94,10 @@ type DeviceProfile struct {
 	Labels          []string          `bson:"labels"`
 	DeviceResources []DeviceResource  `bson:"deviceResources"`
 	DeviceCommands  []ProfileResource `bson:"resources"`
-	CoreCommands    []mgo.DBRef       `bson:"commands"`
+	CoreCommands    []CommandProfile  `bson:"commands"`
 }
 
-func (dp *DeviceProfile) ToContract(transform commandTransform) (c contract.DeviceProfile, err error) {
+func (dp *DeviceProfile) ToContract() (c contract.DeviceProfile, err error) {
 	id := dp.Uuid
 	if id == "" {
 		id = dp.Id.Hex()
@@ -148,43 +150,42 @@ func (dp *DeviceProfile) ToContract(transform commandTransform) (c contract.Devi
 		cpr.Name = r.Name
 		for _, ro := range r.Get {
 			cpr.Get = append(cpr.Get, contract.ResourceOperation{
-				Index:     ro.Index,
-				Operation: ro.Operation,
-				Object:    ro.Object,
-				Parameter: ro.Parameter,
-				Resource:  ro.Resource,
-				Secondary: ro.Secondary,
-				Mappings:  ro.Mappings,
+				Index:          ro.Index,
+				Operation:      ro.Operation,
+				Object:         ro.Object,
+				DeviceResource: ro.DeviceResource,
+				Parameter:      ro.Parameter,
+				Resource:       ro.Resource,
+				DeviceCommand:  ro.DeviceCommand,
+				Secondary:      ro.Secondary,
+				Mappings:       ro.Mappings,
 			})
 		}
 
 		for _, ro := range r.Set {
 			cpr.Set = append(cpr.Set, contract.ResourceOperation{
-				Index:     ro.Index,
-				Operation: ro.Operation,
-				Object:    ro.Object,
-				Parameter: ro.Parameter,
-				Resource:  ro.Resource,
-				Secondary: ro.Secondary,
-				Mappings:  ro.Mappings,
+				Index:          ro.Index,
+				Operation:      ro.Operation,
+				Object:         ro.Object,
+				DeviceResource: ro.DeviceResource,
+				Parameter:      ro.Parameter,
+				Resource:       ro.Resource,
+				DeviceCommand:  ro.DeviceCommand,
+				Secondary:      ro.Secondary,
+				Mappings:       ro.Mappings,
 			})
 		}
 
 		c.DeviceCommands = append(c.DeviceCommands, cpr)
 	}
 
-	for _, dbRef := range dp.CoreCommands {
-		command, err := transform.DBRefToCommand(dbRef)
-		if err != nil {
-			return contract.DeviceProfile{}, err
-		}
-		c.CoreCommands = append(c.CoreCommands, command.ToContract())
+	for _, from := range dp.CoreCommands {
+		c.CoreCommands = append(c.CoreCommands, from.ToContract())
 	}
-
 	return
 }
 
-func (dp *DeviceProfile) FromContract(from contract.DeviceProfile, transform commandTransform) (contractId string, err error) {
+func (dp *DeviceProfile) FromContract(from contract.DeviceProfile) (contractId string, err error) {
 	dp.Id, dp.Uuid, err = fromContractId(from.Id)
 	if err != nil {
 		return
@@ -237,25 +238,29 @@ func (dp *DeviceProfile) FromContract(from contract.DeviceProfile, transform com
 		pr.Name = r.Name
 		for _, ro := range r.Get {
 			pr.Get = append(pr.Get, ResourceOperation{
-				Index:     ro.Index,
-				Operation: ro.Operation,
-				Object:    ro.Object,
-				Parameter: ro.Parameter,
-				Resource:  ro.Resource,
-				Secondary: ro.Secondary,
-				Mappings:  ro.Mappings,
+				Index:          ro.Index,
+				Operation:      ro.Operation,
+				Object:         ro.Object,
+				DeviceResource: ro.DeviceResource,
+				Parameter:      ro.Parameter,
+				Resource:       ro.Resource,
+				DeviceCommand:  ro.DeviceCommand,
+				Secondary:      ro.Secondary,
+				Mappings:       ro.Mappings,
 			})
 		}
 
 		for _, ro := range r.Set {
 			pr.Set = append(pr.Set, ResourceOperation{
-				Index:     ro.Index,
-				Operation: ro.Operation,
-				Object:    ro.Object,
-				Parameter: ro.Parameter,
-				Resource:  ro.Resource,
-				Secondary: ro.Secondary,
-				Mappings:  ro.Mappings,
+				Index:          ro.Index,
+				Operation:      ro.Operation,
+				Object:         ro.Object,
+				DeviceResource: ro.DeviceResource,
+				Parameter:      ro.Parameter,
+				Resource:       ro.Resource,
+				DeviceCommand:  ro.DeviceCommand,
+				Secondary:      ro.Secondary,
+				Mappings:       ro.Mappings,
 			})
 		}
 
@@ -263,20 +268,12 @@ func (dp *DeviceProfile) FromContract(from contract.DeviceProfile, transform com
 	}
 
 	for _, command := range from.CoreCommands {
-		var commandModel Command
+		var commandModel CommandProfile
 		if _, err = commandModel.FromContract(command); err != nil {
 			return
 		}
-
-		var dbRef mgo.DBRef
-
-		dbRef, err = transform.CommandToDBRef(commandModel)
-		if err != nil {
-			return
-		}
-		dp.CoreCommands = append(dp.CoreCommands, dbRef)
+		dp.CoreCommands = append(dp.CoreCommands, commandModel)
 	}
-
 	contractId = toContractId(dp.Id, dp.Uuid)
 	return
 }

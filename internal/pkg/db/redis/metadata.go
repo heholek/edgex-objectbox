@@ -15,8 +15,10 @@ package redis
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
+	types "github.com/objectbox/edgex-objectbox/internal/core/metadata/errors"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gomodule/redigo/redis"
@@ -54,11 +56,11 @@ func (c *Client) GetDeviceReportByName(n string) (contract.DeviceReport, error) 
 	return d, err
 }
 
-func (c *Client) GetDeviceReportByDeviceName(n string) ([]contract.DeviceReport, error) {
+func (c *Client) getDeviceReports(n string) ([]contract.DeviceReport, error) {
 	conn := c.Pool.Get()
 	defer conn.Close()
 
-	objects, err := getObjectsByValue(conn, db.DeviceReport+":device:"+n)
+	objects, err := getObjectsByValue(conn, n)
 	if err != nil {
 		return []contract.DeviceReport{}, err
 	}
@@ -72,6 +74,10 @@ func (c *Client) GetDeviceReportByDeviceName(n string) ([]contract.DeviceReport,
 	}
 
 	return d, nil
+}
+
+func (c *Client) GetDeviceReportByDeviceName(n string) ([]contract.DeviceReport, error) {
+	return c.getDeviceReports(db.DeviceReport + ":device:" + n)
 }
 
 func (c *Client) GetDeviceReportById(id string) (contract.DeviceReport, error) {
@@ -84,43 +90,11 @@ func (c *Client) GetDeviceReportById(id string) (contract.DeviceReport, error) {
 }
 
 func (c *Client) GetDeviceReportsByScheduleEventName(n string) ([]contract.DeviceReport, error) {
-	conn := c.Pool.Get()
-	defer conn.Close()
-
-	objects, err := getObjectsByValue(conn, db.DeviceReport+":scheduleevent:"+n)
-	if err != nil {
-		return []contract.DeviceReport{}, err
-	}
-
-	d := make([]contract.DeviceReport, len(objects))
-	for i, object := range objects {
-		err = unmarshalObject(object, &d[i])
-		if err != nil {
-			return []contract.DeviceReport{}, err
-		}
-	}
-
-	return d, nil
+	return c.getDeviceReports(db.DeviceReport + ":scheduleevent:" + n)
 }
 
 func (c *Client) GetDeviceReportsByAction(n string) ([]contract.DeviceReport, error) {
-	conn := c.Pool.Get()
-	defer conn.Close()
-
-	objects, err := getObjectsByValue(conn, db.DeviceReport+":action:"+n)
-	if err != nil {
-		return []contract.DeviceReport{}, err
-	}
-
-	d := make([]contract.DeviceReport, len(objects))
-	for i, object := range objects {
-		err = unmarshalObject(object, &d[i])
-		if err != nil {
-			return []contract.DeviceReport{}, err
-		}
-	}
-
-	return d, nil
+	return c.getDeviceReports(db.DeviceReport + ":action:" + n)
 }
 
 func (c *Client) AddDeviceReport(d contract.DeviceReport) (string, error) {
@@ -207,11 +181,11 @@ func deleteDeviceReport(conn redis.Conn, id string) error {
 }
 
 // /* ----------------------------- Device ---------------------------------- */
-func (c *Client) AddDevice(d contract.Device) (string, error) {
+func (c *Client) AddDevice(d contract.Device, commands []contract.Command) (string, error) {
 	conn := c.Pool.Get()
 	defer conn.Close()
 
-	return addDevice(conn, d)
+	return addDevice(conn, d, commands)
 }
 
 func (c *Client) UpdateDevice(d contract.Device) error {
@@ -223,7 +197,7 @@ func (c *Client) UpdateDevice(d contract.Device) error {
 		return err
 	}
 
-	_, err = addDevice(conn, d)
+	_, err = addDevice(conn, d, d.Profile.CoreCommands)
 	return err
 }
 
@@ -304,7 +278,7 @@ func (c *Client) getDevicesByValue(v string) ([]contract.Device, error) {
 	return d, nil
 }
 
-func addDevice(conn redis.Conn, d contract.Device) (string, error) {
+func addDevice(conn redis.Conn, d contract.Device, commands []contract.Command) (string, error) {
 	exists, err := redis.Bool(conn.Do("HEXISTS", db.Device+":name", d.Name))
 	if err != nil {
 		return "", err
@@ -338,6 +312,14 @@ func addDevice(conn redis.Conn, d contract.Device) (string, error) {
 	for _, label := range d.Labels {
 		_ = conn.Send("SADD", db.Device+":label:"+label, id)
 	}
+	//add commands
+	for _, c := range commands {
+		cid, err := addCommand(conn, false, c)
+		if err != nil {
+			return "", err
+		}
+		_ = conn.Send("SADD", db.Command+":device:"+id, cid)
+	}
 	_, err = conn.Do("EXEC")
 	return id, err
 }
@@ -353,6 +335,11 @@ func deleteDevice(conn redis.Conn, id string) error {
 	d := contract.Device{}
 	_ = unmarshalDevice(object, &d)
 
+	cmds, err := getCommandsByDeviceId(conn, id)
+	if err != nil {
+		return err
+	}
+
 	_ = conn.Send("MULTI")
 	_ = conn.Send("DEL", id)
 	_ = conn.Send("ZREM", db.Device, id)
@@ -362,6 +349,12 @@ func deleteDevice(conn redis.Conn, id string) error {
 	for _, label := range d.Labels {
 		_ = conn.Send("SREM", db.Device+":label:"+label, id)
 	}
+
+	for _, c := range cmds {
+		deleteCommand(conn, c)
+		_ = conn.Send("SREM", db.Command+":device:"+id, c.Id)
+	}
+
 	_, err = conn.Do("EXEC")
 	return err
 }
@@ -419,10 +412,6 @@ func (c *Client) GetDeviceProfileByName(n string) (contract.DeviceProfile, error
 	var dp contract.DeviceProfile
 	err := getObjectByHash(conn, db.DeviceProfile+":name", n, unmarshalDeviceProfile, &dp)
 	return dp, err
-}
-
-func (c *Client) GetDeviceProfilesByCommandId(id string) ([]contract.DeviceProfile, error) {
-	return c.getDeviceProfilesByValues(db.DeviceProfile + ":command:" + id)
 }
 
 // Get device profiles with the passed query
@@ -507,18 +496,7 @@ func addDeviceProfile(conn redis.Conn, dp contract.DeviceProfile) (string, error
 	for _, label := range dp.Labels {
 		_ = conn.Send("SADD", db.DeviceProfile+":label:"+label, id)
 	}
-	if len(dp.CoreCommands) > 0 {
-		cids := redis.Args{}.Add(db.DeviceProfile + ":commands:" + id)
-		for _, c := range dp.CoreCommands {
-			cid, err := addCommand(conn, false, c)
-			if err != nil {
-				return "", err
-			}
-			_ = conn.Send("SADD", db.DeviceProfile+":command:"+cid, id)
-			cids = cids.Add(cid)
-		}
-		_ = conn.Send("SADD", cids...)
-	}
+
 	_, err = conn.Do("EXEC")
 	return id, err
 }
@@ -543,11 +521,7 @@ func deleteDeviceProfile(conn redis.Conn, id string) error {
 	for _, label := range dp.Labels {
 		_ = conn.Send("SREM", db.DeviceProfile+":label:"+label, id)
 	}
-	// TODO: should commands be also removed?
-	for _, c := range dp.CoreCommands {
-		_ = conn.Send("SREM", db.DeviceProfile+":command:"+c.Id, id)
-	}
-	_ = conn.Send("DEL", db.DeviceProfile+":commands:"+id)
+
 	_, err = conn.Do("EXEC")
 	return err
 }
@@ -1157,7 +1131,29 @@ func (c *Client) GetCommandById(id string) (contract.Command, error) {
 	return d, err
 }
 
-func (c *Client) GetCommandByName(n string) ([]contract.Command, error) {
+func (c *Client) GetCommandByNameAndDeviceId(cname string, did string) (contract.Command, error) {
+	conn := c.Pool.Get()
+	defer conn.Close()
+
+	objects, err := getObjectsByValues(conn, db.Command+":name:"+cname,
+		db.Command+":device:"+did)
+	if err != nil {
+		return contract.Command{}, err
+	}
+	if len(objects) != 1 {
+		return contract.Command{}, db.ErrNotFound
+	}
+
+	var cmd contract.Command
+	err = unmarshalObject(objects[0], &cmd)
+	if err != nil {
+		return contract.Command{}, err
+	}
+
+	return cmd, nil
+}
+
+func (c *Client) GetCommandsByName(n string) ([]contract.Command, error) {
 	conn := c.Pool.Get()
 	defer conn.Close()
 
@@ -1177,44 +1173,8 @@ func (c *Client) GetCommandByName(n string) ([]contract.Command, error) {
 	return cmd, nil
 }
 
-func (c *Client) AddCommand(cmd contract.Command) (string, error) {
-	conn := c.Pool.Get()
-	defer conn.Close()
-
-	return addCommand(conn, true, cmd)
-}
-
-// Update command uses the ID of the command for identification
-func (c *Client) UpdateCommand(cmd contract.Command) error {
-	conn := c.Pool.Get()
-	defer conn.Close()
-
-	err := deleteCommand(conn, cmd.Id)
-	if err != nil {
-		return err
-	}
-
-	_, err = addCommand(conn, true, cmd)
-	return err
-}
-
-// Delete the command by ID
-func (c *Client) DeleteCommandById(id string) error {
-	conn := c.Pool.Get()
-	defer conn.Close()
-
-	// TODO: ??? Check if the command is still in use by device profiles
-
-	return deleteCommand(conn, id)
-}
-
 func addCommand(conn redis.Conn, tx bool, cmd contract.Command) (string, error) {
-	_, err := uuid.Parse(cmd.Id)
-	if err != nil {
-		cmd.Id = uuid.New().String()
-	}
-	id := cmd.Id
-
+	cmd.Id = uuid.New().String()
 	ts := db.MakeTimestamp()
 	if cmd.Created == 0 {
 		cmd.Created = ts
@@ -1229,9 +1189,9 @@ func addCommand(conn redis.Conn, tx bool, cmd contract.Command) (string, error) 
 	if tx {
 		_ = conn.Send("MULTI")
 	}
-	_ = conn.Send("SET", id, m)
-	_ = conn.Send("ZADD", db.Command, 0, id)
-	_ = conn.Send("SADD", db.Command+":name:"+cmd.Name, id)
+	_ = conn.Send("SET", cmd.Id, m)
+	_ = conn.Send("ZADD", db.Command, 0, cmd.Id)
+	_ = conn.Send("SADD", db.Command+":name:"+cmd.Name, cmd.Id)
 	if tx {
 		_, err = conn.Do("EXEC")
 		if err != nil {
@@ -1239,26 +1199,45 @@ func addCommand(conn redis.Conn, tx bool, cmd contract.Command) (string, error) 
 		}
 	}
 
-	return id, nil
+	return cmd.Id, nil
+}
+func (c *Client) GetCommandsByDeviceId(did string) ([]contract.Command, error) {
+	conn := c.Pool.Get()
+	defer conn.Close()
+
+	return getCommandsByDeviceId(conn, did)
 }
 
-func deleteCommand(conn redis.Conn, id string) error {
-	object, err := redis.Bytes(conn.Do("GET", id))
-	if err == redis.ErrNil {
-		return db.ErrNotFound
-	} else if err != nil {
-		return err
+func getCommandsByDeviceId(conn redis.Conn, id string) (commands []contract.Command, err error) {
+	err = validateKeyExists(conn, id)
+	if err != nil {
+		if err == db.ErrNotFound {
+			err = types.NewErrItemNotFound(fmt.Sprintf("device with id %s not found", id))
+		}
+		return []contract.Command{}, err
 	}
 
-	cmd := contract.Command{}
-	_ = unmarshalObject(object, &cmd)
+	objects, err := getObjectsByValue(conn, db.Command+":device:"+id)
+	if err != nil {
+		return []contract.Command{}, err
+	}
 
-	_ = conn.Send("MULTI")
-	_ = conn.Send("DEL", id)
-	_ = conn.Send("ZREM", db.Command, id)
-	_ = conn.Send("SREM", db.Command+":name:"+cmd.Name, id)
-	_, err = conn.Do("EXEC")
-	return err
+	commands = make([]contract.Command, len(objects))
+	for i, object := range objects {
+		err = unmarshalObject(object, &commands[i])
+		if err != nil {
+			return []contract.Command{}, err
+		}
+	}
+	return commands, nil
+}
+
+// GetCommandsByDaviceName coming soon
+
+func deleteCommand(conn redis.Conn, cmd contract.Command) {
+	_ = conn.Send("DEL", cmd.Id)
+	_ = conn.Send("ZREM", db.Command, cmd.Id)
+	_ = conn.Send("SREM", db.Command+":name:"+cmd.Name, cmd.Id)
 }
 
 func (c *Client) ScrubMetadata() (err error) {

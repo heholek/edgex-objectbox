@@ -31,3 +31,29 @@ File = '/edgex/logs/edgex-core-command.log'
   Protocol = 'http'
   Host = 'edgex-support-logging'
   Port = 48061
+
+[Databases]
+  [Databases.Primary]
+  Host = 'edgex-mongo'
+  Name = 'metadata'
+  Password = 'password'
+  Port = 27017
+  Username = 'meta'
+  Timeout = 5000
+  Type = 'mongodb'
+
+[SecretStore]
+Host = 'edgex-vault'
+Port = 8200
+# Use the core-meta data secrets due to core-command using core-meta-data's database for persistance.
+Path = '/v1/secret/edgex/metadata/'
+Protocol = 'https'
+RootCaCertPath = '/vault/config/pki/EdgeXFoundryCA/EdgeXFoundryCA.pem'
+ServerName = 'edgex-vault'
+TokenFile = '/vault/config/assets/resp-init.json'
+  [SecretStore.Authentication]
+  AuthType = 'X-Vault-Token'
+
+[Startup]
+Duration = 30
+Interval = 1

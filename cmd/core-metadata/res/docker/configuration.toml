@@ -1,5 +1,6 @@
 [Writable]
 LogLevel = 'INFO'
+EnableValueDescriptorManagement = false
 
 [Service]
 BootTimeout = 30000
@@ -30,6 +31,10 @@ File = '/edgex/logs/edgex-core-metadata.log'
   Protocol = 'http'
   Host = 'edgex-support-notifications'
   Port = 48060
+  [Clients.CoreData]
+  Protocol = 'http'
+  Host = 'edgex-core-data'
+  Port = 48080
 
 [Databases]
   [Databases.Primary]
@@ -43,3 +48,18 @@ Content = 'Device update: '
 Sender = 'edgex-core-metadata'
 Description = 'Metadata device notice'
 Label = 'metadata'
+
+[SecretStore]
+Host = 'edgex-vault'
+Port = 8200
+Path = '/v1/secret/edgex/metadata/'
+Protocol = 'https'
+RootCaCertPath = '/vault/config/pki/EdgeXFoundryCA/EdgeXFoundryCA.pem'
+ServerName = 'edgex-vault'
+TokenFile = '/vault/config/assets/resp-init.json'
+  [SecretStore.Authentication]
+  AuthType = 'X-Vault-Token'
+
+[Startup]
+Duration = 30
+Interval = 1

@@ -38,7 +38,7 @@ type DBClient interface {
 	GetDevicesByProfileId(pid string) ([]contract.Device, error)
 	GetDevicesByServiceId(sid string) ([]contract.Device, error)
 	GetDevicesWithLabel(l string) ([]contract.Device, error)
-	AddDevice(d contract.Device) (string, error)
+	AddDevice(d contract.Device, commands []contract.Command) (string, error)
 	DeleteDeviceById(id string) error
 
 	// Device Profile
@@ -52,7 +52,6 @@ type DBClient interface {
 	GetDeviceProfilesByManufacturerModel(man string, mod string) ([]contract.DeviceProfile, error)
 	GetDeviceProfilesByManufacturer(man string) ([]contract.DeviceProfile, error)
 	GetDeviceProfileByName(n string) (contract.DeviceProfile, error)
-	GetDeviceProfilesByCommandId(id string) ([]contract.DeviceProfile, error)
 
 	// Addressable
 	UpdateAddressable(a contract.Addressable) error
@@ -88,12 +87,11 @@ type DBClient interface {
 	DeleteProvisionWatcherById(id string) error
 
 	// Command
-	GetCommandById(id string) (contract.Command, error)
-	GetCommandByName(id string) ([]contract.Command, error)
-	AddCommand(c contract.Command) (string, error)
 	GetAllCommands() ([]contract.Command, error)
-	UpdateCommand(c contract.Command) error
-	DeleteCommandById(id string) error
+	GetCommandById(id string) (contract.Command, error)
+	GetCommandsByName(id string) ([]contract.Command, error)
+	GetCommandsByDeviceId(id string) ([]contract.Command, error)
+	GetCommandByNameAndDeviceId(cname string, did string) (contract.Command, error)
 
 	// Scrub all metadata (only used in test)
 	ScrubMetadata() error

@@ -26,3 +26,18 @@ File = '/edgex/logs/edgex-support-logging.log'
   [Databases.Primary]
   Name = 'logging'
   Type = 'objectbox'
+
+[SecretStore]
+Host = 'edgex-vault'
+Port = 8200
+Path = '/v1/secret/edgex/logging/'
+Protocol = 'https'
+RootCaCertPath = '/vault/config/pki/EdgeXFoundryCA/EdgeXFoundryCA.pem'
+ServerName = 'edgex-vault'
+TokenFile = '/vault/config/assets/resp-init.json'
+  [SecretStore.Authentication]
+  AuthType = 'X-Vault-Token'
+
+[Startup]
+Duration = 30
+Interval = 1

@@ -14,12 +14,12 @@
 package metadata
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/gorilla/mux"
 
+	"github.com/edgexfoundry/edgex-go/internal/pkg"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 )
@@ -35,6 +35,9 @@ func LoadRestRoutes() *mux.Router {
 
 	// Metrics
 	r.HandleFunc(clients.ApiMetricsRoute, metricsHandler).Methods(http.MethodGet)
+
+	// Version
+	r.HandleFunc(clients.ApiVersionRoute, pkg.VersionHandler).Methods(http.MethodGet)
 
 	b := r.PathPrefix(clients.ApiBase).Subrouter()
 
@@ -206,35 +209,24 @@ func loadCommandRoutes(b *mux.Router) {
 
 	c := b.PathPrefix("/" + COMMAND).Subrouter()
 	c.HandleFunc("/{"+ID+"}", restGetCommandById).Methods(http.MethodGet)
-	c.HandleFunc("/"+NAME+"/{"+NAME+"}", restGetCommandByName).Methods(http.MethodGet)
+	c.HandleFunc("/"+NAME+"/{"+NAME+"}", restGetCommandsByName).Methods(http.MethodGet)
+
+	d := c.PathPrefix("/" + DEVICE).Subrouter()
+	d.HandleFunc("/{"+ID+"}", restGetCommandsByDeviceId).Methods(http.MethodGet)
 }
 func pingHandler(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set(clients.ContentType, clients.ContentTypeText)
 	w.Write([]byte("pong"))
 }
 
 func configHandler(w http.ResponseWriter, _ *http.Request) {
-	encode(Configuration, w)
+	pkg.Encode(Configuration, w, LoggingClient)
 }
 
 func metricsHandler(w http.ResponseWriter, _ *http.Request) {
 	s := telemetry.NewSystemUsage()
 
-	encode(s, w)
+	pkg.Encode(s, w, LoggingClient)
 
 	return
-}
-
-// Helper function for encoding things for returning from REST calls
-func encode(i interface{}, w http.ResponseWriter) {
-	w.Header().Add("Content-Type", "application/json")
-
-	enc := json.NewEncoder(w)
-	err := enc.Encode(i)
-	// Problems encoding
-	if err != nil {
-		LoggingClient.Error("Error encoding the data: " + err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 }

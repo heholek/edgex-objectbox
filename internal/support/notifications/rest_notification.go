@@ -20,7 +20,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/objectbox/edgex-objectbox/internal/pkg"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/support/notifications/errors"
+	"github.com/objectbox/edgex-objectbox/internal/support/notifications/operators/notification"
+	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gorilla/mux"
 )
@@ -30,50 +34,48 @@ func notificationHandler(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 	}
 
-	switch r.Method {
-	case http.MethodPost:
-		var n models.Notification
-		dec := json.NewDecoder(r.Body)
-		err := dec.Decode(&n)
+	var n models.Notification
+	dec := json.NewDecoder(r.Body)
+	err := dec.Decode(&n)
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			LoggingClient.Error("Error decoding notification: " + err.Error())
-			return
-		}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		LoggingClient.Error("Error decoding notification: " + err.Error())
+		return
+	}
 
-		LoggingClient.Info("Posting Notification: " + n.String())
-		n.Status = models.NotificationsStatus(models.New)
-		n.ID, err = dbClient.AddNotification(n)
+	LoggingClient.Info("Posting Notification: " + n.String())
+	n.Status = models.NotificationsStatus(models.New)
+	n.ID, err = dbClient.AddNotification(n)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
+		LoggingClient.Error(err.Error())
+		return
+	}
+
+	if n.Severity == models.NotificationsSeverity(models.Critical) {
+		LoggingClient.Info("Critical severity scheduler is triggered for: " + n.Slug)
+		n, err = dbClient.GetNotificationById(n.ID)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusConflict)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			LoggingClient.Error(err.Error())
 			return
 		}
 
-		if n.Severity == models.NotificationsSeverity(models.Critical) {
-			LoggingClient.Info("Critical severity scheduler is triggered for: " + n.Slug)
-			n, err = dbClient.GetNotificationById(n.ID)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				LoggingClient.Error(err.Error())
-				return
-			}
-
-			err := distributeAndMark(n)
-			if err != nil {
-				return
-			}
-			LoggingClient.Info("Critical severity scheduler has completed for: " + n.Slug)
+		err := distributeAndMark(n)
+		if err != nil {
+			return
 		}
-
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusAccepted)
-		w.Write([]byte(n.ID))
+		LoggingClient.Info("Critical severity scheduler has completed for: " + n.Slug)
 	}
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusAccepted)
+	w.Write([]byte(n.ID))
+
 }
 
-func notificationBySlugHandler(w http.ResponseWriter, r *http.Request) {
+func restGetNotificationBySlug(w http.ResponseWriter, r *http.Request) {
 
 	if r.Body != nil {
 		defer r.Body.Close()
@@ -81,49 +83,79 @@ func notificationBySlugHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	slug := vars["slug"]
-	switch r.Method {
-	case http.MethodGet:
 
-		n, err := dbClient.GetNotificationBySlug(slug)
-		if err != nil {
-			if err == db.ErrNotFound {
-				http.Error(w, "Notification not found", http.StatusNotFound)
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
-			w.Header().Set("Content-Type", applicationJson)
-			encode(n, w)
-			return
-		}
+	op := notification.NewSlugExecutor(dbClient, slug)
+	result, err := op.Execute()
+	if err != nil {
+		LoggingClient.Error(err.Error())
+		switch err.(type) {
+		case errors.ErrNotificationNotFound:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		default:
 
-		encode(n, w)
-	case http.MethodDelete:
-		_, err := dbClient.GetNotificationBySlug(slug)
-		if err != nil {
-			if err == db.ErrNotFound {
-				http.Error(w, "Notification not found", http.StatusNotFound)
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
-			return
-		}
-
-		LoggingClient.Info("Deleting notification (and associated transmissions) by slug: " + slug)
-
-		if err = dbClient.DeleteNotificationBySlug(slug); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			LoggingClient.Error(err.Error())
-			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("true"))
+		return
 	}
+
+	pkg.Encode(result, w, LoggingClient)
 }
 
-func notificationByIDHandler(w http.ResponseWriter, r *http.Request) {
+func restDeleteNotificationBySlug(w http.ResponseWriter, r *http.Request) {
+
+	if r.Body != nil {
+		defer r.Body.Close()
+	}
+
+	vars := mux.Vars(r)
+	slug := vars["slug"]
+
+	LoggingClient.Info("Deleting notification (and associated transmissions) by slug: " + slug)
+
+	op := notification.NewDeleteBySlugExecutor(dbClient, slug)
+	err := op.Execute()
+	if err != nil {
+		LoggingClient.Error(err.Error())
+		switch err.(type) {
+		case errors.ErrNotificationNotFound:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		default:
+
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("true"))
+}
+
+func restGetNotificationByID(w http.ResponseWriter, r *http.Request) {
+
+	if r.Body != nil {
+		defer r.Body.Close()
+	}
+
+	vars := mux.Vars(r)
+	var id string = vars["id"]
+	op := notification.NewIdExecutor(dbClient, id)
+	result, err := op.Execute()
+	if err != nil {
+		LoggingClient.Error(err.Error())
+		switch err.(type) {
+		case errors.ErrNotificationNotFound:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		default:
+
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+	pkg.Encode(result, w, LoggingClient)
+}
+
+func restDeleteNotificationByID(w http.ResponseWriter, r *http.Request) {
 
 	if r.Body != nil {
 		defer r.Body.Close()
@@ -131,50 +163,28 @@ func notificationByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["id"]
-	switch r.Method {
-	case http.MethodGet:
 
-		n, err := dbClient.GetNotificationById(id)
-		if err != nil {
-			if err == db.ErrNotFound {
-				http.Error(w, "Notification not found", http.StatusNotFound)
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
-			w.Header().Set("Content-Type", applicationJson)
-			encode(n, w)
-			return
-		}
+	LoggingClient.Info("Deleting notification (and associated transmissions): " + id)
 
-		encode(n, w)
-	case http.MethodDelete:
-		_, err := dbClient.GetNotificationById(id)
-		if err != nil {
-			if err == db.ErrNotFound {
-				http.Error(w, "Notification not found", http.StatusNotFound)
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
-			return
-		}
+	op := notification.NewDeleteByIDExecutor(dbClient, id)
+	err := op.Execute()
 
-		LoggingClient.Info("Deleting notification (and associated transmissions): " + id)
-
-		if err = dbClient.DeleteNotificationById(id); err != nil {
+	if err != nil {
+		LoggingClient.Error(err.Error())
+		switch err.(type) {
+		case errors.ErrNotificationNotFound:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		default:
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			LoggingClient.Error(err.Error())
-			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("true"))
+		return
 	}
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("true"))
 }
 
-func notificationOldHandler(w http.ResponseWriter, r *http.Request) {
-
+func restDeleteNotificationsByAge(w http.ResponseWriter, r *http.Request) {
 	if r.Body != nil {
 		defer r.Body.Close()
 	}
@@ -186,26 +196,20 @@ func notificationOldHandler(w http.ResponseWriter, r *http.Request) {
 		LoggingClient.Error("Error converting the age to an integer")
 		return
 	}
-	switch r.Method {
-	case http.MethodDelete:
-		LoggingClient.Info("Deleting old notifications (and associated transmissions): " + vars["age"])
-		err := dbClient.DeleteNotificationsOld(age)
-		if err != nil {
-			if err == db.ErrNotFound {
-				http.Error(w, "Notifications not found", http.StatusNotFound)
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("true"))
+	LoggingClient.Info("Deleting old notifications (and associated transmissions): " + vars["age"])
+	op := notification.NewDeleteByAgeExecutor(dbClient, age)
+	err = op.Execute()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		LoggingClient.Error(err.Error())
+		return
 	}
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("true"))
 }
 
-func notificationBySenderHandler(w http.ResponseWriter, r *http.Request) {
+func restGetNotificationsBySender(w http.ResponseWriter, r *http.Request) {
 
 	if r.Body != nil {
 		defer r.Body.Close()
@@ -219,33 +223,28 @@ func notificationBySenderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch r.Method {
-	case http.MethodGet:
-
-		if limitNum > Configuration.Service.MaxResultCount {
-			http.Error(w, "Exceeded max limit", http.StatusRequestEntityTooLarge)
-			LoggingClient.Error("Exceeded max limit")
-			return
-		}
-
-		n, err := dbClient.GetNotificationBySender(vars["sender"], limitNum)
-		if err != nil {
-			if err == db.ErrNotFound {
-				http.Error(w, "Notification not found", http.StatusNotFound)
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
-			w.Header().Set("Content-Type", applicationJson)
-			encode(n, w)
-			return
-		}
-
-		encode(n, w)
+	// Check the length
+	if err = checkMaxLimit(limitNum); err != nil {
+		http.Error(w, ExceededMaxResultCount, http.StatusRequestEntityTooLarge)
+		return
 	}
+
+	op := notification.NewSenderExecutor(dbClient, vars["sender"], limitNum)
+	results, err := op.Execute()
+	if err != nil {
+		if err == db.ErrNotFound {
+			http.Error(w, "Notification not found", http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		LoggingClient.Error(err.Error())
+		return
+	}
+
+	pkg.Encode(results, w, LoggingClient)
 }
 
-func notificationByStartEndHandler(w http.ResponseWriter, r *http.Request) {
+func restNotificationByStartEnd(w http.ResponseWriter, r *http.Request) {
 
 	if r.Body != nil {
 		defer r.Body.Close()
@@ -271,30 +270,28 @@ func notificationByStartEndHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch r.Method {
-	case http.MethodGet:
-
-		if limitNum > Configuration.Service.MaxResultCount {
-			http.Error(w, "Exceeded max limit", http.StatusRequestEntityTooLarge)
-			LoggingClient.Error("Exceeded max limit")
-			return
-		}
-
-		n, err := dbClient.GetNotificationsByStartEnd(start, end, limitNum)
-		if err != nil {
-			if err == db.ErrNotFound {
-				http.Error(w, "Notification not found", http.StatusNotFound)
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
-			return
-		}
-		encodeWithUTF8(n, w)
+	// Check the length
+	if err = checkMaxLimit(limitNum); err != nil {
+		http.Error(w, ExceededMaxResultCount, http.StatusRequestEntityTooLarge)
+		return
 	}
+
+	op := notification.NewStartEndExecutor(dbClient, start, end, limitNum)
+	results, err := op.Execute()
+	if err != nil {
+		if err == db.ErrNotFound {
+			http.Error(w, "Notification not found", http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		LoggingClient.Error(err.Error())
+		return
+	}
+
+	pkg.Encode(results, w, LoggingClient)
 }
 
-func notificationByStartHandler(w http.ResponseWriter, r *http.Request) {
+func restNotificationByStart(w http.ResponseWriter, r *http.Request) {
 	if r.Body != nil {
 		defer r.Body.Close()
 	}
@@ -311,33 +308,29 @@ func notificationByStartHandler(w http.ResponseWriter, r *http.Request) {
 		LoggingClient.Error("Error converting limit to integer: " + err.Error())
 		return
 	}
-	switch r.Method {
-	case http.MethodGet:
 
-		if limitNum > Configuration.Service.MaxResultCount {
-			http.Error(w, "Exceeded max limit", http.StatusRequestEntityTooLarge)
-			LoggingClient.Error("Exceeded max limit")
-			return
-		}
-
-		n, err := dbClient.GetNotificationsByStart(start, limitNum)
-		if err != nil {
-			if err == db.ErrNotFound {
-				http.Error(w, "Notification not found", http.StatusNotFound)
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
-			w.Header().Set("Content-Type", applicationJson)
-			encode(n, w)
-			return
-		}
-
-		encode(n, w)
+	// Check the length
+	if err = checkMaxLimit(limitNum); err != nil {
+		http.Error(w, ExceededMaxResultCount, http.StatusRequestEntityTooLarge)
+		return
 	}
+
+	op := notification.NewStartExecutor(dbClient, start, limitNum)
+	results, err := op.Execute()
+	if err != nil {
+		if err == db.ErrNotFound {
+			http.Error(w, "Notification not found", http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		LoggingClient.Error(err.Error())
+		return
+	}
+
+	pkg.Encode(results, w, LoggingClient)
 }
 
-func notificationByEndHandler(w http.ResponseWriter, r *http.Request) {
+func restNotificationByEnd(w http.ResponseWriter, r *http.Request) {
 
 	if r.Body != nil {
 		defer r.Body.Close()
@@ -357,33 +350,28 @@ func notificationByEndHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch r.Method {
-	case http.MethodGet:
-
-		if limitNum > Configuration.Service.MaxResultCount {
-			http.Error(w, "Exceeded max limit", http.StatusRequestEntityTooLarge)
-			LoggingClient.Error("Exceeded max limit")
-			return
-		}
-
-		n, err := dbClient.GetNotificationsByEnd(end, limitNum)
-		if err != nil {
-			if err == db.ErrNotFound {
-				http.Error(w, "Notification not found", http.StatusNotFound)
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
-			w.Header().Set("Content-Type", applicationJson)
-			encode(n, w)
-			return
-		}
-
-		encode(n, w)
+	// Check the length
+	if err = checkMaxLimit(limitNum); err != nil {
+		http.Error(w, ExceededMaxResultCount, http.StatusRequestEntityTooLarge)
+		return
 	}
+
+	op := notification.NewEndExecutor(dbClient, end, limitNum)
+	results, err := op.Execute()
+	if err != nil {
+		if err == db.ErrNotFound {
+			http.Error(w, "Notification not found", http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		LoggingClient.Error(err.Error())
+		return
+	}
+
+	pkg.Encode(results, w, LoggingClient)
 }
 
-func notificationsByLabelsHandler(w http.ResponseWriter, r *http.Request) {
+func restNotificationsByLabels(w http.ResponseWriter, r *http.Request) {
 
 	if r.Body != nil {
 		defer r.Body.Close()
@@ -397,35 +385,30 @@ func notificationsByLabelsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch r.Method {
-	case http.MethodGet:
-
-		if limitNum > Configuration.Service.MaxResultCount {
-			http.Error(w, "Exceeded max limit", http.StatusRequestEntityTooLarge)
-			LoggingClient.Error("Exceeded max limit")
-			return
-		}
-
-		labels := splitVars(vars["labels"])
-
-		n, err := dbClient.GetNotificationsByLabels(labels, limitNum)
-		if err != nil {
-			if err == db.ErrNotFound {
-				http.Error(w, "Notification not found", http.StatusNotFound)
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
-			w.Header().Set("Content-Type", applicationJson)
-			encode(n, w)
-			return
-		}
-
-		encode(n, w)
+	// Check the length
+	if err = checkMaxLimit(limitNum); err != nil {
+		http.Error(w, ExceededMaxResultCount, http.StatusRequestEntityTooLarge)
+		return
 	}
+
+	labels := splitVars(vars["labels"])
+
+	op := notification.NewLabelsExecutor(dbClient, labels, limitNum)
+	results, err := op.Execute()
+	if err != nil {
+		if err == db.ErrNotFound {
+			http.Error(w, "Notification not found", http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		LoggingClient.Error(err.Error())
+		return
+	}
+
+	pkg.Encode(results, w, LoggingClient)
 }
 
-func notificationsNewHandler(w http.ResponseWriter, r *http.Request) {
+func restNotificationsNew(w http.ResponseWriter, r *http.Request) {
 
 	if r.Body != nil {
 		defer r.Body.Close()
@@ -439,28 +422,23 @@ func notificationsNewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch r.Method {
-	case http.MethodGet:
-
-		if limitNum > Configuration.Service.MaxResultCount {
-			http.Error(w, "Exceeded max limit", http.StatusRequestEntityTooLarge)
-			LoggingClient.Error("Exceeded max limit")
-			return
-		}
-
-		n, err := dbClient.GetNewNotifications(limitNum)
-		if err != nil {
-			if err == db.ErrNotFound {
-				http.Error(w, "Notification not found", http.StatusNotFound)
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			LoggingClient.Error(err.Error())
-			w.Header().Set("Content-Type", applicationJson)
-			encode(n, w)
-			return
-		}
-
-		encode(n, w)
+	// Check the length
+	if err = checkMaxLimit(limitNum); err != nil {
+		http.Error(w, ExceededMaxResultCount, http.StatusRequestEntityTooLarge)
+		return
 	}
+
+	op := notification.NewGetNewestExecutor(dbClient, limitNum)
+	n, err := op.Execute()
+	if err != nil {
+		if err == db.ErrNotFound {
+			http.Error(w, "Notification not found", http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		LoggingClient.Error(err.Error())
+		return
+	}
+
+	pkg.Encode(n, w, LoggingClient)
 }

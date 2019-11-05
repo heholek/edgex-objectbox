@@ -16,83 +16,56 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"net/http"
-	"os"
-	"os/signal"
-	"strconv"
-	"time"
 
 	"github.com/objectbox/edgex-objectbox"
 	"github.com/objectbox/edgex-objectbox/internal"
 	"github.com/objectbox/edgex-objectbox/internal/core/data"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/database"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/httpserver"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/message"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/handlers/secret"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/usage"
+
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
-	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/models"
-	"github.com/gorilla/context"
 )
 
 func main() {
-	start := time.Now()
+	startupTimer := startup.NewStartUpTimer(internal.BootRetrySecondsDefault, internal.BootTimeoutSecondsDefault)
+
 	var useRegistry bool
-	var useProfile string
+	var profileDir, configDir string
 
 	flag.BoolVar(&useRegistry, "registry", false, "Indicates the service should use registry service.")
 	flag.BoolVar(&useRegistry, "r", false, "Indicates the service should use registry service.")
-	flag.StringVar(&useProfile, "profile", "", "Specify a profile other than default.")
-	flag.StringVar(&useProfile, "p", "", "Specify a profile other than default.")
+	flag.StringVar(&profileDir, "profile", "", "Specify a profile other than default.")
+	flag.StringVar(&profileDir, "p", "", "Specify a profile other than default.")
+	flag.StringVar(&configDir, "confdir", "", "Specify local configuration directory")
+
 	flag.Usage = usage.HelpCallback
 	flag.Parse()
 
-	params := startup.BootParams{UseRegistry: useRegistry, UseProfile: useProfile, BootTimeout: internal.BootTimeoutDefault}
-	startup.Bootstrap(params, data.Retry, logBeforeInit)
-
-	ok := data.Init(useRegistry)
-	if !ok {
-		logBeforeInit(fmt.Errorf("%s: Service bootstrap failed!", clients.CoreDataServiceKey))
-		os.Exit(1)
-	}
-
-	data.LoggingClient.Info("Service dependencies resolved...")
-	data.LoggingClient.Info(fmt.Sprintf("Starting %s %s ", clients.CoreDataServiceKey, edgex.Version))
-
-	http.TimeoutHandler(nil, time.Millisecond*time.Duration(data.Configuration.Service.Timeout), "Request timed out")
-	data.LoggingClient.Info(data.Configuration.Service.StartupMsg)
-
-	errs := make(chan error, 2)
-	listenForInterrupt(errs)
-	startHttpServer(errs, data.Configuration.Service.Port)
-
-	// Time it took to start service
-	data.LoggingClient.Info("Service started in: " + time.Since(start).String())
-	data.LoggingClient.Info("Listening on port: " + strconv.Itoa(data.Configuration.Service.Port))
-	c := <-errs
-	data.Destruct()
-	data.LoggingClient.Warn(fmt.Sprintf("terminating: %v", c))
-
-	os.Exit(0)
-}
-
-func logBeforeInit(err error) {
-	l := logger.NewClient(clients.CoreDataServiceKey, false, "", models.InfoLog)
-	l.Error(err.Error())
-}
-
-func listenForInterrupt(errChan chan error) {
-	go func() {
-		c := make(chan os.Signal)
-		signal.Notify(c, os.Interrupt)
-		errChan <- fmt.Errorf("%s", <-c)
-	}()
-}
-
-func startHttpServer(errChan chan error, port int) {
-	go func() {
-		correlation.LoggingClient = data.LoggingClient //Not thrilled about this, can't think of anything better ATM
-		r := data.LoadRestRoutes()
-		errChan <- http.ListenAndServe(":"+strconv.Itoa(port), context.ClearHandler(r))
-	}()
+	httpServer := httpserver.NewBootstrap(data.LoadRestRoutes())
+	bootstrap.Run(
+		configDir,
+		profileDir,
+		internal.ConfigFileName,
+		useRegistry,
+		clients.CoreDataServiceKey,
+		data.Configuration,
+		startupTimer,
+		di.NewContainer(di.ServiceConstructorMap{}),
+		[]interfaces.BootstrapHandler{
+			secret.NewSecret().BootstrapHandler,
+			database.NewDatabaseForCoreData(&httpServer, data.Configuration).BootstrapHandler,
+			data.BootstrapHandler,
+			telemetry.BootstrapHandler,
+			httpServer.BootstrapHandler,
+			message.NewBootstrap(clients.CoreDataServiceKey, edgex.Version).BootstrapHandler,
+		},
+	)
 }

@@ -11,37 +11,36 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  *******************************************************************************/
+
 package metadata
 
 import (
 	"encoding/json"
-	"errors"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 
+	"github.com/edgexfoundry/edgex-go/internal/core/metadata/errors"
+	"github.com/edgexfoundry/edgex-go/internal/core/metadata/interfaces"
+	"github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/device"
+	"github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/device_profile"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/edgexfoundry/edgex-go/internal/pkg/errorconcept"
+	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gorilla/mux"
-	"gopkg.in/yaml.v2"
 )
 
 func restGetAllDeviceProfiles(w http.ResponseWriter, _ *http.Request) {
-	res, err := dbClient.GetAllDeviceProfiles()
+	op := device_profile.NewGetAllExecutor(Configuration.Service, dbClient, LoggingClient)
+	res, err := op.Execute()
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.HandleOneVariant(w, err, errorconcept.Common.LimitExceeded, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	if len(res) > Configuration.Service.MaxResultCount {
-		err = errors.New("Max limit exceeded with request for profiles")
-		http.Error(w, err.Error(), http.StatusRequestEntityTooLarge)
-		LoggingClient.Error(err.Error())
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	json.NewEncoder(w).Encode(&res)
 }
 
@@ -49,42 +48,30 @@ func restAddDeviceProfile(w http.ResponseWriter, r *http.Request) {
 	var dp models.DeviceProfile
 
 	if err := json.NewDecoder(r.Body).Decode(&dp); err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
-	// Check if there are duplicate names in the device profile command list
-	for _, c1 := range dp.CoreCommands {
-		count := 0
-		for _, c2 := range dp.CoreCommands {
-			if c1.Name == c2.Name {
-				count += 1
-			}
+	if Configuration.Writable.EnableValueDescriptorManagement {
+		// Check if the device profile name is unique so that we do not create ValueDescriptors for a DeviceProfile that
+		// will fail during the creation process later on.
+		nameOp := device_profile.NewGetProfileName(dp.Name, dbClient)
+		_, err := nameOp.Execute()
+		// The operator will return an ItemNotFound error if the DeviceProfile can not be found.
+		if err == nil {
+			httpErrorHandler.Handle(w, err, errorconcept.DeviceProfile.DuplicateName)
+			return
 		}
-		if count > 1 {
-			err := errors.New("Error adding device profile: Duplicate names in the commands")
-			LoggingClient.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusConflict)
+
+		op := device_profile.NewAddValueDescriptorExecutor(r.Context(), vdc, LoggingClient, dp.DeviceResources...)
+		err = op.Execute()
+		if err != nil {
+			httpErrorHandler.HandleOneVariant(w, err, errorconcept.NewServiceClientHttpError(err), errorconcept.Default.InternalServerError)
 			return
 		}
 	}
 
-	id, err := dbClient.AddDeviceProfile(dp)
-	if err != nil {
-		if err == db.ErrNotUnique {
-			http.Error(w, "Duplicate name for device profile", http.StatusConflict)
-		} else if err == db.ErrNameEmpty {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		LoggingClient.Error(err.Error())
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(id))
+	addDeviceProfile(dp, dbClient, w)
 }
 
 func restUpdateDeviceProfile(w http.ResponseWriter, r *http.Request) {
@@ -92,208 +79,88 @@ func restUpdateDeviceProfile(w http.ResponseWriter, r *http.Request) {
 
 	var from models.DeviceProfile
 	if err := json.NewDecoder(r.Body).Decode(&from); err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
-	// Check if the Device Profile exists
-	var to models.DeviceProfile
-	// First try with ID
-	to, err := dbClient.GetDeviceProfileById(from.Id)
-	if err != nil {
-		// Try with name
-		to, err = dbClient.GetDeviceProfileByName(from.Name)
+	if Configuration.Writable.EnableValueDescriptorManagement {
+		vdOp := device_profile.NewUpdateValueDescriptorExecutor(from, dbClient, vdc, LoggingClient, r.Context())
+		err := vdOp.Execute()
 		if err != nil {
-			LoggingClient.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusNotFound)
+			httpErrorHandler.HandleManyVariants(
+				w,
+				err,
+				[]errorconcept.ErrorConceptType{
+					errorconcept.NewServiceClientHttpError(err),
+					errorconcept.DeviceProfile.NotFound,
+					errorconcept.ValueDescriptors.MultipleInUse,
+					errorconcept.DeviceProfile.InvalidState_StatusConflict,
+				},
+				errorconcept.Default.InternalServerError)
 			return
 		}
 	}
 
-	// Update the device profile fields based on the passed JSON
-	if err := updateDeviceProfileFields(from, &to, w); err != nil {
-		LoggingClient.Error(err.Error())
-		return
-	}
-	if err := dbClient.UpdateDeviceProfile(to); err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	op := device_profile.NewUpdateDeviceProfileExecutor(dbClient, from)
+	dp, err := op.Execute()
+	if err != nil {
+		httpErrorHandler.HandleManyVariants(
+			w,
+			err,
+			[]errorconcept.ErrorConceptType{
+				errorconcept.DeviceProfile.NotFound,
+				errorconcept.DeviceProfile.InvalidState_StatusConflict,
+			},
+			errorconcept.Default.InternalServerError)
 		return
 	}
 
 	// Notify Associates
-	notifyProfileAssociates(to, http.MethodPut)
+	err = notifyProfileAssociates(dp, dbClient, http.MethodPut)
+	if err != nil {
+		// Log the error but do not change the response to the client. We do not want this to affect the overall status
+		// of the operation
+		LoggingClient.Warn("Error while notifying profile associates of update: ", err.Error())
+	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("true"))
 }
 
-// Update the fields of the device profile
-// to - the device profile that was already in Mongo (whose fields we're updating)
-// from - the device profile that was passed in with the request
-func updateDeviceProfileFields(from models.DeviceProfile, to *models.DeviceProfile, w http.ResponseWriter) error {
-	if from.Description != "" {
-		to.Description = from.Description
-	}
-	if from.Labels != nil {
-		to.Labels = from.Labels
-	}
-	if from.Manufacturer != "" {
-		to.Manufacturer = from.Manufacturer
-	}
-	if from.Model != "" {
-		to.Model = from.Model
-	}
-	if from.Origin != 0 {
-		to.Origin = from.Origin
-	}
-	if from.Name != "" {
-		to.Name = from.Name
-		// Names must be unique for each device profile
-		if err := checkDuplicateProfileNames(*to, w); err != nil {
-			return err
-		}
-	}
-	if from.DeviceResources != nil {
-		to.DeviceResources = from.DeviceResources
-	}
-	if from.DeviceCommands != nil {
-		to.DeviceCommands = from.DeviceCommands
-	}
-	if from.CoreCommands != nil {
-		// Check for duplicates by command name
-		if err := checkDuplicateCommands(from, w); err != nil {
-			return err
-		}
-
-		// taking lazy approach to commands - remove them all and add them
-		// all back in. TODO - someday make this a two phase commit so
-		// commands don't get wiped out before profile
-
-		// Delete the old commands
-		if err := deleteCommands(*to, w); err != nil {
-			return err
-		}
-
-		to.CoreCommands = from.CoreCommands
-
-		// Add the new commands
-		if err := addCommands(to, w); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// Check for duplicate names in device profiles
-func checkDuplicateProfileNames(dp models.DeviceProfile, w http.ResponseWriter) error {
-	profiles, err := dbClient.GetAllDeviceProfiles()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusServiceUnavailable)
-		return err
-	}
-
-	for _, p := range profiles {
-		if p.Name == dp.Name && p.Id != dp.Id {
-			err = errors.New("Duplicate profile name")
-			http.Error(w, err.Error(), http.StatusConflict)
-			return err
-		}
-	}
-
-	return nil
-}
-
-// Check for duplicate command names in the device profile
-func checkDuplicateCommands(dp models.DeviceProfile, w http.ResponseWriter) error {
-	// Check if there are duplicate names in the device profile command list
-	for _, c1 := range dp.CoreCommands {
-		count := 0
-		for _, c2 := range dp.CoreCommands {
-			if c1.Name == c2.Name {
-				count += 1
-			}
-		}
-		if count > 1 {
-			err := errors.New("Error adding device profile: Duplicate names in the commands")
-			http.Error(w, err.Error(), http.StatusConflict)
-			return err
-		}
-	}
-
-	return nil
-}
-
-// Delete all of the commands that are a part of the device profile
-func deleteCommands(dp models.DeviceProfile, w http.ResponseWriter) error {
-	for _, command := range dp.CoreCommands {
-		err := dbClient.DeleteCommandById(command.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-			return err
-		}
-	}
-
-	return nil
-}
-
-// Add all of the commands that are a part of the device profile
-func addCommands(dp *models.DeviceProfile, w http.ResponseWriter) error {
-	for i := range dp.CoreCommands {
-		if newId, err := dbClient.AddCommand(dp.CoreCommands[i]); err != nil {
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-			return err
-		} else {
-			dp.CoreCommands[i].Id = newId
-		}
-	}
-
-	return nil
-}
-
 func restGetProfileByProfileId(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	var did string = vars["id"]
+	var did = vars["id"]
 
-	res, err := dbClient.GetDeviceProfileById(did)
+	op := device_profile.NewGetProfileID(did, dbClient)
+	res, err := op.Execute()
 	if err != nil {
-		if err == db.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.HandleOneVariant(w, err, errorconcept.Database.NotFound, errorconcept.Default.InternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	json.NewEncoder(w).Encode(res)
 }
 
 func restDeleteProfileByProfileId(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	var did string = vars["id"]
+	var did = vars["id"]
 
-	// Check if the device profile exists
-	dp, err := dbClient.GetDeviceProfileById(did)
+	op := device_profile.NewDeleteByIDExecutor(dbClient, did)
+	err := op.Execute()
 	if err != nil {
-		if err == db.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-		} else {
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-		}
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.HandleManyVariants(
+			w,
+			err,
+			[]errorconcept.ErrorConceptType{
+				errorconcept.DeviceProfile.NotFound,
+				errorconcept.DeviceProfile.InvalidState_StatusConflict,
+			},
+			errorconcept.Default.InternalServerError)
 		return
 	}
 
-	// Delete the device profile
-	if err = deleteDeviceProfile(dp, w); err != nil {
-		LoggingClient.Error(err.Error())
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("true"))
 }
@@ -303,111 +170,78 @@ func restDeleteProfileByName(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	n, err := url.QueryUnescape(vars[NAME])
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
-	// Check if the device profile exists
-	dp, err := dbClient.GetDeviceProfileByName(n)
+	op := device_profile.NewDeleteByNameExecutor(dbClient, n)
+	err = op.Execute()
 	if err != nil {
-		if err == db.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.HandleManyVariants(
+			w,
+			err,
+			[]errorconcept.ErrorConceptType{
+				errorconcept.DeviceProfile.NotFound,
+				errorconcept.DeviceProfile.InvalidState_StatusConflict,
+			},
+			errorconcept.Default.InternalServerError)
 		return
 	}
 
-	// Delete the device profile
-	if err = deleteDeviceProfile(dp, w); err != nil {
-		LoggingClient.Error(err.Error())
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("true"))
 }
 
-// Delete the device profile
-// Make sure there are no devices still using it
-// Delete the associated commands
-func deleteDeviceProfile(dp models.DeviceProfile, w http.ResponseWriter) error {
-	// Check if the device profile is still in use by devices
-	d, err := dbClient.GetDevicesByProfileId(dp.Id)
-
-	// XXX ErrNotFound should always be returned but this is not consistent in the implementations
-	if err == db.ErrNotFound {
-		err = nil
-		d = []models.Device{}
-	} else if err != nil {
-		http.Error(w, err.Error(), http.StatusServiceUnavailable)
-		return err
-	}
-	if len(d) > 0 {
-		err = errors.New("Can't delete device profile, the profile is still in use by a device")
-		http.Error(w, err.Error(), http.StatusConflict)
-		return err
-	}
-
-	// Check if the device profile is still in use by provision watchers
-	pw, err := dbClient.GetProvisionWatchersByProfileId(dp.Id)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusServiceUnavailable)
-		return err
-	}
-	if len(pw) > 0 {
-		err = errors.New("Cant delete device profile, the profile is still in use by a provision watcher")
-		http.Error(w, err.Error(), http.StatusConflict)
-		return err
-	}
-
-	// Delete the profile
-	if err := dbClient.DeleteDeviceProfileById(dp.Id); err != nil {
-		http.Error(w, err.Error(), http.StatusServiceUnavailable)
-		return err
-	}
-
-	for _, command := range dp.CoreCommands {
-		if err := dbClient.DeleteCommandById(command.Id); err != nil {
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-			return err
-		}
-	}
-
-	return nil
-}
-
 func restAddProfileByYaml(w http.ResponseWriter, r *http.Request) {
 	f, _, err := r.FormFile("file")
-	switch err {
-	case nil:
-	// do nothing
-	case http.ErrMissingFile:
-		err := errors.New("YAML file is empty")
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error(err.Error())
-		return
-	default:
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		LoggingClient.Error(err.Error())
+	if err != nil {
+		httpErrorHandler.HandleOneVariant(w, err, errorconcept.DeviceProfile.MissingFile, errorconcept.Default.InternalServerError)
 		return
 	}
+
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.DeviceProfile.ReadFile)
 		return
 	}
 	if len(data) == 0 {
-		err := errors.New("YAML file is empty")
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error(err.Error())
+		err := errors.NewErrEmptyFile("YAML")
+		httpErrorHandler.Handle(w, err, errorconcept.DeviceProfile.MissingFile)
 		return
 	}
 
-	addDeviceProfileYaml(data, w)
+	var dp models.DeviceProfile
+
+	err = yaml.Unmarshal(data, &dp)
+	if err != nil {
+		httpErrorHandler.Handle(w, err, errorconcept.DeviceProfile.UnmarshalYaml_StatusInternalServer)
+		return
+	}
+
+	// Avoid using the 'addDeviceProfile' function because we need to be backwards compatibility for API response codes.
+	// The difference is the mapping of 'ErrContractInvalid' to a '409(Conflict)' rather than a '400(Bad request).
+	// Disregarding backwards compatibility, the 'addDeviceProfile' function is the correct implementation to use in the
+	// 'ErrContractInvalid' since a '400(Bad Request)' is the correct response.
+	op := device_profile.NewAddDeviceProfileExecutor(dp, dbClient)
+	id, err := op.Execute()
+
+	if err != nil {
+		httpErrorHandler.HandleManyVariants(
+			w,
+			err,
+			[]errorconcept.ErrorConceptType{
+				errorconcept.DeviceProfile.InvalidState_StatusBadRequest,
+				errorconcept.DeviceProfile.ContractInvalid_StatusConflict,
+				errorconcept.Common.DuplicateName,
+				errorconcept.DeviceProfile.EmptyName,
+			},
+			errorconcept.Default.InternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(id))
 }
 
 // Add a device profile with YAML content
@@ -416,50 +250,37 @@ func restAddProfileByYamlRaw(w http.ResponseWriter, r *http.Request) {
 	// Get the YAML string
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.Handle(w, err, errorconcept.DeviceProfile.ReadFile)
 		return
 	}
 
-	addDeviceProfileYaml(body, w)
-}
-
-func addDeviceProfileYaml(data []byte, w http.ResponseWriter) {
 	var dp models.DeviceProfile
 
-	err := yaml.Unmarshal(data, &dp)
+	err = yaml.Unmarshal(body, &dp)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusServiceUnavailable)
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.DeviceProfile.UnmarshalYaml_StatusServiceUnavailable)
 		return
 	}
 
-	// Check if there are duplicate names in the device profile command list
-	for _, c1 := range dp.CoreCommands {
-		count := 0
-		for _, c2 := range dp.CoreCommands {
-			if c1.Name == c2.Name {
-				count += 1
-			}
-		}
-		if count > 1 {
-			err := errors.New("Error adding device profile: Duplicate names in the commands")
-			LoggingClient.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusConflict)
-			return
-		}
-	}
+	addDeviceProfile(dp, dbClient, w)
+}
 
-	id, err := dbClient.AddDeviceProfile(dp)
+// This function centralizes the common logic for adding a device profile to the database and dealing with the return
+func addDeviceProfile(dp models.DeviceProfile, dbClient interfaces.DBClient, w http.ResponseWriter) {
+	op := device_profile.NewAddDeviceProfileExecutor(dp, dbClient)
+	id, err := op.Execute()
+
 	if err != nil {
-		if err == db.ErrNotUnique {
-			http.Error(w, "Duplicate profile name", http.StatusConflict)
-		} else if err == db.ErrNameEmpty {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		} else {
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-		}
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.HandleManyVariants(
+			w,
+			err,
+			[]errorconcept.ErrorConceptType{
+				errorconcept.Common.ContractInvalid_StatusBadRequest,
+				errorconcept.DeviceProfile.InvalidState_StatusBadRequest,
+				errorconcept.Common.DuplicateName,
+				errorconcept.DeviceProfile.EmptyName,
+			},
+			errorconcept.Default.InternalServerError)
 		return
 	}
 
@@ -471,19 +292,18 @@ func restGetProfileByModel(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	an, err := url.QueryUnescape(vars[MODEL])
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
-	res, err := dbClient.GetDeviceProfilesByModel(an)
+	op := device_profile.NewGetModelExecutor(an, dbClient)
+	res, err := op.Execute()
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.HandleOneVariant(w, err, errorconcept.Common.LimitExceeded, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	json.NewEncoder(w).Encode(res)
 }
 
@@ -492,19 +312,18 @@ func restGetProfileWithLabel(w http.ResponseWriter, r *http.Request) {
 
 	label, err := url.QueryUnescape(vars[LABEL])
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
-	res, err := dbClient.GetDeviceProfilesWithLabel(label)
+	op := device_profile.NewGetLabelExecutor(label, dbClient)
+	res, err := op.Execute()
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.HandleOneVariant(w, err, errorconcept.Common.LimitExceeded, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	json.NewEncoder(w).Encode(res)
 }
 
@@ -512,26 +331,24 @@ func restGetProfileByManufacturerModel(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	man, err := url.QueryUnescape(vars[MANUFACTURER])
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	mod, err := url.QueryUnescape(vars[MODEL])
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
-	res, err := dbClient.GetDeviceProfilesByManufacturerModel(man, mod)
+	op := device_profile.NewGetManufacturerModelExecutor(man, mod, dbClient)
+	res, err := op.Execute()
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.HandleOneVariant(w, err, errorconcept.Common.LimitExceeded, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	json.NewEncoder(w).Encode(res)
 }
 
@@ -539,19 +356,18 @@ func restGetProfileByManufacturer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	man, err := url.QueryUnescape(vars[MANUFACTURER])
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
-	res, err := dbClient.GetDeviceProfilesByManufacturer(man)
+	op := device_profile.NewGetManufacturerExecutor(man, dbClient)
+	res, err := op.Execute()
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.HandleOneVariant(w, err, errorconcept.Common.LimitExceeded, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	json.NewEncoder(w).Encode(res)
 }
 
@@ -559,24 +375,19 @@ func restGetProfileByName(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	dn, err := url.QueryUnescape(vars[NAME])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	// Get the device
-	res, err := dbClient.GetDeviceProfileByName(dn)
+	op := device_profile.NewGetProfileName(dn, dbClient)
+	res, err := op.Execute()
 	if err != nil {
-		if err == db.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.HandleOneVariant(w, err, errorconcept.Database.NotFound, errorconcept.Default.InternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 	json.NewEncoder(w).Encode(res)
 }
 
@@ -584,29 +395,22 @@ func restGetYamlProfileByName(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name, err := url.QueryUnescape(vars[NAME])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.Common.InvalidRequest_StatusBadRequest)
 		return
 	}
 
 	// Check for the device profile
-	dp, err := dbClient.GetDeviceProfileByName(name)
+	op := device_profile.NewGetProfileName(name, dbClient)
+	dp, err := op.Execute()
 	if err != nil {
-		// Not found, return nil
-		if err == db.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.HandleOneVariant(w, err, errorconcept.Database.NotFound, errorconcept.Default.InternalServerError)
 		return
 	}
 
 	// Marshal into yaml
 	out, err := yaml.Marshal(dp)
 	if err != nil {
-		LoggingClient.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httpErrorHandler.Handle(w, err, errorconcept.DeviceProfile.MarshalYaml)
 		return
 	}
 
@@ -627,14 +431,15 @@ func restGetYamlProfileById(w http.ResponseWriter, r *http.Request) {
 	id := vars[ID]
 
 	// Check if the device profile exists
-	dp, err := dbClient.GetDeviceProfileById(id)
+	op := device_profile.NewGetProfileID(id, dbClient)
+	dp, err := op.Execute()
 	if err != nil {
 		if err == db.ErrNotFound {
-			w.WriteHeader(http.StatusNotFound)
+			httpErrorHandler.Handle(w, err, errorconcept.Default.NotFound)
 			w.Write([]byte(nil))
 			return
 		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			httpErrorHandler.Handle(w, err, errorconcept.Default.InternalServerError)
 		}
 		LoggingClient.Error(err.Error())
 		return
@@ -643,8 +448,7 @@ func restGetYamlProfileById(w http.ResponseWriter, r *http.Request) {
 	// Marshal the device profile into YAML
 	out, err := yaml.Marshal(dp)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		LoggingClient.Error(err.Error())
+		httpErrorHandler.Handle(w, err, errorconcept.DeviceProfile.MarshalYaml)
 		return
 	}
 
@@ -653,9 +457,10 @@ func restGetYamlProfileById(w http.ResponseWriter, r *http.Request) {
 }
 
 // Notify the associated device services for changes in the device profile
-func notifyProfileAssociates(dp models.DeviceProfile, action string) error {
+func notifyProfileAssociates(dp models.DeviceProfile, dl device.DeviceLoader, action string) error {
 	// Get the devices
-	d, err := dbClient.GetDevicesByProfileId(dp.Id)
+	op := device.NewProfileIdExecutor(Configuration.Service, dl, LoggingClient, dp.Id)
+	d, err := op.Execute()
 	if err != nil {
 		LoggingClient.Error(err.Error())
 		return err

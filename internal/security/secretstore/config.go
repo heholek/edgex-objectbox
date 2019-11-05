@@ -16,8 +16,8 @@
 package secretstore
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/security/secretstoreclient"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/security/secretstoreclient"
 )
 
 type ConfigurationStruct struct {

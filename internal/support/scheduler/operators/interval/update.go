@@ -14,8 +14,8 @@
 package interval
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/errors"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/errors"
 	"github.com/robfig/cron"
 
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"

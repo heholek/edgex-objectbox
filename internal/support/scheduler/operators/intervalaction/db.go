@@ -14,8 +14,8 @@
 package intervalaction
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/operators/interval"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/operators/interval"
 )
 
 // IntervalLoader provides functionality for obtaining Interval.

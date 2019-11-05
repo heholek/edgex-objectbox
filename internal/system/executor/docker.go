@@ -17,7 +17,7 @@ package executor
 import (
 	"fmt"
 
-	"github.com/edgexfoundry/edgex-go/internal/system"
+	"github.com/objectbox/edgex-objectbox/internal/system"
 )
 
 const (

@@ -18,10 +18,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/endpoint"
-	agentClients "github.com/edgexfoundry/edgex-go/internal/system/agent/clients"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/endpoint"
+	agentClients "github.com/objectbox/edgex-objectbox/internal/system/agent/clients"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/general"

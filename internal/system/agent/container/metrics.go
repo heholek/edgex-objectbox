@@ -15,8 +15,8 @@
 package container
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
-	"github.com/edgexfoundry/edgex-go/internal/system/agent/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/system/agent/interfaces"
 )
 
 // MetricsInterfaceName contains the name of the interfaces.Metrics implementation in the DIC.

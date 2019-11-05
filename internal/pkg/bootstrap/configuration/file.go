@@ -20,7 +20,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/interfaces"
 
 	"github.com/BurntSushi/toml"
 )

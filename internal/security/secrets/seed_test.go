@@ -17,8 +17,8 @@ package secrets
 import (
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/security/secrets/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/security/secrets/mocks"
 )
 
 func TestNewCertificateSeed(t *testing.T) {

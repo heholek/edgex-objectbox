@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/security/secrets/option"
+	"github.com/objectbox/edgex-objectbox/internal/security/secrets/option"
 	"github.com/stretchr/testify/assert"
 )
 

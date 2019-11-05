@@ -21,7 +21,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/edgexfoundry/edgex-go/internal/security/secrets"
+	"github.com/objectbox/edgex-objectbox/internal/security/secrets"
 )
 
 // Cache generates PKI exactly once and cached to a designated location for future use.

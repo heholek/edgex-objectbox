@@ -18,8 +18,8 @@ import (
 	"crypto"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/security/secrets"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
+	"github.com/objectbox/edgex-objectbox/internal/security/secrets"
 )
 
 func TestGeneratePrivateKey(t *testing.T) {

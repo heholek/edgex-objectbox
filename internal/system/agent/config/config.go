@@ -15,8 +15,8 @@
 package config
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 )
 
 type ConfigurationClients map[string]config.ClientInfo

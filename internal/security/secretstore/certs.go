@@ -26,7 +26,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/edgexfoundry/edgex-go/internal"
+	"github.com/objectbox/edgex-objectbox/internal"
 )
 
 type CertCollect struct {

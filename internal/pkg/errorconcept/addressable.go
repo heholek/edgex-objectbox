@@ -17,7 +17,7 @@ package errorconcept
 import (
 	"net/http"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/errors"
 )
 
 var Addressable addressableErrorConcept

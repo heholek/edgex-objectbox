@@ -8,11 +8,11 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	dataErrors "github.com/edgexfoundry/edgex-go/internal/core/data/errors"
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/errors"
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/interfaces"
-	mocks2 "github.com/edgexfoundry/edgex-go/internal/core/metadata/interfaces/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/device_profile/mocks"
+	dataErrors "github.com/objectbox/edgex-objectbox/internal/core/data/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/interfaces"
+	mocks2 "github.com/objectbox/edgex-objectbox/internal/core/metadata/interfaces/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/operators/device_profile/mocks"
 )
 
 var TestDeviceResource1 = contract.DeviceResource{

@@ -17,8 +17,8 @@ package errorconcept
 import (
 	"net/http"
 
-	data "github.com/edgexfoundry/edgex-go/internal/core/data/errors"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	data "github.com/objectbox/edgex-objectbox/internal/core/data/errors"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 )
 
 var Database databaseErrorConcept

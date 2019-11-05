@@ -16,9 +16,9 @@ package interval
 import (
 	"testing"
 
-	intervalErrors "github.com/edgexfoundry/edgex-go/internal/support/scheduler/errors"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/operators/interval/mocks"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	intervalErrors "github.com/objectbox/edgex-objectbox/internal/support/scheduler/errors"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/operators/interval/mocks"
 )
 
 var TestInvalidCron = "invalid"

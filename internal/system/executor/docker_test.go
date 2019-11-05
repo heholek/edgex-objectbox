@@ -18,7 +18,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/system"
+	"github.com/objectbox/edgex-objectbox/internal/system"
 	"github.com/stretchr/testify/assert"
 )
 

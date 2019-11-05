@@ -7,8 +7,8 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/device_profile/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/operators/device_profile/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 )
 
 var TestLabelError1 = "TestErrorLabel1"

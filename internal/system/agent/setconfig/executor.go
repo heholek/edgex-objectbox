@@ -18,11 +18,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/system/agent/config"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	requests "github.com/edgexfoundry/go-mod-core-contracts/requests/configuration"
 	responses "github.com/edgexfoundry/go-mod-core-contracts/responses/configuration"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/system/agent/config"
 
 	"github.com/edgexfoundry/go-mod-registry/pkg/types"
 	"github.com/edgexfoundry/go-mod-registry/registry"

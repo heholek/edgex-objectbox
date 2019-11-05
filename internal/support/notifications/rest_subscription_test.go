@@ -24,13 +24,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/support/notifications/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/support/notifications/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gorilla/mux"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/support/notifications/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/support/notifications/interfaces/mocks"
 )
 
 var TestSubscriptionURI = "/subscription"

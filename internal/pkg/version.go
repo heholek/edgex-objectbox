@@ -15,8 +15,8 @@ package pkg
 
 import (
 	"encoding/json"
-	"github.com/edgexfoundry/edgex-go"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
+	"github.com/objectbox/edgex-objectbox"
 	"net/http"
 )
 

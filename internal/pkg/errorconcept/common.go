@@ -17,8 +17,8 @@ package errorconcept
 import (
 	"net/http"
 
-	data "github.com/edgexfoundry/edgex-go/internal/core/data/errors"
-	metadata "github.com/edgexfoundry/edgex-go/internal/core/metadata/errors"
+	data "github.com/objectbox/edgex-objectbox/internal/core/data/errors"
+	metadata "github.com/objectbox/edgex-objectbox/internal/core/metadata/errors"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )

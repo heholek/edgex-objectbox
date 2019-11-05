@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 )
 
 type ConfigurationStruct struct {

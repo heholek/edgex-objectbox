@@ -4,10 +4,10 @@ import (
 	"reflect"
 	"testing"
 
-	mock "github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/command/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	mock "github.com/objectbox/edgex-objectbox/internal/core/metadata/operators/command/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/pkg/errors"
 )
 

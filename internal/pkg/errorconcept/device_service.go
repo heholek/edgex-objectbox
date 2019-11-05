@@ -17,7 +17,7 @@ package errorconcept
 import (
 	"net/http"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 )
 
 var DeviceService deviceServiceErrorConcept

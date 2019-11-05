@@ -17,8 +17,8 @@ package errorconcept
 import (
 	"net/http"
 
-	metadataErrors "github.com/edgexfoundry/edgex-go/internal/core/metadata/errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	metadataErrors "github.com/objectbox/edgex-objectbox/internal/core/metadata/errors"
 )
 
 var DeviceProfile deviceProfileErrorConcept

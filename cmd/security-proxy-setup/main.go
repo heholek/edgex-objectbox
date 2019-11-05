@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/startup"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/usage"
-	"github.com/edgexfoundry/edgex-go/internal/security/proxy"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/usage"
+	"github.com/objectbox/edgex-objectbox/internal/security/proxy"
 )
 
 func main() {

@@ -21,8 +21,8 @@ import (
 	"os"
 	"path/filepath"
 
-	config "github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/security/secrets"
+	config "github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/security/secrets"
 )
 
 // Generate option....

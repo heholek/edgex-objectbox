@@ -17,7 +17,7 @@ package errorconcept
 import (
 	"net/http"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/data/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/errors"
 )
 
 var CBOR cborErrorConcept

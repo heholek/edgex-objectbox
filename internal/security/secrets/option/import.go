@@ -19,7 +19,7 @@ package option
 import (
 	"fmt"
 
-	"github.com/edgexfoundry/edgex-go/internal/security/secrets"
+	"github.com/objectbox/edgex-objectbox/internal/security/secrets"
 )
 
 // Import deploys PKI from CacheDir to DeployDir.  It retruns an error,

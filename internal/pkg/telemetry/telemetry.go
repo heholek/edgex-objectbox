@@ -20,9 +20,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/container"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/startup"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/container"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
 )
 
 type SystemUsage struct {

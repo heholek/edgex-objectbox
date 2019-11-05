@@ -12,9 +12,9 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/command/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/core/command/interfaces/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/core/command/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/core/command/interfaces/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 )
 
 //commandByDeviceID

@@ -15,8 +15,8 @@
 package secret
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 )
 
 func (s *SecretProvider) GetDatabaseCredentials(database config.Database) (config.Credentials, error) {

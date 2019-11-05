@@ -17,9 +17,9 @@ package addressable
 import (
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/errors"
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/addressable/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/operators/addressable/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/stretchr/testify/mock"

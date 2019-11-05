@@ -19,10 +19,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/device/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/operators/device/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 )
 
 func TestUpdateDevice(t *testing.T) {

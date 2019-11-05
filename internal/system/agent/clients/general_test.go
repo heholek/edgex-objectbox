@@ -17,7 +17,7 @@ package clients
 import (
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/endpoint"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/endpoint"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/general"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"

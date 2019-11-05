@@ -19,7 +19,7 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/gorilla/mux"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg"
+	"github.com/objectbox/edgex-objectbox/internal/pkg"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/telemetry"
 )

@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/container"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/startup"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/container"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
 )
 
 // StartMessage contains references to dependencies required by the start message handler.

@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/edgexfoundry/edgex-go/internal/system"
+	"github.com/objectbox/edgex-objectbox/internal/system"
 )
 
 const separator = ";"

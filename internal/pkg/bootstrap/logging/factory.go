@@ -15,7 +15,7 @@
 package logging
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/interfaces"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"

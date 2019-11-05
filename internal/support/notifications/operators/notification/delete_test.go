@@ -18,8 +18,8 @@ import (
 	"reflect"
 	"testing"
 
-	notificationErrors "github.com/edgexfoundry/edgex-go/internal/support/notifications/errors"
-	"github.com/edgexfoundry/edgex-go/internal/support/notifications/operators/notification/mocks"
+	notificationErrors "github.com/objectbox/edgex-objectbox/internal/support/notifications/errors"
+	"github.com/objectbox/edgex-objectbox/internal/support/notifications/operators/notification/mocks"
 )
 
 var TestAge int = 1564594093

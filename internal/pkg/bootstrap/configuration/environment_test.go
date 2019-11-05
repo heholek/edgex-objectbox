@@ -18,7 +18,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -15,8 +15,8 @@
 package container
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
 )
 
 // CredentialsProviderName contains the name of the interfaces.CredentialsProvider implementation in the DIC.

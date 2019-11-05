@@ -17,9 +17,9 @@ import (
 	"reflect"
 	"testing"
 
-	intervalErrors "github.com/edgexfoundry/edgex-go/internal/support/scheduler/errors"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/operators/intervalaction/mocks"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	intervalErrors "github.com/objectbox/edgex-objectbox/internal/support/scheduler/errors"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/operators/intervalaction/mocks"
 )
 
 //var InvalidFreqInterval = SuccessfulIntervalActionResult[4]

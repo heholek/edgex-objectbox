@@ -18,10 +18,10 @@ import (
 	"github.com/pkg/errors"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/device/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/operators/device/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 )
 
 var TestDeviceProfileID = "TestDeviceProfileID"

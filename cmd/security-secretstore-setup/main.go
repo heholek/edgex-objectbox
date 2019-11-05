@@ -27,11 +27,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/startup"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/usage"
-	"github.com/edgexfoundry/edgex-go/internal/security/secretstore"
-	"github.com/edgexfoundry/edgex-go/internal/security/secretstoreclient"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/usage"
+	"github.com/objectbox/edgex-objectbox/internal/security/secretstore"
+	"github.com/objectbox/edgex-objectbox/internal/security/secretstoreclient"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"

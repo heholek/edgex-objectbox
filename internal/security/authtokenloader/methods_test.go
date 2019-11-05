@@ -22,7 +22,7 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/edgexfoundry/edgex-go/internal/security/fileioperformer/mocks"
+	. "github.com/objectbox/edgex-objectbox/internal/security/fileioperformer/mocks"
 	"github.com/stretchr/testify/assert"
 )
 

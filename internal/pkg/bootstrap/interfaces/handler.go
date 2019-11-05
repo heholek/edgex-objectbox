@@ -18,8 +18,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/startup"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
 )
 
 // BootstrapHandler defines the contract each bootstrap handler must fulfill.  Implementation returns true if the

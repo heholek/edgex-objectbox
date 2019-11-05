@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/startup"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"

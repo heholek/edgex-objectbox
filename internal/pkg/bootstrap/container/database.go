@@ -15,8 +15,8 @@
 package container
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
 )
 
 // DBClientInterfaceName contains the name of the interfaces.DBClient implementation in the DIC.

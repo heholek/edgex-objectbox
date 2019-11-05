@@ -25,7 +25,7 @@ import (
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 
-	"github.com/edgexfoundry/edgex-go/internal/security/secretstoreclient"
+	"github.com/objectbox/edgex-objectbox/internal/security/secretstoreclient"
 )
 
 func TestGenerate(t *testing.T) {

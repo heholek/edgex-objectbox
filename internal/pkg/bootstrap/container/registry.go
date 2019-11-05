@@ -15,8 +15,8 @@
 package container
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
 	"github.com/edgexfoundry/go-mod-registry/registry"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
 )
 
 // RegistryClientInterfaceName contains the name of the registry.Client implementation in the DIC.

@@ -25,7 +25,7 @@ import (
 
 	"github.com/cloudflare/gokey"
 
-	"github.com/edgexfoundry/edgex-go/internal"
+	"github.com/objectbox/edgex-objectbox/internal"
 )
 
 // CredentialGenerator returns a credential generated with random algorithm for secret store

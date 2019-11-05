@@ -18,10 +18,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/errors"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/operators/intervalaction"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal/pkg"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/errors"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/operators/intervalaction"
 )
 
 func restGetIntervalAction(w http.ResponseWriter, r *http.Request) {

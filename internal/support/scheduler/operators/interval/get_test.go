@@ -19,9 +19,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/operators/interval/mocks"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/operators/interval/mocks"
 )
 
 var Id = "83cb038b-5a94-4707-985d-13effec62de2"

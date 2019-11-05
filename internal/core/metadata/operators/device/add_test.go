@@ -18,11 +18,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/device/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/uuid"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/operators/device/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 )
 
 func TestAddNewDevice(t *testing.T) {

@@ -23,5 +23,5 @@ import (
 type foo struct{}
 
 func TestTypeInstanceToNameReturnsExpectedPackagePlusTypeName(t *testing.T) {
-	assert.Equal(t, "github.com/edgexfoundry/edgex-go/internal/pkg/di.foo", TypeInstanceToName(foo{}))
+	assert.Equal(t, "github.com/objectbox/edgex-objectbox/internal/pkg/di.foo", TypeInstanceToName(foo{}))
 }

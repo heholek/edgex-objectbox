@@ -14,8 +14,8 @@
 package interval
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/errors"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/errors"
 )
 
 type AddExecutor interface {

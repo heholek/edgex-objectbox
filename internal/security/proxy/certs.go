@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/edgexfoundry/edgex-go/internal"
+	"github.com/objectbox/edgex-objectbox/internal"
 )
 
 type CertificateLoader interface {

@@ -20,13 +20,13 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/errors"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/operators/interval"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gorilla/mux"
+	"github.com/objectbox/edgex-objectbox/internal/pkg"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/errors"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/operators/interval"
 )
 
 func restGetIntervals(w http.ResponseWriter, r *http.Request) {

@@ -25,8 +25,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/edgexfoundry/edgex-go/internal"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
+	"github.com/objectbox/edgex-objectbox/internal"
 )
 
 type Service struct {

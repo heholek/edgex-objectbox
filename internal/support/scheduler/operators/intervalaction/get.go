@@ -15,9 +15,9 @@
 package intervalaction
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/errors"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/errors"
 )
 
 // This interface that returns a collection of interval actions

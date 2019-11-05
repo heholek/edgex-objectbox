@@ -18,7 +18,7 @@ package notifications
 import (
 	"net/http"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg"
+	"github.com/objectbox/edgex-objectbox/internal/pkg"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/gorilla/mux"

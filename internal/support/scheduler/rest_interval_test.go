@@ -23,14 +23,14 @@ import (
 	"os"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	customError "github.com/edgexfoundry/go-mod-core-contracts/clients/types"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gorilla/mux"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/interfaces/mocks"
 )
 
 // TestURI this is not really used since we are using the HTTP testing framework and not creating routes, but rather

@@ -19,7 +19,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 )
 
 const (

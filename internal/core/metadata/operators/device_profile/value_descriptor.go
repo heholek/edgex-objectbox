@@ -8,8 +8,8 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	dataErrors "github.com/edgexfoundry/edgex-go/internal/core/data/errors"
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/errors"
+	dataErrors "github.com/objectbox/edgex-objectbox/internal/core/data/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/errors"
 )
 
 // ValueDescriptorAdder provides the necessary functionality for creating a ValueDescriptor.

@@ -16,8 +16,8 @@ package subscription
 import (
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/support/notifications/operators/subscription/mocks"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal/support/notifications/operators/subscription/mocks"
 )
 
 var ValidSubscription = SuccessfulDatabaseResult[0]

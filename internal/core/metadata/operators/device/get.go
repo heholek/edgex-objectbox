@@ -15,10 +15,10 @@
 package device
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/errors"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/errors"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 )
 
 type DeviceAllExecutor interface {

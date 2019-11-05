@@ -21,8 +21,8 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/command/errors"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/core/command/errors"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 )
 
 func commandByDeviceID(deviceID string, commandID string, body string, queryParams string, isPutCommand bool, ctx context.Context) (string, int) {

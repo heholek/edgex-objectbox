@@ -15,8 +15,8 @@
 package container
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
-	"github.com/edgexfoundry/edgex-go/internal/system/agent/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/system/agent/config"
 )
 
 // ConfigurationName contains the name of the interfaces.GetConfig implementation in the DIC.

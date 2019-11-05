@@ -15,7 +15,7 @@
 package interfaces
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 )
 
 // BootstrapConfiguration defines the configuration elements required by the bootstrap.

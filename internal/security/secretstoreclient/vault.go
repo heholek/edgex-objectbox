@@ -25,9 +25,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/edgexfoundry/edgex-go/internal"
-	"github.com/edgexfoundry/edgex-go/internal/security/fileioperformer"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
+	"github.com/objectbox/edgex-objectbox/internal"
+	"github.com/objectbox/edgex-objectbox/internal/security/fileioperformer"
 )
 
 type vaultClient struct {

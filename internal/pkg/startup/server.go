@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/correlation"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/correlation"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	"github.com/gorilla/mux"

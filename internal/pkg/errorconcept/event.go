@@ -15,7 +15,7 @@
 package errorconcept
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/core/data/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/errors"
 	"net/http"
 )
 

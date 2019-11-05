@@ -20,7 +20,7 @@
 //
 //		import (
 //			"fmt"
-//			"github.com/edgexfoundry/edgex-go/internal/pkg/di"
+//			"github.com/objectbox/edgex-objectbox/internal/pkg/di"
 //		)
 //
 //		type foo struct {

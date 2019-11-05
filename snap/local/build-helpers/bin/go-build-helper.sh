@@ -1,6 +1,6 @@
 #!/bin/bash
 # example usage:
-# $ gopartbootstrap github.com/edgexfoundry/edgex-go
+# $ gopartbootstrap github.com/objectbox/edgex-objectbox
 gopartbootstrap() 
 {
     # first set the GOPATH to be in the current directory and in ".gopath"

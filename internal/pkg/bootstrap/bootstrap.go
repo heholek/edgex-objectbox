@@ -21,12 +21,12 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/configuration"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/container"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/logging"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/startup"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/configuration"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/container"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/logging"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 

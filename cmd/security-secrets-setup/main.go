@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/usage"
-	"github.com/edgexfoundry/edgex-go/internal/security/secrets"
-	"github.com/edgexfoundry/edgex-go/internal/security/secrets/option"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/usage"
+	"github.com/objectbox/edgex-objectbox/internal/security/secrets"
+	"github.com/objectbox/edgex-objectbox/internal/security/secrets/option"
 )
 
 type exiter interface {

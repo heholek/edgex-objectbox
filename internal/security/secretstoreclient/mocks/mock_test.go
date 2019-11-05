@@ -21,7 +21,7 @@ import (
 	"net/http"
 	"testing"
 
-	. "github.com/edgexfoundry/edgex-go/internal/security/secretstoreclient"
+	. "github.com/objectbox/edgex-objectbox/internal/security/secretstoreclient"
 	"github.com/stretchr/testify/assert"
 )
 

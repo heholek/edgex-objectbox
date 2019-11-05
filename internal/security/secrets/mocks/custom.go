@@ -15,7 +15,7 @@
 package mocks
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 )
 
 func CreateValidX509ConfigMock() config.X509Config {

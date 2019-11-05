@@ -21,15 +21,15 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/errors"
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/device"
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/device_profile"
-	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/errorconcept"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gorilla/mux"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/operators/device"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/operators/device_profile"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/errorconcept"
 )
 
 func restGetAllDeviceProfiles(w http.ResponseWriter, _ *http.Request) {

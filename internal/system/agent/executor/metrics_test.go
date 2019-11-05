@@ -19,8 +19,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/system"
-	"github.com/edgexfoundry/edgex-go/internal/system/agent/response"
+	"github.com/objectbox/edgex-objectbox/internal/system"
+	"github.com/objectbox/edgex-objectbox/internal/system/agent/response"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 

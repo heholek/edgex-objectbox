@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/security/secrets"
+	"github.com/objectbox/edgex-objectbox/internal/security/secrets"
 	"github.com/stretchr/testify/assert"
 )
 

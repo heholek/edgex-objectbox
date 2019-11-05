@@ -15,8 +15,8 @@
 package container
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
 )
 
 // LoggingClientInterfaceName contains the name of the logger.LoggingClient implementation in the DIC.

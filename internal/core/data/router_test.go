@@ -27,10 +27,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/core/data/interfaces/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/errorconcept"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/interfaces/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/errorconcept"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"

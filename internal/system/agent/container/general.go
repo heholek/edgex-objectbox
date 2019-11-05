@@ -15,8 +15,8 @@
 package container
 
 import (
-	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
-	"github.com/edgexfoundry/edgex-go/internal/system/agent/clients"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/system/agent/clients"
 )
 
 // GeneralClientsName contains the name of the clients.Clients implementation in the DIC.

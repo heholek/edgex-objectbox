@@ -20,12 +20,12 @@ import (
 	"os"
 	"sync"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/container"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/bootstrap/startup"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/di"
-	"github.com/edgexfoundry/edgex-go/internal/security/authtokenloader"
-	"github.com/edgexfoundry/edgex-go/internal/security/fileioperformer"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/container"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
+	"github.com/objectbox/edgex-objectbox/internal/security/authtokenloader"
+	"github.com/objectbox/edgex-objectbox/internal/security/fileioperformer"
 
 	"github.com/edgexfoundry/go-mod-secrets/pkg"
 

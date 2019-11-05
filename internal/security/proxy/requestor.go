@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/edgexfoundry/edgex-go/internal"
+	"github.com/objectbox/edgex-objectbox/internal"
 )
 
 func NewRequestor(skipVerify bool, timeoutInSecond int) internal.HttpCaller {

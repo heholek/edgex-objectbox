@@ -19,7 +19,7 @@ package mocks
 import (
 	"testing"
 
-	. "github.com/edgexfoundry/edgex-go/internal/security/authtokenloader"
+	. "github.com/objectbox/edgex-objectbox/internal/security/authtokenloader"
 	"github.com/stretchr/testify/assert"
 )
 

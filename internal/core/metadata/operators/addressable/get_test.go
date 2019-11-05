@@ -8,10 +8,10 @@ import (
 
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	metadataErrors "github.com/edgexfoundry/edgex-go/internal/core/metadata/errors"
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/addressable/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
+	metadataErrors "github.com/objectbox/edgex-objectbox/internal/core/metadata/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/operators/addressable/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 )
 
 var Id = "83cb038b-5a94-4707-985d-13effec62de2"

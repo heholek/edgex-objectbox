@@ -22,11 +22,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/support/scheduler/interfaces/mocks"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/gorilla/mux"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/support/scheduler/interfaces/mocks"
 )
 
 var intervalActionForAdd = contract.IntervalAction{

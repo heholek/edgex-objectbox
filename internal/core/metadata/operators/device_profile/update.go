@@ -5,7 +5,7 @@ import (
 
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/errors"
 )
 
 // UpdateDeviceProfileExecutor provides functionality for updating and persisting device profiles.

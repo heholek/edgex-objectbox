@@ -7,7 +7,7 @@ import (
 
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/operators/device_profile/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/operators/device_profile/mocks"
 )
 
 var TestError = errors.New("test error")

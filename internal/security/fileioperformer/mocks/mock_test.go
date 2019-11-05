@@ -20,7 +20,7 @@ import (
 	"os"
 	"testing"
 
-	. "github.com/edgexfoundry/edgex-go/internal/security/fileioperformer"
+	. "github.com/objectbox/edgex-objectbox/internal/security/fileioperformer"
 	"github.com/stretchr/testify/assert"
 )
 

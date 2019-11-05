@@ -17,10 +17,10 @@ package certificates
 import (
 	"testing"
 
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/security/secrets"
-	"github.com/edgexfoundry/edgex-go/internal/security/secrets/mocks"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/security/secrets"
+	"github.com/objectbox/edgex-objectbox/internal/security/secrets/mocks"
 )
 
 func TestRootCertGenerate(t *testing.T) {

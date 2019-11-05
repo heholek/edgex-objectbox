@@ -15,11 +15,11 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/errors"
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/interfaces"
-	"github.com/edgexfoundry/edgex-go/internal/core/metadata/interfaces/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/db"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/interfaces"
+	"github.com/objectbox/edgex-objectbox/internal/core/metadata/interfaces/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/mock"

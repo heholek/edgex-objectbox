@@ -24,9 +24,9 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	"github.com/edgexfoundry/edgex-go/internal/core/data/errors"
-	"github.com/edgexfoundry/edgex-go/internal/core/data/operators/value_descriptor/mocks"
-	"github.com/edgexfoundry/edgex-go/internal/pkg/config"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/errors"
+	"github.com/objectbox/edgex-objectbox/internal/core/data/operators/value_descriptor/mocks"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 )
 
 var TestSuccessfulConfig = config.ServiceInfo{MaxResultCount: 5}

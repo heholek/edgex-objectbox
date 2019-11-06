@@ -34,6 +34,7 @@ var ProvisionWatcher_ = struct {
 	Identifiers    *objectbox.PropertyByteVector
 	Profile        *objectbox.RelationToOne
 	Service        *objectbox.RelationToOne
+	AdminState     *objectbox.PropertyString
 	OperatingState *objectbox.PropertyString
 }{
 	Created: &objectbox.PropertyInt64{
@@ -86,6 +87,12 @@ var ProvisionWatcher_ = struct {
 		},
 		Target: &DeviceServiceBinding.Entity,
 	},
+	AdminState: &objectbox.PropertyString{
+		BaseProperty: &objectbox.BaseProperty{
+			Id:     10,
+			Entity: &ProvisionWatcherBinding.Entity,
+		},
+	},
 	OperatingState: &objectbox.PropertyString{
 		BaseProperty: &objectbox.BaseProperty{
 			Id:     9,
@@ -117,8 +124,9 @@ func (provisionWatcher_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Service", 11, 8, 6873740026061739530)
 	model.PropertyFlags(8712)
 	model.PropertyRelation("DeviceService", 14, 3453358122163741587)
+	model.Property("AdminState", 9, 10, 92900689631506377)
 	model.Property("OperatingState", 9, 9, 3437982289020393516)
-	model.EntityLastPropertyId(9, 3437982289020393516)
+	model.EntityLastPropertyId(10, 92900689631506377)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -189,6 +197,7 @@ func (provisionWatcher_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.
 
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetIdentifiers = fbutils.CreateByteVectorOffset(fbb, propIdentifiers)
+	var offsetAdminState = fbutils.CreateStringOffset(fbb, string(obj.AdminState))
 	var offsetOperatingState = fbutils.CreateStringOffset(fbb, string(obj.OperatingState))
 
 	var rIdProfile uint64
@@ -210,7 +219,7 @@ func (provisionWatcher_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.
 	}
 
 	// build the FlatBuffers object
-	fbb.StartObject(9)
+	fbb.StartObject(10)
 	fbutils.SetInt64Slot(fbb, 0, obj.Timestamps.Created)
 	fbutils.SetInt64Slot(fbb, 1, obj.Timestamps.Modified)
 	fbutils.SetInt64Slot(fbb, 2, obj.Timestamps.Origin)
@@ -219,6 +228,7 @@ func (provisionWatcher_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.
 	fbutils.SetUOffsetTSlot(fbb, 5, offsetIdentifiers)
 	fbutils.SetUint64Slot(fbb, 6, rIdProfile)
 	fbutils.SetUint64Slot(fbb, 7, rIdService)
+	fbutils.SetUOffsetTSlot(fbb, 9, offsetAdminState)
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetOperatingState)
 	return nil
 }
@@ -281,6 +291,7 @@ func (provisionWatcher_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (
 		Identifiers:    propIdentifiers,
 		Profile:        *relProfile,
 		Service:        *relService,
+		AdminState:     models.AdminState(fbutils.GetStringSlot(table, 22)),
 		OperatingState: models.OperatingState(fbutils.GetStringSlot(table, 20)),
 	}, nil
 }

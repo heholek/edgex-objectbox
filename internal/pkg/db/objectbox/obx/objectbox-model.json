@@ -777,7 +777,7 @@
     },
     {
       "id": "12:678769668479103726",
-      "lastPropertyId": "9:3437982289020393516",
+      "lastPropertyId": "10:92900689631506377",
       "name": "ProvisionWatcher",
       "properties": [
         {
@@ -832,6 +832,11 @@
         {
           "id": "9:3437982289020393516",
           "name": "OperatingState",
+          "type": 9
+        },
+        {
+          "id": "10:92900689631506377",
+          "name": "AdminState",
           "type": 9
         }
       ]

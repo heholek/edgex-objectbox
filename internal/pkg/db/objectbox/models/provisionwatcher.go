@@ -25,5 +25,6 @@ type ProvisionWatcher struct {
 	Identifiers       map[string]string `objectbox:"type:[]byte converter:mapStringStringJson"`
 	Profile           DeviceProfile     `objectbox:"link"`
 	Service           DeviceService     `objectbox:"link"`
+	AdminState        models.AdminState
 	OperatingState    models.OperatingState
 }

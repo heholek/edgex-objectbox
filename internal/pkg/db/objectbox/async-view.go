@@ -33,6 +33,9 @@ func (view *AsyncView) Clear() {
 }
 
 func (view *AsyncView) markIfNoErr(err error, id uint64, state int8) {
+	if err != nil {
+		return
+	}
 	view.mutex.Lock()
 	view.ids[id] = state
 	view.mutex.Unlock()

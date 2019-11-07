@@ -17,6 +17,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox"
 	"sync"
 	"time"
 
@@ -87,6 +88,8 @@ func (d Database) newDBClient(loggingClient logger.LoggingClient, credentials co
 				loggingClient)
 		}
 		return redis.NewClient(db.Configuration{Host: databaseInfo.Host, Port: databaseInfo.Port}, loggingClient)
+	case db.ObjectBox:
+		return objectbox.NewClient(db.Configuration{DatabaseName: databaseInfo.Name})
 	default:
 		return nil, db.ErrUnsupportedDatabase
 	}

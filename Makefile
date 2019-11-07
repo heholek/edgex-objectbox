@@ -20,7 +20,7 @@ MICROSERVICES=cmd/config-seed/config-seed cmd/export-client/export-client cmd/ex
 VERSION=$(shell cat ./VERSION)
 DOCKER_TAG=$(VERSION)-dev
 
-GOFLAGS=-ldflags "-X github.com/objectbox/edgex-objectbox.Version=$(VERSION)"
+#GOFLAGS=-ldflags "-X github.com/objectbox/edgex-objectbox.Version=$(VERSION)"
 
 GIT_SHA=$(shell git rev-parse HEAD)
 
@@ -38,7 +38,7 @@ cmd/core-data/core-data:
 	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/core-data
 
 cmd/core-command/core-command:
-	$(GO) build $(GOFLAGS) -o $@ ./cmd/core-command
+	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/core-command
 
 cmd/export-client/export-client:
 	$(GOCGO) build $(GOFLAGS) -o $@ ./cmd/export-client

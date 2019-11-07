@@ -11,14 +11,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
-
-	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 
 	mgo "github.com/globalsign/mgo"
 	bson "github.com/globalsign/mgo/bson"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/config"
 )
 
 type mongoLog struct {

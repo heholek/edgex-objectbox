@@ -204,4 +204,7 @@ type DBClient interface {
 
 	ScrubAllIntervalActions() (int, error)
 	ScrubAllIntervals() (int, error)
+
+	// EdgeX-ObjectBox addition
+	EnsureAllDurable(async bool) error
 }

@@ -22,3 +22,5 @@ mv "${obxmodels}"/*.obx.go "${obxbindings}/"
 
 # fix package name on generated files and objectbox-model.go
 for f in "${obxbindings}"/*.go; do sed -i 's/package models/package obx/g' "$f"; done
+
+gofmt -l -w "${obxbindings}"

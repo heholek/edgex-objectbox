@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
-	"github.com/influxdata/influxdb/pkg/testing/assert"
 	correlation "github.com/objectbox/edgex-objectbox/internal/pkg/correlation/models"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
+	"github.com/objectbox/objectbox-go/test/assert"
 )
 
 func TestObjectBox(t *testing.T) {
@@ -93,72 +93,66 @@ func TestObjectBoxReadings(t *testing.T) {
 	client := createClient()
 	defer client.CloseSession()
 
-	assert.NoError(t, client.ScrubAllEvents())
+	assert.NoErr(t, client.ScrubAllEvents())
 	countPre, err := client.eventBox.Count()
-	assert.NoError(t, err)
-	ok := assert.Equal(t, countPre, uint64(0))
+	assert.NoErr(t, err)
+	assert.Eq(t, countPre, uint64(0))
 	countPre, err = client.readingBox.Count()
-	ok = ok && assert.Equal(t, countPre, uint64(0))
-	if !ok {
-		t.Fatal("Non-zero counts")
-	}
+	assert.Eq(t, countPre, uint64(0))
 
 	reading := models.Reading{
 		Name:   "reading1",
 		Device: "device42",
 	}
 	objectId, err := client.AddReading(reading)
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 	t.Logf("Added reading ID %v", objectId)
-	assert.NotEqual(t, objectId, "")
+	assert.NotEq(t, objectId, "")
 
 	reading.Name = "reading2"
 	objectId2, err := client.AddReading(reading)
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 
 	t.Logf("Added 2nd reading ID %v", objectId2)
 
 	reading.Name = "reading3"
 	reading.Device = "device43"
 	objectId3, err := client.AddReading(reading)
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 
 	t.Logf("Added 3rd reading ID %v", objectId3)
 	count, err := client.ReadingCount()
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 
-	assert.Equal(t, count, 3)
+	assert.Eq(t, count, 3)
 
 	readingRead, err := client.ReadingById(string(objectId2))
 	if err != nil {
 		t.Fatalf("Could not get 2nd reading by ID: %v", err)
 	}
-	assert.Equal(t, readingRead.Id, objectId2)
-	assert.Equal(t, readingRead.Device, "device42")
+	assert.Eq(t, readingRead.Id, objectId2)
+	assert.Eq(t, readingRead.Device, "device42")
 
 	all, err := client.Readings()
-	assert.NoError(t, err)
-	if assert.Equal(t, len(all), 3) {
-		assert.Equal(t, all[0].Device, "device42")
-		assert.Equal(t, all[1].Device, "device42")
-		assert.Equal(t, all[2].Device, "device43")
-	}
+	assert.NoErr(t, err)
+	assert.Eq(t, len(all), 3)
+	assert.Eq(t, all[0].Device, "device42")
+	assert.Eq(t, all[1].Device, "device42")
+	assert.Eq(t, all[2].Device, "device43")
 
 	readings, err := client.ReadingsByDevice("device42", 10)
-	if assert.Equal(t, len(readings), 2) {
-		assert.Equal(t, readings[0].Id, objectId)
-		assert.Equal(t, readings[0].Device, "device42")
-		assert.Equal(t, readings[1].Id, objectId2)
-		assert.Equal(t, readings[1].Device, "device42")
-	}
+	assert.Eq(t, len(readings), 2)
+	assert.Eq(t, readings[0].Id, objectId)
+	assert.Eq(t, readings[0].Device, "device42")
+	assert.Eq(t, readings[1].Id, objectId2)
+	assert.Eq(t, readings[1].Device, "device42")
 
 	// Limit
 	readings, err = client.ReadingsByDevice("device42", 1)
-	assert.Equal(t, len(readings), 1)
+	assert.Eq(t, len(readings), 1)
 
 	readings, err = client.ReadingsByDevice("device43", 10)
-	if assert.Equal(t, len(readings), 1) {
-		assert.Equal(t, readings[0].Id, objectId3)
-		assert.Equal(t, readings[0].Device, "device43")
-	}
+	assert.Eq(t, len(readings), 1)
+	assert.Eq(t, readings[0].Id, objectId3)
+	assert.Eq(t, readings[0].Device, "device43")
 }

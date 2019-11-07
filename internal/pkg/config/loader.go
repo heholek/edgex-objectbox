@@ -20,10 +20,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/objectbox/edgex-objectbox/internal"
-	"github.com/objectbox/edgex-objectbox/internal"
-
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/logger"
+	"github.com/objectbox/edgex-objectbox/internal"
 
 	"github.com/BurntSushi/toml"
 	"github.com/pkg/errors"

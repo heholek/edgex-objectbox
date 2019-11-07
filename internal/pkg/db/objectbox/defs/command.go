@@ -12,11 +12,15 @@
  * the License.
  *******************************************************************************/
 
-package models
+package defs
 
 import (
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
+
+// Command represents a command on a device and is used by core-command service.
+// In addition to model.Command, it adds DeviceId - a reference to device
 
 type Command struct {
 	models.Timestamps `objectbox:"inline"`
@@ -24,4 +28,38 @@ type Command struct {
 	Name              string
 	Get               Get
 	Put               Put
+
+	// Additional
+	DeviceId uint64 `objectbox:"link:Device"`
+}
+
+func (c *Command) ToContract() contract.Command {
+	return contract.Command{
+		Timestamps: c.Timestamps,
+		Id:         c.Id,
+		Name:       c.Name,
+		Get: contract.Get{
+			contract.Action{
+				c.Get.Action.Path,
+				c.Get.Action.Responses,
+				c.Get.Action.URL,
+			},
+		},
+		Put: contract.Put{
+			contract.Action{
+				c.Put.Action.Path,
+				c.Put.Action.Responses,
+				c.Put.Action.URL,
+			},
+			c.Put.ParameterNames,
+		},
+	}
+}
+
+func CommandSliceToContract(commands []Command) []contract.Command {
+	var result = make([]contract.Command, 0, len(commands))
+	for i := range commands {
+		result = append(result, commands[i].ToContract())
+	}
+	return result
 }

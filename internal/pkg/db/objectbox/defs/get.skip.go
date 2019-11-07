@@ -12,9 +12,8 @@
  * the License.
  *******************************************************************************/
 
-package models
+package defs
 
-type Put struct {
-	Action         `objectbox:"inline"`
-	ParameterNames []string
+type Get struct {
+	Action `objectbox:"inline"`
 }

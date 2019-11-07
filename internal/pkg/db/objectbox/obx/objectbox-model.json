@@ -85,7 +85,7 @@
     },
     {
       "id": "2:3466110984159220104",
-      "lastPropertyId": "12:706434787225063093",
+      "lastPropertyId": "13:4054390726219833422",
       "name": "Command",
       "properties": [
         {
@@ -148,6 +148,14 @@
           "id": "12:706434787225063093",
           "name": "Put_ParameterNames",
           "type": 30
+        },
+        {
+          "id": "13:4054390726219833422",
+          "name": "DeviceId",
+          "indexId": "21:2079075702818635513",
+          "type": 11,
+          "flags": 8712,
+          "relationTarget": "Device"
         }
       ]
     },
@@ -279,7 +287,7 @@
     },
     {
       "id": "5:2211424933411195666",
-      "lastPropertyId": "11:5969260086641149857",
+      "lastPropertyId": "12:984219279912093297",
       "name": "DeviceProfile",
       "properties": [
         {
@@ -339,13 +347,11 @@
           "id": "11:5969260086641149857",
           "name": "DeviceCommands",
           "type": 23
-        }
-      ],
-      "relations": [
+        },
         {
-          "id": "1:2308887105935734223",
+          "id": "12:984219279912093297",
           "name": "CoreCommands",
-          "targetId": "2:3466110984159220104"
+          "type": 23
         }
       ]
     },
@@ -1137,7 +1143,7 @@
     }
   ],
   "lastEntityId": "16:2903250960703756959",
-  "lastIndexId": "20:145108907760923749",
+  "lastIndexId": "21:2079075702818635513",
   "lastRelationId": "2:6583600503460504451",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
@@ -1153,6 +1159,8 @@
     7563386498631520310,
     7403783828917261073
   ],
-  "retiredRelationUids": [],
+  "retiredRelationUids": [
+    2308887105935734223
+  ],
   "version": 0
 }

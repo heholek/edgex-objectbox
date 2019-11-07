@@ -12,19 +12,24 @@
  * the License.
  *******************************************************************************/
 
-package models
+package defs
 
 import (
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
-type ProvisionWatcher struct {
-	models.Timestamps `objectbox:"inline"`
-	Id                string
-	Name              string            `objectbox:"unique"`
-	Identifiers       map[string]string `objectbox:"type:[]byte converter:mapStringStringJson"`
-	Profile           DeviceProfile     `objectbox:"link"`
-	Service           DeviceService     `objectbox:"link"`
-	AdminState        models.AdminState
-	OperatingState    models.OperatingState
+type Device struct {
+	models.DescribedObject `objectbox:"inline"`
+	Id                     string
+	Name                   string `objectbox:"unique"`
+	AdminState             models.AdminState
+	OperatingState         models.OperatingState
+	Protocols              map[string]models.ProtocolProperties `objectbox:"type:[]byte converter:mapStringProtocolPropertiesJson"`
+	LastConnected          int64
+	LastReported           int64
+	Labels                 []string
+	Location               interface{}   `objectbox:"type:[]byte converter:interfaceJson"`
+	Service                DeviceService `objectbox:"link"`
+	Profile                DeviceProfile `objectbox:"link"`
+	AutoEvents             []AutoEvent   `objectbox:"type:[]byte converter:autoEventsJson"`
 }

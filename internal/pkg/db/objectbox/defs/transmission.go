@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Dell Inc.
+ * Copyright 2018 Dell Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -10,22 +10,22 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  *******************************************************************************/
 
-package models
+package defs
 
 import (
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
-type DeviceService struct {
-	models.DescribedObject `objectbox:"inline"`
-	Id                     string
-	Name                   string `objectbox:"unique"`
-	LastConnected          int64
-	LastReported           int64
-	OperatingState         models.OperatingState
-	Labels                 []string
-	Addressable            Addressable `objectbox:"link"`
-	AdminState             models.AdminState
+type Transmission struct {
+	models.Timestamps `objectbox:"inline"`
+	ID                string
+	Notification      Notification `objectbox:"link"`
+	Receiver          string
+	Channel           models.Channel
+	Status            models.TransmissionStatus
+	ResendCount       int
+	Records           []models.TransmissionRecord `objectbox:"type:[]byte converter:transmissionRecordsJson"`
 }

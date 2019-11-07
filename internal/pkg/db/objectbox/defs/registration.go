@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Dell Inc.
+ * Copyright 2019 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,12 +12,23 @@
  * the License.
  *******************************************************************************/
 
-package models
+package defs
 
-import "github.com/edgexfoundry/go-mod-core-contracts/models"
+import (
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
+)
 
-type Action struct {
-	Path      string
-	Responses []models.Response `objectbox:"type:[]byte converter:responsesJson"`
-	URL       string
+type Registration struct {
+	ID          string
+	Created     int64
+	Modified    int64
+	Origin      int64
+	Name        string      `objectbox:"unique"`
+	Addressable Addressable `objectbox:"link"`
+	Format      string
+	Filter      models.Filter
+	Encryption  models.EncryptionDetails
+	Compression string
+	Enable      bool
+	Destination string
 }

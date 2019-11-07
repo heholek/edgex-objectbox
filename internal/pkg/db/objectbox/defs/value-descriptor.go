@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2018 Dell Technologies Inc.
+ * Copyright 2017 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -10,22 +10,22 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  *******************************************************************************/
 
-package models
+package defs
 
-import (
-	"github.com/edgexfoundry/go-mod-core-contracts/models"
-)
-
-type Transmission struct {
-	models.Timestamps `objectbox:"inline"`
-	ID                string
-	Notification      Notification `objectbox:"link"`
-	Receiver          string
-	Channel           models.Channel
-	Status            models.TransmissionStatus
-	ResendCount       int
-	Records           []models.TransmissionRecord `objectbox:"type:[]byte converter:transmissionRecordsJson"`
+type ValueDescriptor struct {
+	Id           string
+	Created      int64
+	Description  string
+	Modified     int64
+	Origin       int64
+	Name         string      `objectbox:"unique"`
+	Min          interface{} `objectbox:"type:[]byte converter:interfaceJson"`
+	Max          interface{} `objectbox:"type:[]byte converter:interfaceJson"`
+	DefaultValue interface{} `objectbox:"type:[]byte converter:interfaceJson"`
+	Type         string
+	UomLabel     string
+	Formatting   string
+	Labels       []string
 }

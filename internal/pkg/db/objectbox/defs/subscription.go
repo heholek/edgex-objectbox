@@ -13,7 +13,7 @@
  *
  *******************************************************************************/
 
-package models
+package defs
 
 import (
 	"github.com/edgexfoundry/go-mod-core-contracts/models"

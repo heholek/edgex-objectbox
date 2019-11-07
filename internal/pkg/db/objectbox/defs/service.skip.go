@@ -12,24 +12,21 @@
  * the License.
  *******************************************************************************/
 
-package models
+package defs
 
 import (
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
-type Device struct {
+// this is not an entity, (that's why the file is named .skip.go)
+
+type Service struct {
 	models.DescribedObject `objectbox:"inline"`
 	Id                     string
 	Name                   string `objectbox:"unique"`
-	AdminState             models.AdminState
-	OperatingState         models.OperatingState
-	Protocols              map[string]models.ProtocolProperties `objectbox:"type:[]byte converter:mapStringProtocolPropertiesJson"`
 	LastConnected          int64
 	LastReported           int64
+	OperatingState         models.OperatingState
 	Labels                 []string
-	Location               interface{}   `objectbox:"type:[]byte converter:interfaceJson"`
-	Service                DeviceService `objectbox:"link"`
-	Profile                DeviceProfile `objectbox:"link"`
-	AutoEvents             []AutoEvent   `objectbox:"type:[]byte converter:autoEventsJson"`
+	Addressable            Addressable `objectbox:"link"`
 }

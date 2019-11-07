@@ -12,8 +12,12 @@
  * the License.
  *******************************************************************************/
 
-package models
+package defs
 
-type Get struct {
-	Action `objectbox:"inline"`
+import "github.com/edgexfoundry/go-mod-core-contracts/models"
+
+type Action struct {
+	Path      string
+	Responses []models.Response `objectbox:"type:[]byte converter:responsesJson"`
+	URL       string
 }

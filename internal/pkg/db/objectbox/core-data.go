@@ -299,6 +299,32 @@ func (client *coreDataClient) DeleteEventById(idString string) error {
 	return mapError(client.eventBox.RemoveId(id))
 }
 
+// DeleteEventsByDevice deletes events and readings associated with the specified device ID.
+// Returns the number of removed events.
+func (client *coreDataClient) DeleteEventsByDevice(deviceId string) (int, error) {
+	var count uint64
+	var err = client.objectBox.RunInWriteTx(func() error {
+		err := client.DeleteReadingsByDevice(deviceId)
+		if err != nil {
+			return err
+		}
+
+		var query = &client.queries.event.device
+
+		query.Lock()
+		defer query.Unlock()
+
+		if err := query.SetStringParams(obx.Event_.Device, deviceId); err != nil {
+			return mapError(err)
+		}
+
+		count, err = query.Limit(0).Remove()
+		return err
+	})
+
+	return int(count), err
+}
+
 func (client *coreDataClient) EventsForDeviceLimit(id string, limit int) ([]contract.Event, error) {
 	var query = &client.queries.event.device
 
@@ -442,6 +468,22 @@ func (client *coreDataClient) DeleteReadingById(idString string) error {
 	}
 
 	return mapError(client.readingBox.RemoveId(id))
+}
+
+func (client *coreDataClient) DeleteReadingsByDevice(deviceId string) error {
+	client.awaitAsync()
+
+	var query = &client.queries.reading.device
+
+	query.Lock()
+	defer query.Unlock()
+
+	if err := query.SetStringParams(obx.Reading_.Device, deviceId); err != nil {
+		return mapError(err)
+	}
+
+	_, err := query.Limit(0).Remove()
+	return mapError(err)
 }
 
 func (client *coreDataClient) ReadingsByDevice(deviceId string, limit int) ([]contract.Reading, error) {

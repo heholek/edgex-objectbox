@@ -13,6 +13,7 @@ type ObjectBoxClient struct {
 	// embedded services
 	*coreDataClient
 	*coreMetaDataClient
+	*coreCommandClient
 	*exportClient
 	*schedulerClient
 	*notificationsClient
@@ -44,7 +45,11 @@ func (client *ObjectBoxClient) Connect() error {
 	}
 
 	if err == nil {
-		client.coreMetaDataClient, err = newCoreMetaDataClient(objectBox)
+		client.coreCommandClient, err = newCoreCommandClient(objectBox)
+	}
+
+	if err == nil {
+		client.coreMetaDataClient, err = newCoreMetaDataClient(objectBox, client.coreCommandClient)
 	}
 
 	if err == nil {
@@ -72,6 +77,7 @@ func (client *ObjectBoxClient) CloseSession() {
 	// remove service references
 	client.coreDataClient = nil
 	client.coreMetaDataClient = nil
+	client.coreCommandClient = nil
 	client.exportClient = nil
 	client.schedulerClient = nil
 	client.notificationsClient = nil

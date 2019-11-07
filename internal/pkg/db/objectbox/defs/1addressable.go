@@ -12,21 +12,23 @@
  * the License.
  *******************************************************************************/
 
-package models
+package defs
 
 import (
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
-// this is not an entity, (that's why the file is named .skip.go)
-
-type Service struct {
-	models.DescribedObject `objectbox:"inline"`
-	Id                     string
-	Name                   string `objectbox:"unique"`
-	LastConnected          int64
-	LastReported           int64
-	OperatingState         models.OperatingState
-	Labels                 []string
-	Addressable            Addressable `objectbox:"link"`
+type Addressable struct {
+	models.Timestamps `objectbox:"inline"`
+	Id                string
+	Name              string `objectbox:"unique"`
+	Protocol          string
+	HTTPMethod        string
+	Address           string
+	Port              int
+	Path              string
+	Publisher         string
+	User              string
+	Password          string
+	Topic             string
 }

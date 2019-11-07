@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2018 Dell Inc.
+ * Copyright 2017 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,24 +12,21 @@
  * the License.
  *******************************************************************************/
 
-package models
+package defs
 
-type IntervalAction struct {
-	ID         string
-	Created    int64
-	Modified   int64
-	Origin     int64
-	Name       string `objectbox:"unique"`
-	Interval   string
-	Parameters string
-	Target     string
-	Protocol   string
-	HTTPMethod string
-	Address    string
-	Port       int
-	Path       string
-	Publisher  string
-	User       string
-	Password   string
-	Topic      string
+import (
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
+)
+
+// DeviceProfile is a template for a device
+type DeviceProfile struct {
+	models.DescribedObject `objectbox:"inline"`
+	Id                     string
+	Name                   string `objectbox:"unique"`
+	Manufacturer           string
+	Model                  string
+	Labels                 []string
+	DeviceResources        []models.DeviceResource  `objectbox:"type:[]byte converter:deviceResourcesJson"`
+	DeviceCommands         []models.ProfileResource `objectbox:"type:[]byte converter:profileResourcesJson"`
+	CoreCommands           []models.Command         `objectbox:"type:[]byte converter:commandsJson"`
 }

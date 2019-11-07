@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-obxmodels=internal/pkg/db/objectbox/models #source
-# obxmodels=internal/pkg/db/objectbox/models/correlation #source
+obxmodels=internal/pkg/db/objectbox/defs #source
+# obxmodels=internal/pkg/db/objectbox/defs/correlation #source
 obxbindings=internal/pkg/db/objectbox/obx  #target
 
 generator="go run github.com/objectbox/objectbox-go/cmd/objectbox-gogen -byValue -persist ${obxbindings}/objectbox-model.json"
@@ -21,6 +21,6 @@ for f in "${obxmodels}"/*.obx.go; do sed -i 's/import (/import (\n\t. "github.co
 mv "${obxmodels}"/*.obx.go "${obxbindings}/"
 
 # fix package name on generated files and objectbox-model.go
-for f in "${obxbindings}"/*.go; do sed -i 's/package models/package obx/g' "$f"; done
+for f in "${obxbindings}"/*.go; do sed -i 's/package defs/package obx/g' "$f"; done
 
 gofmt -l -w "${obxbindings}"

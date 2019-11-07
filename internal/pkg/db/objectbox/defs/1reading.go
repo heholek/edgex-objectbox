@@ -12,23 +12,16 @@
  * the License.
  *******************************************************************************/
 
-package models
+package defs
 
-import (
-	"github.com/edgexfoundry/go-mod-core-contracts/models"
-)
-
-type Addressable struct {
-	models.Timestamps `objectbox:"inline"`
-	Id                string
-	Name              string `objectbox:"unique"`
-	Protocol          string
-	HTTPMethod        string
-	Address           string
-	Port              int
-	Path              string
-	Publisher         string
-	User              string
-	Password          string
-	Topic             string
+type Reading struct {
+	Id          string
+	Pushed      int64
+	Created     int64
+	Origin      int64
+	Modified    int64
+	Device      string
+	Name        string
+	Value       string
+	BinaryValue []byte
 }

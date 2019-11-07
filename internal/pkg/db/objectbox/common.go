@@ -1,8 +1,8 @@
 package objectbox
 
 import (
-	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/objectbox/edgex-objectbox/internal/pkg/db"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"strings"
 )

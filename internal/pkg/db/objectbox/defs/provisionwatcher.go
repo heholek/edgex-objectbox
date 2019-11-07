@@ -12,20 +12,19 @@
  * the License.
  *******************************************************************************/
 
-package models
+package defs
 
 import (
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
-type DeviceProfile struct {
-	models.DescribedObject `objectbox:"inline"`
-	Id                     string
-	Name                   string `objectbox:"unique"`
-	Manufacturer           string
-	Model                  string
-	Labels                 []string
-	DeviceResources        []models.DeviceResource  `objectbox:"type:[]byte converter:deviceResourcesJson"`
-	DeviceCommands         []models.ProfileResource `objectbox:"type:[]byte converter:profileResourcesJson"`
-	CoreCommands           []Command
+type ProvisionWatcher struct {
+	models.Timestamps `objectbox:"inline"`
+	Id                string
+	Name              string            `objectbox:"unique"`
+	Identifiers       map[string]string `objectbox:"type:[]byte converter:mapStringStringJson"`
+	Profile           DeviceProfile     `objectbox:"link"`
+	Service           DeviceService     `objectbox:"link"`
+	AdminState        models.AdminState
+	OperatingState    models.OperatingState
 }

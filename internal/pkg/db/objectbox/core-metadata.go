@@ -12,9 +12,9 @@ import (
 
 type coreMetaDataClient struct {
 	objectBox *objectbox.ObjectBox
+	cmdClient *coreCommandClient // Temporary until core-command is completely separated from core-metadata
 
 	addressableBox      *obx.AddressableBox      // no async - a config
-	commandBox          *obx.CommandBox          // no async - a config
 	deviceBox           *obx.DeviceBox           // no async - a config/state
 	deviceProfileBox    *obx.DeviceProfileBox    // no async - a config/state
 	deviceReportBox     *obx.DeviceReportBox     // no async - has unique and requires insert/update to fail
@@ -33,11 +33,7 @@ type coreMetaDataQueries struct {
 		publisher addressableQuery
 		topic     addressableQuery
 	}
-	command struct {
-		name commandQuery
-	}
 	deviceProfile struct {
-		commands             deviceProfileQuery
 		labels               deviceProfileQuery
 		manufacturer         deviceProfileQuery
 		manufacturerAndModel deviceProfileQuery
@@ -73,11 +69,6 @@ type addressableQuery struct {
 	sync.Mutex
 }
 
-type commandQuery struct {
-	*obx.CommandQuery
-	sync.Mutex
-}
-
 type deviceQuery struct {
 	*obx.DeviceQuery
 	sync.Mutex
@@ -105,12 +96,11 @@ type provisionWatcherQuery struct {
 
 //endregion
 
-func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient, error) {
-	var client = &coreMetaDataClient{objectBox: objectBox}
+func newCoreMetaDataClient(objectBox *objectbox.ObjectBox, commandClient *coreCommandClient) (*coreMetaDataClient, error) {
+	var client = &coreMetaDataClient{objectBox: objectBox, cmdClient: commandClient}
 	var err error
 
 	client.addressableBox = obx.BoxForAddressable(objectBox)
-	client.commandBox = obx.BoxForCommand(objectBox)
 	client.deviceBox = obx.BoxForDevice(objectBox)
 	client.deviceProfileBox = obx.BoxForDeviceProfile(objectBox)
 	client.deviceReportBox = obx.BoxForDeviceReport(objectBox)
@@ -144,13 +134,6 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	}
 	//endregion
 
-	//region Command
-	if err == nil {
-		client.queries.command.name.CommandQuery, err =
-			client.commandBox.QueryOrError(obx.Command_.Name.Equals("", true))
-	}
-	//endregion
-
 	//region Device
 	if err == nil {
 		client.queries.device.labels.DeviceQuery, err =
@@ -171,10 +154,6 @@ func newCoreMetaDataClient(objectBox *objectbox.ObjectBox) (*coreMetaDataClient,
 	//endregion
 
 	//region DeviceProfile
-	if err == nil {
-		client.queries.deviceProfile.commands.DeviceProfileQuery, err =
-			client.deviceProfileBox.QueryOrError(obx.DeviceProfile_.CoreCommands.Link(obx.Command_.Id.Equals(0)))
-	}
 	if err == nil {
 		client.queries.deviceProfile.labels.DeviceProfileQuery, err =
 			client.deviceProfileBox.QueryOrError(obx.DeviceProfile_.Labels.Contains("", true))
@@ -448,19 +427,49 @@ func (client *coreMetaDataClient) GetDevicesWithLabel(l string) ([]contract.Devi
 	return result, mapError(err)
 }
 
-func (client *coreMetaDataClient) AddDevice(d contract.Device) (string, error) {
+func (client *coreMetaDataClient) AddDevice(d contract.Device, commands []contract.Command) (string, error) {
 	onCreate(&d.Timestamps)
 
-	id, err := client.deviceBox.Put(&d)
-	return obx.IdToString(id), mapError(err)
+	var id uint64
+	var err = client.objectBox.RunInWriteTx(func() error {
+		var err error
+		id, err = client.deviceBox.Put(&d)
+		if err != nil {
+			return err
+		}
+
+		// In the future this should be a separate call, not part of AddDevice. See core-command.go
+		for i := range commands {
+			commands[i].Id, err = client.cmdClient.addCommand(commands[i], id)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return "", mapError(err)
+	}
+
+	return obx.IdToString(id), nil
 }
 
-func (client *coreMetaDataClient) DeleteDeviceById(id string) error {
-	if id, err := obx.IdFromString(id); err != nil {
+func (client *coreMetaDataClient) DeleteDeviceById(idString string) error {
+	id, err := obx.IdFromString(idString)
+	if err != nil {
 		return mapError(err)
-	} else {
-		return mapError(client.deviceBox.RemoveId(id))
 	}
+
+	return mapError(client.objectBox.RunInWriteTx(func() error {
+		err = client.cmdClient.deleteCommandsByDeviceId(idString)
+		if err != nil {
+			return err
+		}
+
+		return client.deviceBox.RemoveId(id)
+	}))
 }
 
 func (client *coreMetaDataClient) UpdateDeviceProfile(dp contract.DeviceProfile) error {
@@ -598,22 +607,6 @@ func (client *coreMetaDataClient) GetDeviceProfileByName(n string) (contract.Dev
 	} else {
 		return list[0], nil
 	}
-}
-
-func (client *coreMetaDataClient) GetDeviceProfilesByCommandId(id string) ([]contract.DeviceProfile, error) {
-	var query = &client.queries.deviceProfile.commands
-
-	query.Lock()
-	defer query.Unlock()
-
-	if id, err := obx.IdFromString(id); err != nil {
-		return nil, mapError(err)
-	} else if err := query.SetInt64Params(obx.Command_.Id, int64(id)); err != nil {
-		return nil, mapError(err)
-	}
-
-	result, err := query.Limit(0).Find()
-	return result, mapError(err)
 }
 
 func (client *coreMetaDataClient) UpdateAddressable(a contract.Addressable) error {
@@ -961,69 +954,6 @@ func (client *coreMetaDataClient) DeleteProvisionWatcherById(id string) error {
 	}
 }
 
-func (client *coreMetaDataClient) GetCommandById(id string) (contract.Command, error) {
-	if id, err := obx.IdFromString(id); err != nil {
-		return contract.Command{}, mapError(err)
-	} else if object, err := client.commandBox.Get(id); err != nil {
-		return contract.Command{}, mapError(err)
-	} else if object == nil {
-		return contract.Command{}, mapError(db.ErrNotFound)
-	} else {
-		return *object, nil
-	}
-}
-
-func (client *coreMetaDataClient) GetCommandByName(name string) ([]contract.Command, error) {
-	var query = &client.queries.command.name
-
-	query.Lock()
-	defer query.Unlock()
-
-	if err := query.SetStringParams(obx.Command_.Name, name); err != nil {
-		return nil, mapError(err)
-	}
-
-	result, err := query.Limit(0).Find()
-	return result, mapError(err)
-}
-
-func (client *coreMetaDataClient) AddCommand(c contract.Command) (string, error) {
-	onCreate(&c.Timestamps)
-
-	id, err := client.commandBox.Put(&c)
-	return obx.IdToString(id), mapError(err)
-}
-
-func (client *coreMetaDataClient) GetAllCommands() ([]contract.Command, error) {
-	result, err := client.commandBox.GetAll()
-	return result, mapError(err)
-}
-
-func (client *coreMetaDataClient) UpdateCommand(c contract.Command) error {
-	onUpdate(&c.Timestamps)
-
-	if id, err := obx.IdFromString(c.Id); err != nil {
-		return mapError(err)
-	} else if exists, err := client.commandBox.Contains(id); err != nil {
-		return mapError(err)
-	} else if !exists {
-		return mapError(db.ErrNotFound)
-	}
-
-	_, err := client.commandBox.Put(&c)
-	return mapError(err)
-
-}
-
-func (client *coreMetaDataClient) DeleteCommandById(idString string) error {
-	id, err := obx.IdFromString(idString)
-	if err != nil {
-		return mapError(err)
-	}
-
-	return mapError(client.commandBox.RemoveId(id))
-}
-
 func (client *coreMetaDataClient) ScrubMetadata() error {
 	var err error
 
@@ -1032,7 +962,8 @@ func (client *coreMetaDataClient) ScrubMetadata() error {
 	}
 
 	if err == nil {
-		err = client.commandBox.RemoveAll()
+		// TODO remove when core-command is completely detached from metadata
+		err = obx.BoxForCommand(client.objectBox).RemoveAll()
 	}
 
 	if err == nil {

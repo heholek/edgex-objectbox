@@ -6,8 +6,8 @@ package obx
 import (
 	"errors"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
-	. "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/flatbuffers/go"
+	. "github.com/objectbox/edgex-objectbox/internal/pkg/db/objectbox/defs"
 	"github.com/objectbox/objectbox-go/objectbox"
 	"github.com/objectbox/objectbox-go/objectbox/fbutils"
 )
@@ -38,6 +38,7 @@ var Command_ = struct {
 	Put_Responses      *objectbox.PropertyByteVector
 	Put_URL            *objectbox.PropertyString
 	Put_ParameterNames *objectbox.PropertyStringVector
+	DeviceId           *objectbox.RelationToOne
 }{
 	Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
@@ -111,6 +112,13 @@ var Command_ = struct {
 			Entity: &CommandBinding.Entity,
 		},
 	},
+	DeviceId: &objectbox.RelationToOne{
+		Property: &objectbox.BaseProperty{
+			Id:     13,
+			Entity: &CommandBinding.Entity,
+		},
+		Target: &DeviceBinding.Entity,
+	},
 }
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
@@ -134,7 +142,10 @@ func (command_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Put_Responses", 23, 10, 7143390721286976146)
 	model.Property("Put_URL", 9, 11, 5130326444177191018)
 	model.Property("Put_ParameterNames", 30, 12, 706434787225063093)
-	model.EntityLastPropertyId(12, 706434787225063093)
+	model.Property("DeviceId", 11, 13, 4054390726219833422)
+	model.PropertyFlags(8712)
+	model.PropertyRelation("Device", 21, 2079075702818635513)
+	model.EntityLastPropertyId(13, 4054390726219833422)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -201,8 +212,10 @@ func (command_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, 
 	var offsetPut_URL = fbutils.CreateStringOffset(fbb, obj.Put.Action.URL)
 	var offsetPut_ParameterNames = fbutils.CreateStringVectorOffset(fbb, obj.Put.ParameterNames)
 
+	var rIdDeviceId = obj.DeviceId
+
 	// build the FlatBuffers object
-	fbb.StartObject(12)
+	fbb.StartObject(13)
 	fbutils.SetInt64Slot(fbb, 0, obj.Timestamps.Created)
 	fbutils.SetInt64Slot(fbb, 1, obj.Timestamps.Modified)
 	fbutils.SetInt64Slot(fbb, 2, obj.Timestamps.Origin)
@@ -215,6 +228,7 @@ func (command_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Builder, 
 	fbutils.SetUOffsetTSlot(fbb, 9, offsetPut_Responses)
 	fbutils.SetUOffsetTSlot(fbb, 10, offsetPut_URL)
 	fbutils.SetUOffsetTSlot(fbb, 11, offsetPut_ParameterNames)
+	fbutils.SetUint64Slot(fbb, 12, rIdDeviceId)
 	return nil
 }
 
@@ -244,30 +258,30 @@ func (command_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (interface
 		return nil, errors.New("converter responsesJsonToEntityProperty() failed on Command.Put.Action.Responses: " + err.Error())
 	}
 
-	return &Command{
+	result := &Command{
 		Timestamps: models.Timestamps{
 			Created:  fbutils.GetInt64Slot(table, 4),
 			Modified: fbutils.GetInt64Slot(table, 6),
 			Origin:   fbutils.GetInt64Slot(table, 8),
 		},
-		Id:   propId,
-		Name: fbutils.GetStringSlot(table, 12),
-		Get: Get{
-			Action: Action{
-				Path:      fbutils.GetStringSlot(table, 14),
-				Responses: propGet_Responses,
-				URL:       fbutils.GetStringSlot(table, 18),
-			},
-		},
-		Put: Put{
-			Action: Action{
-				Path:      fbutils.GetStringSlot(table, 20),
-				Responses: propPut_Responses,
-				URL:       fbutils.GetStringSlot(table, 24),
-			},
-			ParameterNames: fbutils.GetStringVectorSlot(table, 26),
-		},
-	}, nil
+		Id:       propId,
+		Name:     fbutils.GetStringSlot(table, 12),
+		DeviceId: fbutils.GetUint64Slot(table, 28),
+	}
+
+	result.Get.Action = Action{
+		Path:      fbutils.GetStringSlot(table, 14),
+		Responses: propGet_Responses,
+		URL:       fbutils.GetStringSlot(table, 18),
+	}
+	result.Put.Action = Action{
+		Path:      fbutils.GetStringSlot(table, 20),
+		Responses: propPut_Responses,
+		URL:       fbutils.GetStringSlot(table, 24),
+	}
+	result.Put.ParameterNames = fbutils.GetStringVectorSlot(table, 26)
+
+	return result, nil
 }
 
 // MakeSlice is called by ObjectBox to construct a new slice to hold the read objects

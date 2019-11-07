@@ -537,7 +537,7 @@ func testDBCommand(t *testing.T, db interfaces.DBClient) {
 		t.Fatalf("Name does not match %s - %s", command.Name, cn)
 	}
 
-	commands, err = db.GetCommandsByDeviceId(uuid.New().String())
+	commands, err = db.GetCommandsByDeviceId("10000")
 	if err != nil {
 		t.Fatalf("Error getting commands by device id %v", err)
 	}

@@ -235,3 +235,23 @@ func profileResourcesJsonToDatabaseValue(goValue []models.ProfileResource) ([]by
 
 	return json.Marshal(goValue)
 }
+
+func commandsJsonToEntityProperty(dbValue []byte) (result []models.Command, err error) {
+	if dbValue == nil {
+		return nil, nil
+	}
+
+	if err := json.Unmarshal(dbValue, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func commandsJsonToDatabaseValue(goValue []models.Command) ([]byte, error) {
+	if goValue == nil {
+		return nil, nil
+	}
+
+	return json.Marshal(goValue)
+}

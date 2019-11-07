@@ -37,7 +37,7 @@ var DeviceProfile_ = struct {
 	Labels              *objectbox.PropertyStringVector
 	DeviceResources     *objectbox.PropertyByteVector
 	DeviceCommands      *objectbox.PropertyByteVector
-	CoreCommands        *objectbox.RelationToMany
+	CoreCommands        *objectbox.PropertyByteVector
 }{
 	Timestamps_Created: &objectbox.PropertyInt64{
 		BaseProperty: &objectbox.BaseProperty{
@@ -105,10 +105,11 @@ var DeviceProfile_ = struct {
 			Entity: &DeviceProfileBinding.Entity,
 		},
 	},
-	CoreCommands: &objectbox.RelationToMany{
-		Id:     1,
-		Source: &DeviceProfileBinding.Entity,
-		Target: &CommandBinding.Entity,
+	CoreCommands: &objectbox.PropertyByteVector{
+		BaseProperty: &objectbox.BaseProperty{
+			Id:     12,
+			Entity: &DeviceProfileBinding.Entity,
+		},
 	},
 }
 
@@ -134,8 +135,8 @@ func (deviceProfile_EntityInfo) AddToModel(model *objectbox.Model) {
 	model.Property("Labels", 30, 9, 3915749655245396678)
 	model.Property("DeviceResources", 23, 10, 349654535178347918)
 	model.Property("DeviceCommands", 23, 11, 5969260086641149857)
-	model.EntityLastPropertyId(11, 5969260086641149857)
-	model.Relation(1, 2308887105935734223, CommandBinding.Id, CommandBinding.Uid)
+	model.Property("CoreCommands", 23, 12, 984219279912093297)
+	model.EntityLastPropertyId(12, 984219279912093297)
 }
 
 // GetId is called by ObjectBox during Put operations to check for existing ID on an object
@@ -162,10 +163,6 @@ func (deviceProfile_EntityInfo) SetId(object interface{}, id uint64) error {
 
 // PutRelated is called by ObjectBox to put related entities before the object itself is flattened and put
 func (deviceProfile_EntityInfo) PutRelated(ob *objectbox.ObjectBox, object interface{}, id uint64) error {
-	if err := BoxForDeviceProfile(ob).RelationReplace(DeviceProfile_.CoreCommands, id, object, object.(*DeviceProfile).CoreCommands); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -197,6 +194,15 @@ func (deviceProfile_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 		}
 	}
 
+	var propCoreCommands []byte
+	{
+		var err error
+		propCoreCommands, err = commandsJsonToDatabaseValue(obj.CoreCommands)
+		if err != nil {
+			return errors.New("converter commandsJsonToDatabaseValue() failed on DeviceProfile.CoreCommands: " + err.Error())
+		}
+	}
+
 	var offsetDescription = fbutils.CreateStringOffset(fbb, obj.DescribedObject.Description)
 	var offsetName = fbutils.CreateStringOffset(fbb, obj.Name)
 	var offsetManufacturer = fbutils.CreateStringOffset(fbb, obj.Manufacturer)
@@ -204,9 +210,10 @@ func (deviceProfile_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 	var offsetLabels = fbutils.CreateStringVectorOffset(fbb, obj.Labels)
 	var offsetDeviceResources = fbutils.CreateByteVectorOffset(fbb, propDeviceResources)
 	var offsetDeviceCommands = fbutils.CreateByteVectorOffset(fbb, propDeviceCommands)
+	var offsetCoreCommands = fbutils.CreateByteVectorOffset(fbb, propCoreCommands)
 
 	// build the FlatBuffers object
-	fbb.StartObject(11)
+	fbb.StartObject(12)
 	fbutils.SetInt64Slot(fbb, 0, obj.DescribedObject.Timestamps.Created)
 	fbutils.SetInt64Slot(fbb, 1, obj.DescribedObject.Timestamps.Modified)
 	fbutils.SetInt64Slot(fbb, 2, obj.DescribedObject.Timestamps.Origin)
@@ -218,6 +225,7 @@ func (deviceProfile_EntityInfo) Flatten(object interface{}, fbb *flatbuffers.Bui
 	fbutils.SetUOffsetTSlot(fbb, 8, offsetLabels)
 	fbutils.SetUOffsetTSlot(fbb, 9, offsetDeviceResources)
 	fbutils.SetUOffsetTSlot(fbb, 10, offsetDeviceCommands)
+	fbutils.SetUOffsetTSlot(fbb, 11, offsetCoreCommands)
 	return nil
 }
 
@@ -231,9 +239,8 @@ func (deviceProfile_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (int
 		Bytes: bytes,
 		Pos:   flatbuffers.GetUOffsetT(bytes),
 	}
-	var id = fbutils.GetUint64Slot(table, 12)
 
-	propId, err := objectbox.StringIdConvertToEntityProperty(id)
+	propId, err := objectbox.StringIdConvertToEntityProperty(fbutils.GetUint64Slot(table, 12))
 	if err != nil {
 		return nil, errors.New("converter objectbox.StringIdConvertToEntityProperty() failed on DeviceProfile.Id: " + err.Error())
 	}
@@ -248,13 +255,9 @@ func (deviceProfile_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (int
 		return nil, errors.New("converter profileResourcesJsonToEntityProperty() failed on DeviceProfile.DeviceCommands: " + err.Error())
 	}
 
-	var relCoreCommands []Command
-	if rIds, err := BoxForDeviceProfile(ob).RelationIds(DeviceProfile_.CoreCommands, id); err != nil {
-		return nil, err
-	} else if rSlice, err := BoxForCommand(ob).GetManyExisting(rIds...); err != nil {
-		return nil, err
-	} else {
-		relCoreCommands = rSlice
+	propCoreCommands, err := commandsJsonToEntityProperty(fbutils.GetByteVectorSlot(table, 26))
+	if err != nil {
+		return nil, errors.New("converter commandsJsonToEntityProperty() failed on DeviceProfile.CoreCommands: " + err.Error())
 	}
 
 	return &DeviceProfile{
@@ -273,7 +276,7 @@ func (deviceProfile_EntityInfo) Load(ob *objectbox.ObjectBox, bytes []byte) (int
 		Labels:          fbutils.GetStringVectorSlot(table, 20),
 		DeviceResources: propDeviceResources,
 		DeviceCommands:  propDeviceCommands,
-		CoreCommands:    relCoreCommands,
+		CoreCommands:    propCoreCommands,
 	}, nil
 }
 

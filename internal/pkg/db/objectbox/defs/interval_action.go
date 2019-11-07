@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Dell Inc.
+ * Copyright 2018 Dell Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,16 +12,24 @@
  * the License.
  *******************************************************************************/
 
-package models
+package defs
 
-type Reading struct {
-	Id          string
-	Pushed      int64
-	Created     int64
-	Origin      int64
-	Modified    int64
-	Device      string
-	Name        string
-	Value       string
-	BinaryValue []byte
+type IntervalAction struct {
+	ID         string
+	Created    int64
+	Modified   int64
+	Origin     int64
+	Name       string `objectbox:"unique"`
+	Interval   string
+	Parameters string
+	Target     string
+	Protocol   string
+	HTTPMethod string
+	Address    string
+	Port       int
+	Path       string
+	Publisher  string
+	User       string
+	Password   string
+	Topic      string
 }

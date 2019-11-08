@@ -133,7 +133,7 @@ docker_core_data:
 
 docker_core_command:
 	docker build \
-		-f cmd/core-command/Dockerfile \
+		-f cmd/Dockerfile --build-arg service=core-command \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
 		-t objectboxio/edge-core-command:$(GIT_SHA) \

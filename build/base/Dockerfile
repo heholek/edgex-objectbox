@@ -1,7 +1,7 @@
 # Common Dockerfile loads all the modules
 # Copyright (c) 2019 ObjectBox
 
-FROM golang:1.11-stretch
+FROM golang:1.12-stretch
 ARG service
 
 RUN apt-get update && apt-get install -y libzmq3-dev

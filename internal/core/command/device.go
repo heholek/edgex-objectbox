@@ -44,7 +44,9 @@ func commandByDeviceID(deviceID string, commandID string, body string, queryPara
 	}
 
 	//once command service have its own persistence layer this call will be changed.
-	commands, err := dbClient.GetCommandsByDeviceId(d.Id)
+	// OBX
+	// commands, err := dbClient.GetCommandsByDeviceId(d.Id)
+	commands, err := mdcc.CommandsForDeviceId(d.Id, ctx)
 	if err != nil {
 		LoggingClient.Error(err.Error())
 		if err == db.ErrNotFound {
@@ -88,7 +90,9 @@ func commandByNames(dn string, cn string, body string, queryParams string, isPut
 		return errors.NewErrDeviceLocked(d.Name).Error(), http.StatusLocked
 	}
 
-	command, err := dbClient.GetCommandByNameAndDeviceId(cn, d.Id)
+	// OBX
+	// command, err := dbClient.GetCommandByNameAndDeviceId(cn, d.Id)
+	commands, err := mdcc.CommandsForDeviceId(d.Id, ctx)
 	if err != nil {
 		LoggingClient.Error(err.Error())
 		if err == db.ErrNotFound {
@@ -97,6 +101,23 @@ func commandByNames(dn string, cn string, body string, queryParams string, isPut
 			return err.Error(), http.StatusInternalServerError
 		}
 	}
+
+	// OBX start
+	var c *contract.Command
+	for i := range commands {
+		if commands[i].Name == cn {
+			c = &commands[i]
+			break
+		}
+	}
+	if c == nil {
+		err = db.ErrNotFound
+		LoggingClient.Error(err.Error())
+		return err.Error(), http.StatusNotFound
+	}
+	var command = *c
+	// OBX end
+
 
 	return commandByDevice(d, command, body, queryParams, isPutCommand, ctx)
 }
@@ -136,7 +157,9 @@ func getCommands(ctx context.Context) (int, []contract.CommandResponse, error) {
 	}
 	cr := []contract.CommandResponse{}
 	for _, d := range devices {
-		commands, err := dbClient.GetCommandsByDeviceId(d.Id)
+		// OBX
+		// commands, err := dbClient.GetCommandsByDeviceId(d.Id)
+		commands, err := mdcc.CommandsForDeviceId(d.Id, ctx)
 		if err != nil {
 			LoggingClient.Error(err.Error())
 			if err == db.ErrNotFound {
@@ -162,7 +185,9 @@ func getCommandsByDeviceID(did string, ctx context.Context) (int, contract.Comma
 		}
 	}
 
-	commands, err := dbClient.GetCommandsByDeviceId(d.Id)
+	// OBX
+	// commands, err := dbClient.GetCommandsByDeviceId(d.Id)
+	commands, err := mdcc.CommandsForDeviceId(d.Id, ctx)
 	if err != nil {
 		LoggingClient.Error(err.Error())
 		if err == db.ErrNotFound {
@@ -186,7 +211,9 @@ func getCommandsByDeviceName(dn string, ctx context.Context) (int, contract.Comm
 		}
 	}
 
-	commands, err := dbClient.GetCommandsByDeviceId(d.Id)
+	// OBX
+	// commands, err := dbClient.GetCommandsByDeviceId(d.Id)
+	commands, err := mdcc.CommandsForDeviceId(d.Id, ctx)
 	if err != nil {
 		LoggingClient.Error(err.Error())
 		if err == db.ErrNotFound {

@@ -18,7 +18,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/objectbox/edgex-objectbox/internal/core/command/interfaces"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/container"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/bootstrap/startup"
 	"github.com/objectbox/edgex-objectbox/internal/pkg/di"
@@ -36,7 +35,9 @@ var Configuration = &ConfigurationStruct{}
 var LoggingClient logger.LoggingClient
 
 var mdc metadata.DeviceClient
-var dbClient interfaces.DBClient
+// OBX - forwarding calls to metadata as it's database is the one currently storing all commands data
+// var dbClient interfaces.DBClient
+var mdcc metadata.CommandClient
 
 // Global ErrorConcept variables
 var httpErrorHandler errorconcept.ErrorHandler
@@ -46,7 +47,8 @@ func BootstrapHandler(wg *sync.WaitGroup, ctx context.Context, startupTimer star
 	// update global variables.
 	LoggingClient = container.LoggingClientFrom(dic.Get)
 	httpErrorHandler = errorconcept.NewErrorHandler(LoggingClient)
-	dbClient = container.DBClientFrom(dic.Get)
+	// OBX
+	// dbClient = container.DBClientFrom(dic.Get)
 
 	// initialize clients required by service.
 	registryClient := container.RegistryFrom(dic.Get)
@@ -56,6 +58,17 @@ func BootstrapHandler(wg *sync.WaitGroup, ctx context.Context, startupTimer star
 			Path:        clients.ApiDeviceRoute,
 			UseRegistry: registryClient != nil,
 			Url:         Configuration.Clients["Metadata"].Url() + clients.ApiDeviceRoute,
+			Interval:    Configuration.Service.ClientMonitor,
+		},
+		endpoint.Endpoint{RegistryClient: &registryClient})
+
+	// OBX
+	mdcc = metadata.NewCommandClient(
+		types.EndpointParams{
+			ServiceKey:  clients.CoreMetaDataServiceKey,
+			Path:        clients.ApiCommandRoute,
+			UseRegistry: registryClient != nil,
+			Url:         Configuration.Clients["Metadata"].Url() + clients.ApiCommandRoute,
 			Interval:    Configuration.Service.ClientMonitor,
 		},
 		endpoint.Endpoint{RegistryClient: &registryClient})

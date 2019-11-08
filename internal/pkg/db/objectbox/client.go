@@ -6,6 +6,11 @@ import (
 	. "github.com/objectbox/objectbox-go/objectbox"
 )
 
+// TODO: REST API tests (blackbox) sometime import data with relation IDs missing (e.g. Transmission.Notification.ID).
+//  This causes ObjectBox to try & insert the related entity but then fails if it there's a unique constraint.
+//  Maybe we should try to find an existing one in such cases.
+//  Happens for example in: AddTransmission, AddRegistration
+
 type ObjectBoxClient struct {
 	config    db.Configuration
 	objectBox *ObjectBox

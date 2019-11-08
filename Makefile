@@ -200,24 +200,24 @@ docker_security_secrets_setup:
 	docker build \
 		-f cmd/security-secrets-setup/Dockerfile \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-edgex-secret-store:$(GIT_SHA) \
-		-t objectboxio/edge-edgex-secret-store:$(DOCKER_TAG) \
+		-t objectboxio/edge-secret-store:$(GIT_SHA) \
+		-t objectboxio/edge-secret-store:$(DOCKER_TAG) \
 		.
 
 docker_security_proxy_setup:
 	docker build \
 		-f cmd/security-proxy-setup/Dockerfile \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-edgex-security-proxy-setup:$(GIT_SHA) \
-		-t objectboxio/edge-edgex-security-proxy-setup:$(DOCKER_TAG) \
+		-t objectboxio/edge-security-proxy-setup:$(GIT_SHA) \
+		-t objectboxio/edge-security-proxy-setup:$(DOCKER_TAG) \
 		.
 
 docker_security_secretstore_setup:
 		docker build \
 		-f cmd/security-secretstore-setup/Dockerfile \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-edgex-security-secretstore-setup:$(GIT_SHA) \
-		-t objectboxio/edge-edgex-security-secretstore-setup:$(DOCKER_TAG) \
+		-t objectboxio/edge-security-secretstore-setup:$(GIT_SHA) \
+		-t objectboxio/edge-security-secretstore-setup:$(DOCKER_TAG) \
 		.
 
 raml_verify:

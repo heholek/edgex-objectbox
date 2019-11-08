@@ -224,7 +224,6 @@ apps:
     after:
       - export-client
       - core-config-seed
-      - edgex-mongo
       - edgexproxy
     command: bin/support-rulesengine-wrapper.sh
     daemon: simple
@@ -233,7 +232,6 @@ apps:
     adapter: none
     after:
       - core-config-seed
-      - edgex-mongo
       - edgexproxy
     command: bin/export-client -confdir $SNAP_DATA/config/export-client/res --registry
     daemon: simple
@@ -243,7 +241,6 @@ apps:
     adapter: full
     after:
       - core-config-seed
-      - edgex-mongo
       - edgexproxy
     command: bin/export-distro -confdir $SNAP_DATA/config/export-distro/res --registry
     daemon: simple
@@ -253,7 +250,6 @@ apps:
     adapter: none
     after:
       - core-config-seed
-      - edgex-mongo
       - edgexproxy
     command: bin/sys-mgmt-agent -confdir $SNAP_DATA/config/sys-mgmt-agent/res --registry
     daemon: simple
@@ -262,7 +258,6 @@ apps:
     adapter: none
     after:
       - core-config-seed
-      - edgex-mongo
       - edgexproxy
       - core-data
       - core-metadata
@@ -276,7 +271,6 @@ apps:
     adapter: none
     after:
       - core-config-seed
-      - edgex-mongo
       - edgexproxy
       - core-data
       - core-metadata

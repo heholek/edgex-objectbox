@@ -189,7 +189,6 @@ func (client *coreDataClient) Events() ([]contract.Event, error) {
 }
 
 func (client *coreDataClient) EventsWithLimit(limit int) ([]contract.Event, error) {
-	// TODO there is no test for this method in the test/db_data.go
 	var query = &client.queries.event.all
 
 	query.Lock()
@@ -295,8 +294,13 @@ func (client *coreDataClient) DeleteEventById(idString string) error {
 		return mapError(err)
 	}
 
-	// TODO: Do this async to speed up deleteEventsByAge() when AsyncBox is available in objectbox-go
-	return mapError(client.eventBox.RemoveId(id))
+	if async {
+		err = client.eventBox.Async().RemoveId(id)
+	} else {
+		err = client.eventBox.RemoveId(id)
+	}
+
+	return mapError(err)
 }
 
 // DeleteEventsByDevice deletes events and readings associated with the specified device ID.
@@ -573,8 +577,6 @@ func (client *coreDataClient) AddValueDescriptor(v contract.ValueDescriptor) (st
 	if v.Created == 0 {
 		v.Created = db.MakeTimestamp()
 	}
-
-	// TODO tests don't set Max, Min, Default (interface{})
 
 	id, err := client.valueDescriptorBox.Put(&v)
 	return obx.IdToString(id), mapError(err)

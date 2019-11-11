@@ -905,10 +905,10 @@ func (client *coreMetaDataClient) GetProvisionWatchersByIdentifier(k string, v s
 
 	// TODO can we make this more efficient?
 	//  The biggest problem is that ProvisionWatcher contains relations which are loaded eagerly
-	// options are
-	// 	- query on identifiers.contains(`"name":"value"`)
-	//  - current code with lazy-loading relations
-	//  - "property" query (only returns a single property)
+	//  options are
+	// 	 - query on identifiers.contains(`"name":"value"`)
+	//   - current code with lazy-loading relations
+	//   - "property" query (only returns a single property)
 	if all, err := client.provisionWatcherBox.GetAll(); err != nil {
 		return nil, mapError(err)
 	} else {

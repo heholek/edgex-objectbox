@@ -51,6 +51,7 @@ func createClient() *ObjectBoxClient {
 	config := db.Configuration{
 		DatabaseName: "unit-test",
 	}
+	os.RemoveAll(config.DatabaseName)
 	client, err := NewClient(config)
 	if err != nil {
 		panic("Could not connect DB client: " + err.Error())
@@ -68,25 +69,30 @@ func TestObjectBoxEvents(t *testing.T) {
 		},
 	}
 	objectId, err := client.AddEvent(event)
-	if err != nil {
-		t.Fatalf("Could not add event: %v", err)
-	}
-	t.Logf("Added object ID %v", objectId)
+	assert.NoErr(t, err)
 
 	event.Device = "2nd device"
 	objectId, err = client.AddEvent(event)
-	if err != nil {
-		t.Fatalf("Could not add 2nd event: %v", err)
-	}
-	t.Logf("Added 2nd object ID %v", objectId)
+	assert.NoErr(t, err)
 
 	eventRead, err := client.EventById(string(objectId))
-	if err != nil {
-		t.Fatalf("Could not get 2nd event by ID: %v", err)
-	}
+	assert.NoErr(t, err)
+
 	if objectId != eventRead.ID || event.Device != eventRead.Device {
 		t.Fatalf("Event data error: %v vs. %v", event, eventRead)
 	}
+
+	allEvents, err := client.Events()
+	assert.NoErr(t, err)
+	assert.Eq(t, 2, len(allEvents))
+
+	allEvents, err = client.EventsWithLimit(10)
+	assert.NoErr(t, err)
+	assert.Eq(t, 2, len(allEvents))
+
+	allEvents, err = client.EventsWithLimit(1)
+	assert.NoErr(t, err)
+	assert.Eq(t, 1, len(allEvents))
 }
 
 func TestObjectBoxReadings(t *testing.T) {

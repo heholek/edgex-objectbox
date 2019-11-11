@@ -636,6 +636,14 @@ func (client *notificationsClient) GetTransmissionsByStatus(limit int, status co
 func (client *notificationsClient) AddTransmission(t contract.Transmission) (string, error) {
 	onCreate(&t.Timestamps)
 
+	// Related Notification may already exist under the given name even if the ID is missing, try to find it.
+	if len(t.Notification.ID) == 0 && len(t.Notification.Slug) > 0 {
+		relNotification, err := client.GetNotificationBySlug(t.Notification.Slug)
+		if err == nil && len(relNotification.ID) > 0 {
+			t.Notification = relNotification
+		}
+	}
+
 	id, err := client.transmissionBox.Put(&t)
 	return obx.IdToString(id), mapError(err)
 }

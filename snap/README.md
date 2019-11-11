@@ -190,13 +190,27 @@ root@edgex:~# git clone https://github.com/objectbox/edgex-objectbox
 root@edgex:~# cd edgex-objectbox && snapcraft --destructive-mode
 ```
 
-### Building ARMv6hf on Raspberry Pi 3b
+### Building ARMv6hf on Raspberry Pi
 The following steps apply when running Raspbian. 
 With Ubuntu Core, you may have luck trying one of the generic build options described in folowing chapters.
 
 Adapted from https://snapcraft.io/docs/build-on-lxd
 
-1. Install LXD and initialize it, accepting all the default options (maybe except for size, use e.g. 5 GB instead).
+1. Make sure you're running an armhf OS version
+    ```shell script
+   dpkg --print-architecture
+   uname -a
+    ```
+
+1. Install snapd & reboot
+    ```shell script
+   sudo apt-get update
+   sudo apt-get install snapd
+   sudo reboot
+    ```
+
+1. Install LXD and initialize it, accepting all the default options (maybe except for size, 10 GB should be enough).
+   You may need to log out and back in before running `lxd init`, if it says "command not found".
     ```shell script
    sudo snap install lxd
    sudo lxd init
@@ -213,7 +227,7 @@ Adapted from https://snapcraft.io/docs/build-on-lxd
 1. Clone the repo and build the snap. APT update is necessary for part dependencies package discovery.
     ```shell script
    apt update
-   git clone -b branch-name --single-branch https://github.com/objectbox/edgex-objectbox.git
+   git clone -b fuji --single-branch https://github.com/objectbox/edgex-objectbox.git
    cd edgex-objectbox
    snapcraft --destructive-mode
     ```

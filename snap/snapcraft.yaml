@@ -402,7 +402,6 @@ parts:
   objectbox-c:
     plugin: nil
     source: https://github.com/objectbox/objectbox-c.git
-    after: [curl]
     override-build: |
       echo "N" | ./download.sh 0.7.1
       mv lib "$SNAPCRAFT_PART_INSTALL/lib"

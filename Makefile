@@ -18,9 +18,9 @@ MICROSERVICES=cmd/config-seed/config-seed cmd/export-client/export-client cmd/ex
 .PHONY: $(MICROSERVICES)
 
 VERSION=$(shell cat ./VERSION)
-DOCKER_TAG=$(VERSION)-dev
+DOCKER_TAG=$(VERSION)
 
-#GOFLAGS=-ldflags "-X github.com/objectbox/edgex-objectbox.Version=$(VERSION)"
+GOFLAGS=-ldflags "-X github.com/objectbox/edgex-objectbox.Version=$(VERSION)"
 
 GIT_SHA=$(shell git rev-parse HEAD)
 

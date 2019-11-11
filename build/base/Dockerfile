@@ -15,3 +15,7 @@ RUN go mod download
 
 COPY ./build/base/objectbox-download.sh .
 RUN ./objectbox-download.sh --install 0.7.1
+
+RUN if [ "$(uname -m)" = "armv7l" ]; \
+        then cp /lib/ld-linux-armhf.so.3 /ld-linux.so; \
+        else cp /lib64/ld-linux-x86-64.so.2 /ld-linux.so; fi

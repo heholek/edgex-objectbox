@@ -33,5 +33,5 @@ COPY --from=builder /deps /
 
 # run the service using ld.so
 ENV LD_LIBRARY_PATH /usr/local/lib:/usr/lib:/lib:/usr/lib64:/lib64
-COPY --from=builder /lib64/ld-linux-x86-64.so.2 /lib64/
-ENTRYPOINT ["/lib64/ld-linux-x86-64.so.2","/service","--registry","--profile=docker","--confdir=/res"]
+COPY --from=builder /ld-linux.so /ld-linux.so
+ENTRYPOINT ["/ld-linux.so","/service","--registry","--profile=docker","--confdir=/res"]

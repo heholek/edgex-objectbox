@@ -183,7 +183,7 @@ apps:
     # https://github.com/edgexfoundry/edgex-go/issues/1306
     stop-timeout: 10s
   core-metadata:
-    adapter: none
+    adapter: full
     after:
       - core-config-seed
 #      - edgex-mongo
@@ -195,7 +195,7 @@ apps:
     plugs: [network, network-bind]
     stop-timeout: 10s
   core-command:
-    adapter: none
+    adapter: full
     after:
       - core-config-seed
 #      - edgex-mongo
@@ -219,7 +219,7 @@ apps:
     plugs: [network, network-bind]
     stop-timeout: 10s
   support-notifications:
-    adapter: none
+    adapter: full
     after:
       - core-config-seed
 #      - edgex-mongo
@@ -231,7 +231,7 @@ apps:
     plugs: [network, network-bind]
     stop-timeout: 10s
   support-scheduler:
-    adapter: none
+    adapter: full
     after:
       - core-config-seed
 #      - edgex-mongo
@@ -255,7 +255,7 @@ apps:
     daemon: simple
     plugs: [network, network-bind]
   export-client:
-    adapter: none
+    adapter: full
     after:
       - core-config-seed
 #      - edgex-mongo

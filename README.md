@@ -19,7 +19,7 @@ They can be launched easily with **docker-compose**.
 The simplest way to get started is to fetch the latest docker-compose.yml and start the EdgeX containers:
 
 ```sh
-wget https://raw.githubusercontent.com/objectbox/edgex-objectbox/objectbox-go/bin/docker-compose.yml
+wget https://raw.githubusercontent.com/objectbox/edgex-objectbox/fuji/bin/docker-compose.yml
 docker-compose up -d
 ```
 

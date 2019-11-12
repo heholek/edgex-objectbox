@@ -97,13 +97,6 @@ docker_build_base:
 		-t objectboxio/edge-build-base:$(GIT_SHA) \
 		.
 
-docker_volume:
-	docker build \
-		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-volume:$(GIT_SHA) \
-		-t objectboxio/edge-volume:$(DOCKER_TAG) \
-		build/volume
-
 docker_config_seed:
 	docker build \
 		-f cmd/config-seed/Dockerfile \

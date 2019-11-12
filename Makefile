@@ -94,7 +94,7 @@ docker_build_base:
 	docker build \
 		-f build/base/Dockerfile \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-build-base:$(GIT_SHA) \
+		-t objectboxio/edgex-build-base:$(GIT_SHA) \
 		.
 
 docker_config_seed:
@@ -102,8 +102,8 @@ docker_config_seed:
 		-f cmd/config-seed/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-core-config-seed:$(GIT_SHA) \
-		-t objectboxio/edge-core-config-seed:$(DOCKER_TAG) \
+		-t objectboxio/edgex-core-config-seed:$(GIT_SHA) \
+		-t objectboxio/edgex-core-config-seed:$(DOCKER_TAG) \
 		.
 
 docker_core_metadata:
@@ -111,8 +111,8 @@ docker_core_metadata:
 		-f cmd/Dockerfile --build-arg service=core-metadata \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-core-metadata:$(GIT_SHA) \
-		-t objectboxio/edge-core-metadata:$(DOCKER_TAG) \
+		-t objectboxio/edgex-core-metadata:$(GIT_SHA) \
+		-t objectboxio/edgex-core-metadata:$(DOCKER_TAG) \
 		.
 
 docker_core_data:
@@ -120,8 +120,8 @@ docker_core_data:
 		-f cmd/Dockerfile --build-arg service=core-data \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-core-data:$(GIT_SHA) \
-		-t objectboxio/edge-core-data:$(DOCKER_TAG) \
+		-t objectboxio/edgex-core-data:$(GIT_SHA) \
+		-t objectboxio/edgex-core-data:$(DOCKER_TAG) \
 		.
 
 docker_core_command:
@@ -129,8 +129,8 @@ docker_core_command:
 		-f cmd/Dockerfile --build-arg service=core-command \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-core-command:$(GIT_SHA) \
-		-t objectboxio/edge-core-command:$(DOCKER_TAG) \
+		-t objectboxio/edgex-core-command:$(GIT_SHA) \
+		-t objectboxio/edgex-core-command:$(DOCKER_TAG) \
 		.
 
 docker_export_client:
@@ -138,8 +138,8 @@ docker_export_client:
 		-f cmd/Dockerfile --build-arg service=export-client \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-export-client:$(GIT_SHA) \
-		-t objectboxio/edge-export-client:$(DOCKER_TAG) \
+		-t objectboxio/edgex-export-client:$(GIT_SHA) \
+		-t objectboxio/edgex-export-client:$(DOCKER_TAG) \
 		.
 
 docker_export_distro:
@@ -147,8 +147,8 @@ docker_export_distro:
 		-f cmd/export-distro/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-export-distro:$(GIT_SHA) \
-		-t objectboxio/edge-export-distro:$(DOCKER_TAG) \
+		-t objectboxio/edgex-export-distro:$(GIT_SHA) \
+		-t objectboxio/edgex-export-distro:$(DOCKER_TAG) \
 		.
 
 docker_support_logging:
@@ -156,8 +156,8 @@ docker_support_logging:
 		-f cmd/support-logging/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-support-logging:$(GIT_SHA) \
-		-t objectboxio/edge-support-logging:$(DOCKER_TAG) \
+		-t objectboxio/edgex-support-logging:$(GIT_SHA) \
+		-t objectboxio/edgex-support-logging:$(DOCKER_TAG) \
 		.
 
 docker_support_notifications:
@@ -165,8 +165,8 @@ docker_support_notifications:
 		-f cmd/Dockerfile --build-arg service=support-notifications \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-support-notifications:$(GIT_SHA) \
-		-t objectboxio/edge-support-notifications:$(DOCKER_TAG) \
+		-t objectboxio/edgex-support-notifications:$(GIT_SHA) \
+		-t objectboxio/edgex-support-notifications:$(DOCKER_TAG) \
 		.
 
 docker_support_scheduler:
@@ -174,8 +174,8 @@ docker_support_scheduler:
 		-f cmd/Dockerfile --build-arg service=support-scheduler \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-support-scheduler:$(GIT_SHA) \
-		-t objectboxio/edge-support-scheduler:$(DOCKER_TAG) \
+		-t objectboxio/edgex-support-scheduler:$(GIT_SHA) \
+		-t objectboxio/edgex-support-scheduler:$(DOCKER_TAG) \
 		.
 
 docker_sys_mgmt_agent:
@@ -183,8 +183,8 @@ docker_sys_mgmt_agent:
 		-f cmd/sys-mgmt-agent/Dockerfile \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-sys-mgmt-agent:$(GIT_SHA) \
-		-t objectboxio/edge-sys-mgmt-agent:$(DOCKER_TAG) \
+		-t objectboxio/edgex-sys-mgmt-agent:$(GIT_SHA) \
+		-t objectboxio/edgex-sys-mgmt-agent:$(DOCKER_TAG) \
 		.
 
 docker_security_secrets_setup:
@@ -193,24 +193,24 @@ docker_security_secrets_setup:
 	docker build \
 		-f cmd/security-secrets-setup/Dockerfile \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-secret-store:$(GIT_SHA) \
-		-t objectboxio/edge-secret-store:$(DOCKER_TAG) \
+		-t objectboxio/edgex-secret-store:$(GIT_SHA) \
+		-t objectboxio/edgex-secret-store:$(DOCKER_TAG) \
 		.
 
 docker_security_proxy_setup:
 	docker build \
 		-f cmd/security-proxy-setup/Dockerfile \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-security-proxy-setup:$(GIT_SHA) \
-		-t objectboxio/edge-security-proxy-setup:$(DOCKER_TAG) \
+		-t objectboxio/edgex-security-proxy-setup:$(GIT_SHA) \
+		-t objectboxio/edgex-security-proxy-setup:$(DOCKER_TAG) \
 		.
 
 docker_security_secretstore_setup:
 		docker build \
 		-f cmd/security-secretstore-setup/Dockerfile \
 		--label "git_sha=$(GIT_SHA)" \
-		-t objectboxio/edge-security-secretstore-setup:$(GIT_SHA) \
-		-t objectboxio/edge-security-secretstore-setup:$(DOCKER_TAG) \
+		-t objectboxio/edgex-security-secretstore-setup:$(GIT_SHA) \
+		-t objectboxio/edgex-security-secretstore-setup:$(DOCKER_TAG) \
 		.
 
 raml_verify:

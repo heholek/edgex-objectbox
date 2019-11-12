@@ -67,7 +67,7 @@ services:
       - volume
 
   config-seed:
-    image: objectboxio/edge-core-config-seed:1.1.0
+    image: objectboxio/edgex-core-config-seed:1.1.0
     container_name: edgex-config-seed
     hostname: edgex-core-config-seed
     networks:
@@ -84,7 +84,7 @@ services:
       - consul
 
   vault:
-    image: objectboxio/edge-secret-store:1.1.0
+    image: objectboxio/edgex-secret-store:1.1.0
     container_name: edgex-vault
     hostname: edgex-vault
     networks:
@@ -113,7 +113,7 @@ services:
       - consul
 
   vault-worker:
-    image: objectboxio/edge-security-secretstore-setup:1.1.0
+    image: objectboxio/edgex-security-secretstore-setup:1.1.0
     container_name: edgex-vault-worker
     hostname: edgex-vault-worker
     entrypoint: >
@@ -209,7 +209,7 @@ services:
         - consul
 
   edgex-proxy:
-    image: objectboxio/edge-security-proxy-setup:1.1.0
+    image: objectboxio/edgex-security-proxy-setup:1.1.0
     container_name: edgex-proxy
     hostname: edgex-proxy
     entrypoint: >
@@ -251,7 +251,7 @@ services:
 #      - vault-worker
 
   logging:
-    image: objectboxio/edge-support-logging:1.1.0
+    image: objectboxio/edgex-support-logging:1.1.0
     ports:
       - "48061:48061"
     container_name: edgex-support-logging
@@ -270,7 +270,7 @@ services:
       - volume
 
   system:
-    image: objectboxio/edge-sys-mgmt-agent:1.1.0
+    image: objectboxio/edgex-sys-mgmt-agent:1.1.0
     ports:
       - "48090:48090"
     container_name: edgex-sys-mgmt-agent
@@ -287,7 +287,7 @@ services:
       - logging
 
   notifications:
-    image: objectboxio/edge-support-notifications:1.1.0
+    image: objectboxio/edgex-support-notifications:1.1.0
     ports:
       - "48060:48060"
     container_name: edgex-support-notifications
@@ -304,7 +304,7 @@ services:
       - logging
 
   metadata:
-    image: objectboxio/edge-core-metadata:1.1.0
+    image: objectboxio/edgex-core-metadata:1.1.0
     ports:
       - "48081:48081"
     container_name: edgex-core-metadata
@@ -321,7 +321,7 @@ services:
       - logging
 
   data:
-    image: objectboxio/edge-core-data:1.1.0
+    image: objectboxio/edgex-core-data:1.1.0
     ports:
       - "48080:48080"
       - "5563:5563"
@@ -339,7 +339,7 @@ services:
       - logging
 
   command:
-    image: objectboxio/edge-core-command:1.1.0
+    image: objectboxio/edgex-core-command:1.1.0
     ports:
       - "48082:48082"
     container_name: edgex-core-command
@@ -356,7 +356,7 @@ services:
       - metadata
 
   scheduler:
-    image: objectboxio/edge-support-scheduler:1.1.0
+    image: objectboxio/edgex-support-scheduler:1.1.0
     ports:
       - "48085:48085"
     container_name: edgex-support-scheduler
@@ -407,7 +407,7 @@ services:
       - app-service-rules
 
 #  export-client:
-#    image: objectboxio/edge-export-client:1.1.0
+#    image: objectboxio/edgex-export-client:1.1.0
 #    ports:
 #      - "48071:48071"
 #    container_name: edgex-export-client
@@ -426,7 +426,7 @@ services:
 #      - data
 #
 #  export-distro:
-#    image: objectboxio/edge-export-distro:1.1.0
+#    image: objectboxio/edgex-export-distro:1.1.0
 #    ports:
 #      - "48070:48070"
 #      - "5566:5566"

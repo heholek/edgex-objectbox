@@ -11,7 +11,7 @@ declare -a archs=("x86_64" "armv7l")
 thisArchTag=$(uname -m)-$version
 
 # get the list of image names (without tags) to combine
-images=$(docker image ls | grep "objectboxio/edge-" | grep "$thisArchTag" | cut -d' ' -f1)
+images=$(docker image ls | grep "objectboxio/edgex-" | grep "$thisArchTag" | cut -d' ' -f1)
 
 declare -a creates=()
 declare -a pushes=()

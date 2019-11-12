@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 ARG git_sha
-FROM objectboxio/edge-build-base:${git_sha} AS builder
+FROM objectboxio/edgex-build-base:${git_sha} AS builder
 
 ARG service
 COPY . .

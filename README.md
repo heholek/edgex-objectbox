@@ -135,7 +135,7 @@ or
 
 ```sh
 cd bin
-./edge-launch.sh
+./edgex-launch.sh
 ```
 
 **Note** You must have a database (Mongo or Redis) running before the services will operate

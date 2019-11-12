@@ -518,7 +518,7 @@ parts:
   # otherwise go will try to import all of the files from the top-level go.mod
   # from edgex-go which at this point will fail
   # eventually we would like these changes to be upstreamed but until then
-  # they live here. see also https://github.com/objectbox/edgex-objectbox/issues/1109
+  # they live here. see also https://github.com/edgexfoundry/edgex-go/issues/1109
   go:
     plugin: nil
     source: snap/local/build-helpers
@@ -595,6 +595,31 @@ parts:
       - make
       - zip
 
+#  mongodb:
+#    plugin: dump
+#    source:
+#      - on amd64: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1604-3.4.10.tgz
+#      - else:
+#          - on arm64: https://fastdl.mongodb.org/linux/mongodb-linux-arm64-ubuntu1604-3.4.10.tgz
+#      - else fail
+#    organize:
+#      GNU-AGPL-3.0: usr/share/doc/mongodb/GNU-AGPL-3.0
+#      MPL-2: usr/share/doc/mongodb/MPL-2
+#      README: usr/share/doc/mongodb/README
+#      THIRD-PARTY-NOTICES: usr/share/doc/mongodb/THIRD-PARTY-NOTICES
+#    stage-packages:
+#      - libssl1.0.0
+#    stage:
+#      - -bin/bsondump
+#      - -bin/mongoexport
+#      - -bin/mongofiles
+#      - -bin/mongoimport
+#      - -bin/mongooplog
+#      - -bin/mongoperf
+#      - -bin/mongoreplay
+#      - -bin/mongorestore
+#      - -bin/mongos
+#      - -bin/mongotop
   remarshal:
     plugin: python
     source: https://github.com/dbohdan/remarshal.git

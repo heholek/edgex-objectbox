@@ -23,7 +23,9 @@ func (s *SecretProvider) GetDatabaseCredentials(database config.Database) (confi
 	// If security is disabled or the database is Redis then we are to use the credentials supplied by the
 	// configuration. The reason we do this for Redis is because Redis does not have an authentication nor an
 	// authorization mechanism.
-	if !s.isSecurityEnabled() || database.Type == db.RedisDB {
+	// OBX: same applies to objectbox
+	//if !s.isSecurityEnabled() || database.Type == db.RedisDB {
+	if !s.isSecurityEnabled() || database.Type == db.RedisDB || database.Type == db.ObjectBox {
 		return config.Credentials{
 			Username: database.Username,
 			Password: database.Password,

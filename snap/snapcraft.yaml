@@ -955,9 +955,9 @@ parts:
       # the openresty build system also hard-codes the path to nginx inside
       # the "resty" binary so we need to change that
       # TODO: make this use $SNAP as an env var directly rather than
-      # hard-coding /snap/edgexfoundry/current as $SNAP
+      # hard-coding /snap/edgex-objectbox/current as $SNAP
       sed -i \
-        -e s@$SNAPCRAFT_PART_INSTALL/nginx/sbin/nginx@/snap/edgexfoundry/current/nginx/sbin/nginx@ \
+        -e s@$SNAPCRAFT_PART_INSTALL/nginx/sbin/nginx@/snap/edgex-objectbox/current/nginx/sbin/nginx@ \
         resty
 
   kong:

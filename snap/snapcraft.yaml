@@ -594,20 +594,20 @@ parts:
     source-depth: 1
     organize:
       LICENSE: usr/share/doc/remarshal/LICENSE
-  redis:
-    source: https://github.com/antirez/redis.git
-    source-tag: "5.0.4"
-    source-depth: 1
-    plugin: make
-    make-install-var: PREFIX
-    override-build: |
-      snapcraftctl build
-      # process the config file to specify the working directory for redis
-      # as $SNAP_DATA/redis
-      cd $SNAPCRAFT_PART_SRC
-      mkdir -p $SNAPCRAFT_PART_INSTALL/config/redis
-      sed -e s@'dir ./'@'dir \$SNAP_DATA/redis'@ \
-        redis.conf > $SNAPCRAFT_PART_INSTALL/config/redis/redis.conf
+#  redis:
+#    source: https://github.com/antirez/redis.git
+#    source-tag: "5.0.4"
+#    source-depth: 1
+#    plugin: make
+#    make-install-var: PREFIX
+#    override-build: |
+#      snapcraftctl build
+#      # process the config file to specify the working directory for redis
+#      # as $SNAP_DATA/redis
+#      cd $SNAPCRAFT_PART_SRC
+#      mkdir -p $SNAPCRAFT_PART_INSTALL/config/redis
+#      sed -e s@'dir ./'@'dir \$SNAP_DATA/redis'@ \
+#        redis.conf > $SNAPCRAFT_PART_INSTALL/config/redis/redis.conf
 #  edgex-mongo:
 #    source: https://github.com/edgexfoundry/docker-edgex-mongo.git
 #    source-branch: fuji

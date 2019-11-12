@@ -1,2 +1,5 @@
 docs
 *.snap
+.git
+snap
+benchmark

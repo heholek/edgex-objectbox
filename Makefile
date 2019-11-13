@@ -153,12 +153,21 @@ docker_devices:
 		$(DOCKER_TAG)
 
 docker_ui:
-	./build/build-upstream-repo.sh \
-		ui \
-		277361c19809286defc6bccd20bc08e304c6ef7c \
-		https://github.com/edgexfoundry/edgex-ui-go.git \
-		$(GIT_SHA) \
-		$(DOCKER_TAG)
+	# fails for ARMv7 because of the repository mirrors that are being added to apk in the upstream Dockerfile
+	# 	./build/build-upstream-repo.sh \
+	# 		ui \
+	# 		277361c19809286defc6bccd20bc08e304c6ef7c \
+	# 		https://github.com/edgexfoundry/edgex-ui-go.git \
+	# 		$(GIT_SHA) \
+	# 		$(DOCKER_TAG)
+	docker build \
+		-f build/ui-go/Dockerfile \
+		--build-arg git_sha=$(GIT_SHA) \
+		--label "git_sha=$(GIT_SHA)" \
+		-t objectboxio/edgex-ui-go:$(GIT_SHA) \
+		-t objectboxio/edgex-ui-go:$(DOCKER_TAG) \
+		build/ui-go
+
 
 docker_config_seed:
 	docker build \

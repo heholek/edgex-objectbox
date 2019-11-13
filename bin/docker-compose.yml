@@ -544,11 +544,11 @@ services:
 # UIs
 #################################################################
   ui:
-    image: objectboxio/edgex-ui:1.1.0
+    image: objectboxio/edgex-ui-go:1.1.0
     ports:
       - "4000:4000"
-    container_name: edgex-ui
-    hostname: edgex-ui
+    container_name: edgex-ui-go
+    hostname: edgex-ui-go
     networks:
       - edgex-network
     volumes:

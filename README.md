@@ -27,6 +27,16 @@ You can check the status of your running EdgeX services by going to http://local
 
 Now that you have EdgeX up and running, you can follow our [API Walkthrough](https://docs.edgexfoundry.org/Ch-Walkthrough.html) to learn how the different services work together to connect IoT devices to cloud services.
 
+### Without security services
+The following docker-compose file omits security services for an even more lightweight setup.  
+Note: this is the only option available for armhf/arm-32bit devices/OSs, such as Raspberry Pi with Raspbian, 
+because Kong API gateway is not available for armhf.
+
+```sh
+wget https://raw.githubusercontent.com/objectbox/edgex-objectbox/fuji/bin/docker-compose-no-secty.yml
+docker-compose up -d
+```
+
 # Running EdgeX with security components
 
 Starting with the Fuji release, EdgeX includes enhanced security features that are enabled by default. There are 3 major components that are responsible for security

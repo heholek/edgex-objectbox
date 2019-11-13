@@ -11,6 +11,8 @@ GO=CGO_ENABLED=0 GO111MODULE=on go
 GOCGO=CGO_ENABLED=1 GO111MODULE=on go
 
 DOCKERS=docker_build_base docker_volume docker_config_seed docker_export_client docker_export_distro docker_core_data docker_core_metadata docker_core_command docker_support_logging docker_support_notifications docker_sys_mgmt_agent docker_support_scheduler docker_security_secrets_setup docker_security_proxy_setup docker_security_secretstore_setup
+# DOCKERS+=docker_app_service_configurable docker_support_rulesengine
+DOCKERS+=docker_consul docker_volume docker_devices docker_ui
 .PHONY: $(DOCKERS)
 
 MICROSERVICES=cmd/config-seed/config-seed cmd/export-client/export-client cmd/export-distro/export-distro cmd/core-metadata/core-metadata cmd/core-data/core-data cmd/core-command/core-command cmd/support-logging/support-logging cmd/support-notifications/support-notifications cmd/sys-mgmt-executor/sys-mgmt-executor cmd/sys-mgmt-agent/sys-mgmt-agent cmd/support-scheduler/support-scheduler cmd/security-secrets-setup/security-secrets-setup cmd/security-proxy-setup/security-proxy-setup cmd/security-secretstore-setup/security-secretstore-setup
@@ -96,6 +98,67 @@ docker_build_base:
 		--label "git_sha=$(GIT_SHA)" \
 		-t objectboxio/edgex-build-base:$(GIT_SHA) \
 		.
+
+# docker_app_service_configurable:
+# 	$(eval NAME := app-service-configurable)
+# 	./build/get-upstream-repo.sh \
+# 		$(NAME) \
+# 		407c5695040f00cf2c69603f5ad8d39d9232cb8d \
+# 		https://github.com/edgexfoundry/app-service-configurable.git
+# 	docker build \
+# 		--build-arg http_proxy \
+# 		--build-arg https_proxy \
+# 		--label "git_sha=$(GIT_SHA)" \
+# 		-t objectboxio/edgex-$(NAME):$(GIT_SHA) \
+# 		-t objectboxio/edgex-$(NAME):$(DOCKER_TAG) \
+# 		build/checkouts/$(NAME)
+
+# currently fails to build: Step 7/15 : COPY target/*.jar $APP_DIR/$APP - no source files were specified
+# docker_support_rulesengine:
+# 	$(eval NAME := support-rulesengine)
+# 	./build/get-upstream-repo.sh \
+# 		$(NAME) \
+# 		35f17d8e59789244a7d634909f958bd3b73e8e81 \
+# 		https://github.com/edgexfoundry/support-rulesengine.git
+# 	docker build \
+# 		--build-arg http_proxy \
+# 		--build-arg https_proxy \
+# 		--label "git_sha=$(GIT_SHA)" \
+# 		-t objectboxio/edgex-$(NAME):$(GIT_SHA) \
+# 		-t objectboxio/edgex-$(NAME):$(DOCKER_TAG) \
+# 		build/checkouts/$(NAME)
+
+docker_consul:
+	./build/build-upstream-repo.sh \
+		consul \
+		50b620a4478e2ed0408c29de667cb3e11d03cd8a \
+		https://github.com/edgexfoundry/docker-edgex-consul.git \
+		$(GIT_SHA) \
+		$(DOCKER_TAG)
+
+docker_volume:
+	./build/build-upstream-repo.sh \
+		volume \
+		9cc8536c83189269461638e6684ed6435b9b3075 \
+		https://github.com/edgexfoundry/docker-edgex-volume.git \
+		$(GIT_SHA) \
+		$(DOCKER_TAG)
+
+docker_devices:
+	./build/build-upstream-repo.sh \
+		device-virtual \
+		b4f3ea612a0bba9fde6d44447b3e9c68bf64be13 \
+		https://github.com/edgexfoundry/device-virtual-go.git \
+		$(GIT_SHA) \
+		$(DOCKER_TAG)
+
+docker_ui:
+	./build/build-upstream-repo.sh \
+		ui \
+		277361c19809286defc6bccd20bc08e304c6ef7c \
+		https://github.com/edgexfoundry/edgex-ui-go.git \
+		$(GIT_SHA) \
+		$(DOCKER_TAG)
 
 docker_config_seed:
 	docker build \

@@ -35,7 +35,7 @@ volumes:
 
 services:
   volume:
-    image: nexus3.edgexfoundry.org:10004/docker-edgex-volume:1.1.0
+    image: objectboxio/edgex-volume:1.1.0
     container_name: edgex-files
     networks:
       - edgex-network
@@ -46,7 +46,7 @@ services:
       - consul-data:/consul/data
 
   consul:
-    image: nexus3.edgexfoundry.org:10004/docker-edgex-consul:1.1.0
+    image: objectboxio/edgex-consul:1.1.0
     ports:
       - "8400:8400"
       - "8500:8500"
@@ -372,39 +372,39 @@ services:
     depends_on:
       - metadata
 
-  app-service-rules:
-    image: nexus3.edgexfoundry.org:10004/docker-app-service-configurable:master
-    ports:
-      - "48100:48100"
-    container_name: edgex-app-service-configurable-rules
-    hostname: edgex-app-service-configurable-rules
-    networks:
-      edgex-network:
-        aliases:
-          - edgex-app-service-configurable-rules
-    environment:
-      <<: *common-variables
-      edgex_service: http://edgex-app-service-configurable-rules:48100
-      edgex_profile: rules-engine
-      Service_Host: edgex-app-service-configurable-rules
-      MessageBus_SubscribeHost_Host: edgex-core-data
-    depends_on:
-      - consul
-      - logging
-      - data
+#  app-service-rules:
+#    image: nexus3.edgexfoundry.org:10004/docker-app-service-configurable:master
+#    ports:
+#      - "48100:48100"
+#    container_name: edgex-app-service-configurable-rules
+#    hostname: edgex-app-service-configurable-rules
+#    networks:
+#      edgex-network:
+#        aliases:
+#          - edgex-app-service-configurable-rules
+#    environment:
+#      <<: *common-variables
+#      edgex_service: http://edgex-app-service-configurable-rules:48100
+#      edgex_profile: rules-engine
+#      Service_Host: edgex-app-service-configurable-rules
+#      MessageBus_SubscribeHost_Host: edgex-core-data
+#    depends_on:
+#      - consul
+#      - logging
+#      - data
 
-  rulesengine:
-    image: nexus3.edgexfoundry.org:10004/docker-support-rulesengine:master
-    ports:
-      - "48075:48075"
-    container_name: edgex-support-rulesengine
-    hostname: edgex-support-rulesengine
-    networks:
-      edgex-network:
-        aliases:
-          - edgex-support-rulesengine
-    depends_on:
-      - app-service-rules
+#  rulesengine:
+#    image: nexus3.edgexfoundry.org:10004/docker-support-rulesengine:master
+#    ports:
+#      - "48075:48075"
+#    container_name: edgex-support-rulesengine
+#    hostname: edgex-support-rulesengine
+#    networks:
+#      edgex-network:
+#        aliases:
+#          - edgex-support-rulesengine
+#    depends_on:
+#      - app-service-rules
 
 #  export-client:
 #    image: objectboxio/edgex-export-client:1.1.0
@@ -454,7 +454,7 @@ services:
 #################################################################
 
   device-virtual:
-    image: nexus3.edgexfoundry.org:10004/docker-device-virtual-go:1.1.0
+    image: objectboxio/edgex-device-virtual:1.1.0
     ports:
     - "49990:49990"
     container_name: edgex-device-virtual
@@ -544,11 +544,11 @@ services:
 # UIs
 #################################################################
   ui:
-    image: nexus3.edgexfoundry.org:10004/docker-edgex-ui-go:1.1.0
+    image: objectboxio/edgex-ui:1.1.0
     ports:
       - "4000:4000"
-    container_name: edgex-ui-go
-    hostname: edgex-ui-go
+    container_name: edgex-ui
+    hostname: edgex-ui
     networks:
       - edgex-network
     volumes:

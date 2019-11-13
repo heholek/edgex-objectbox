@@ -5,7 +5,7 @@ set -euo pipefail
 
 version=$(cat ./VERSION)
 
-images=$(docker images "objectboxio/edgex-*:*$version" --format "{{.Repository}}:{{.Tag}}")
+images=$(docker images "objectboxio/edgex-*:$(uname -m)-$version" --format "{{.Repository}}:{{.Tag}}")
 
 echo "$images"
 

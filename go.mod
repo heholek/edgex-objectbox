@@ -1,7 +1,7 @@
 module github.com/objectbox/edgex-objectbox
 
 require (
-	bitbucket.org/bertimususe u09/systemstat v0.0.0-20180207000608-0eeff89b0690
+	bitbucket.org/bertimus9/systemstat v0.0.0-20180207000608-0eeff89b0690
 	github.com/BurntSushi/toml v0.3.1
 	github.com/OneOfOne/xxhash v1.2.5
 	github.com/cloudflare/gokey v0.1.0

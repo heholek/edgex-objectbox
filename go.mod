@@ -1,7 +1,7 @@
 module github.com/objectbox/edgex-objectbox
 
 require (
-	bitbucket.org/bertimus9/systemstat v0.0.0-20180207000608-0eeff89b0690
+	bitbucket.org/bertimususe u09/systemstat v0.0.0-20180207000608-0eeff89b0690
 	github.com/BurntSushi/toml v0.3.1
 	github.com/OneOfOne/xxhash v1.2.5
 	github.com/cloudflare/gokey v0.1.0
@@ -20,7 +20,7 @@ require (
 	github.com/imdario/mergo v0.3.6
 	github.com/magiconair/properties v1.8.0
 	github.com/mattn/go-xmpp v0.0.0-20190124093244-6093f50721ed
-	github.com/objectbox/objectbox-go v1.0.1-0.20191105074346-a58c984ce327
+	github.com/objectbox/objectbox-go v1.1.0-rc.1
 	github.com/pebbe/zmq4 v1.0.0
 	github.com/pelletier/go-toml v1.2.0
 	github.com/pkg/errors v0.8.1

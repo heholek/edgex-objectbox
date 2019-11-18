@@ -7,9 +7,10 @@ RUN apk update && apk add make git
 # set the working directory
 WORKDIR /build
 
+ARG src_git_sha
 RUN git init && \
 	git remote add origin https://github.com/edgexfoundry/edgex-ui-go.git && \
-	git fetch origin 277361c19809286defc6bccd20bc08e304c6ef7c --depth=1 && \
+	git fetch origin $src_git_sha --depth=1 && \
 	git reset --hard FETCH_HEAD
 
 RUN make prepare

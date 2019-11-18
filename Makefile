@@ -147,7 +147,7 @@ docker_volume:
 docker_devices:
 	./build/build-upstream-repo.sh \
 		device-virtual \
-		b4f3ea612a0bba9fde6d44447b3e9c68bf64be13 \
+		fb454a3731a380daa3bfc3bfa45a73d1aa22ed51 \
 		https://github.com/edgexfoundry/device-virtual-go.git \
 		$(GIT_SHA) \
 		$(DOCKER_TAG)
@@ -162,6 +162,7 @@ docker_ui:
 	# 		$(DOCKER_TAG)
 	docker build \
 		-f build/ui-go/Dockerfile \
+		--build-arg src_git_sha=277361c19809286defc6bccd20bc08e304c6ef7c \
 		--build-arg git_sha=$(GIT_SHA) \
 		--label "git_sha=$(GIT_SHA)" \
 		-t objectboxio/edgex-ui-go:$(GIT_SHA) \

@@ -234,7 +234,8 @@ Adapted from https://snapcraft.io/docs/build-on-lxd
 1. In the host environment, get the snap:
     ```shell script
    lxc file pull mysnapcraft/root/edgex-objectbox/edgex*.snap .
-```   
+    ```
+
 ### Building with multipass
 
 The easiest way to build the snap is using the multipass VM tool that snapcraft knows to use directly. After [installing multipass](https://multipass.run), just run 

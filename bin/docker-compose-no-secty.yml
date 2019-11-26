@@ -210,7 +210,7 @@ services:
       - metadata
 
 #  app-service-rules:
-#    image: nexus3.edgexfoundry.org:10004/docker-app-service-configurable:master
+#    image: edgexfoundry/docker-app-service-configurable:1.0.0
 #    ports:
 #      - "48100:48100"
 #    container_name: edgex-app-service-configurable-rules
@@ -231,7 +231,7 @@ services:
 #      - data
 
 #  rulesengine:
-#    image: nexus3.edgexfoundry.org:10004/docker-support-rulesengine:master
+#    image: edgexfoundry/docker-support-rulesengine:1.1.0
 #    ports:
 #      - "48075:48075"
 #    container_name: edgex-support-rulesengine
@@ -309,7 +309,7 @@ services:
     - command
 
   # device-random:
-  #   image: nexus3.edgexfoundry.org:10004/docker-device-random-go:1.1.0
+  #   image: edgexfoundry/docker-device-random-go:1.1.0
   #   ports:
   #     - "49988:49988"
   #   container_name: edgex-device-random
@@ -326,7 +326,7 @@ services:
   #     - command
   #
   # device-mqtt:
-  #   image: nexus3.edgexfoundry.org:10004/docker-device-mqtt-go:1.1.0
+  #   image: edgexfoundry/docker-device-mqtt-go:1.1.0
   #   ports:
   #     - "49982:49982"
   #   container_name: edgex-device-mqtt
@@ -343,7 +343,7 @@ services:
   #     - command
   #
   # device-modbus:
-  #   image: nexus3.edgexfoundry.org:10004/docker-device-modbus-go:1.1.0
+  #   image: edgexfoundry/docker-device-modbus-go:1.1.0
   #   ports:
   #     - "49991:49991"
   #   container_name: edgex-device-modbus
@@ -360,7 +360,7 @@ services:
   #     - command
   #
   # device-snmp:
-  #   image: nexus3.edgexfoundry.org:10004/docker-device-snmp-go:1.1.0
+  #   image: edgexfoundry/docker-device-snmp-go:1.1.0
   #   ports:
   #     - "49993:49993"
   #   container_name: edgex-device-snmp

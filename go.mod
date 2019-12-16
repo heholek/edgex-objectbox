@@ -20,7 +20,7 @@ require (
 	github.com/imdario/mergo v0.3.6
 	github.com/magiconair/properties v1.8.0
 	github.com/mattn/go-xmpp v0.0.0-20190124093244-6093f50721ed
-	github.com/objectbox/objectbox-go v1.1.0-rc.1
+	github.com/objectbox/objectbox-go v1.1.0
 	github.com/pebbe/zmq4 v1.0.0
 	github.com/pelletier/go-toml v1.2.0
 	github.com/pkg/errors v0.8.1

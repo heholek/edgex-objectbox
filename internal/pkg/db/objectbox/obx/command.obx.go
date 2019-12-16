@@ -123,7 +123,7 @@ var Command_ = struct {
 
 // GeneratorVersion is called by ObjectBox to verify the compatibility of the generator used to generate this code
 func (command_EntityInfo) GeneratorVersion() int {
-	return 4
+	return 5
 }
 
 // AddToModel is called by ObjectBox during model build
